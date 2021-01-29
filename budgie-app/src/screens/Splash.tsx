@@ -4,8 +4,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Image, View } from 'react-native';
 import { RootStackParamList } from '../../App';
 
-// const SPLASH_TIMEOUT = 0;
-const SPLASH_TIMEOUT = 3000;
+const SPLASH_TIMEOUT = 0;
+// const SPLASH_TIMEOUT = 30000;
 
 export const Splash: FC<{
     navigation: StackNavigationProp<RootStackParamList, 'Splash'>
