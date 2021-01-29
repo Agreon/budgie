@@ -1,72 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
-
-var schema = `
-CREATE TABLE IF NOT EXISTS person (
-    first_name text,
-    last_name text,
-    email text
-);
-
-CREATE TABLE IF NOT EXISTS place (
-    country text,
-    city text NULL,
-    telcode integer
-);
-
-CREATE TABLE IF NOT EXISTS expense (
-	id text,
-	name text,
-	type text,
-	costs text,
-	date timestamp with time zone,
-	created_at timestamp with time zone,
-	updated_at timestamp with time zone
-	)`
-
-type Person struct {
-	FirstName string `db:"first_name"`
-	LastName  string `db:"last_name"`
-	Email     string
-}
-
-type ExpenseType string
-
-const (
-	Food            ExpenseType = "Food"
-	Clothes                     = "Clothes"
-	DinnerOutside               = "DinnerOutside"
-	Rent                        = "Rent"
-	Electricity                 = "Electricity"
-	GEZ                         = "GEZ"
-	Insurance                   = "Insurance"
-	Cellphone                   = "Cellphone"
-	PublicTransport             = "PublicTransport"
-	Internet                    = "Internet"
-	HygieneMedicine             = "HygieneMedicine"
-	LeisureTime                 = "LeisureTime"
-	Education                   = "Education"
-	Travel                      = "Travel"
-	Other                       = "Other"
-)
-
-type Expense struct {
-	ID        string      `db:"ID"`
-	Name      string      `db:"name"`
-	Type      ExpenseType `db:"type"`
-	Costs     string      `db:"costs"`
-	Time      time.Time   `db:"date"`
-	CreatedAt time.Time   `db:"createdAt"`
-	UpdatedAt time.Time   `db:"updatedat"`
-}
 
 func main() {
 	db, err := sqlx.Connect("postgres", "user=postgres dbname=budgie password=postgres sslmode=disable")
@@ -79,6 +20,8 @@ func main() {
 	tx := db.MustBegin()
 	tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($2, $1, $3)", "Jason", "Moiron", "jmoiron@jmoiron.net")
 	tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($1, $2, $3)", "John", "Doe", "johndoeDNE@gmail.net")
+	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), $5)", "Snäckies", "Food", "14.56", "'1997-01-31 09:26:56.66 +02:00'", "'2020-01-16 8:00:00 US/Pacific'")
+	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), $5)", "Unterhosen", "Clothes", "2.00", "'1999-01-15 8:00:00 US/Pacific'", "'2020-01-16 8:00:00 US/Pacific'")
 	tx.MustExec("INSERT INTO place (country, city, telcode) VALUES ($1, $2, $3)", "United States", "New York", "1")
 	tx.MustExec("INSERT INTO place (country, telcode) VALUES ($1, $2)", "Hong Kong", "852")
 	tx.MustExec("INSERT INTO place (country, telcode) VALUES ($1, $2)", "Singapore", "65")
@@ -89,11 +32,21 @@ func main() {
 	jason := Person{}
 	err = db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
 
+	expenses := []Expense{}
+	err = db.Select(&expenses, "SELECT * FROM expense ORDER BY created_at DESC")
+
+	//test := []string{}
+	//err = db.Select(&test, "SELECT costs FROM expense ")
+	//fmt.Println(test[0])
+	fmt.Println(expenses[0].ID)
+	//food := Expense{}
+	//err = db.Get(&food, "SELECT * FROM expense WHERE type=$1", "Food")
+
 	r := gin.Default()
 
-	r.GET("/ping", func(c *gin.Context) {
+	r.GET("/expense", func(c *gin.Context) {
 
-		c.JSON(200, jason)
+		c.JSON(200, expenses)
 		//c.JSON(200, gin.H{
 		//	"message": jason.Email,
 		//	"bla":     jason.FirstName,
