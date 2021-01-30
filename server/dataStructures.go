@@ -63,5 +63,12 @@ type Expense struct {
 	Costs     string      `db:"costs"`
 	Time      time.Time   `db:"date"`
 	CreatedAt time.Time   `db:"created_at"`
-	UpdatedAt time.Time   `db:"updated_at"`
+	UpdatedAt time.Time   `db:"updatstringed_at"`
+}
+
+type IncomingExpense struct {
+	Name string      `json:"name" binding:"required"`
+	Type ExpenseType `json:"type" binding:"required"`
+	Cost string      `json:"cost" binding:"required"`
+	Date string      `json:"date" binding:"required"`
 }

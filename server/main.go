@@ -38,7 +38,7 @@ func main() {
 	//test := []string{}
 	//err = db.Select(&test, "SELECT costs FROM expense ")
 	//fmt.Println(test[0])
-	fmt.Println(expenses[0].ID)
+	//fmt.Println(expenses[0].ID)
 	//food := Expense{}
 	//err = db.Get(&food, "SELECT * FROM expense WHERE type=$1", "Food")
 
@@ -52,5 +52,23 @@ func main() {
 		//	"bla":     jason.FirstName,
 		//})
 	})
+
+	r.POST("/post", func(c *gin.Context) {
+
+		//id := c.Query("id")
+		//page := c.DefaultQuery("page", "0")
+		//name := c.Query("name")
+		//message := c.PostFormMap("message")
+		//
+		//fmt.Printf("id: %s; page: %s; name: %s; message: %v", id, page, name, message)
+		var newExpanse IncomingExpense
+		c.BindJSON(&newExpanse)
+
+		tx := db.MustBegin()
+		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
+		tx.Commit()
+		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
+	})
+
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
