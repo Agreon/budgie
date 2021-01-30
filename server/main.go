@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -43,6 +43,12 @@ func main() {
 	//err = db.Get(&food, "SELECT * FROM expense WHERE type=$1", "Food")
 
 	r := gin.Default()
+
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"*"}
+	corsConfig.AddAllowMethods("GET")
+
+	r.Use(cors.New(corsConfig))
 
 	r.GET("/expense", func(c *gin.Context) {
 
