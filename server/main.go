@@ -5,15 +5,11 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=budgie password=postgres sslmode=disable")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	db := GetDB()
 
 	db.MustExec(schema)
 
@@ -29,8 +25,30 @@ func main() {
 	tx.NamedExec("INSERT INTO person (first_name, last_name, email) VALUES (:first_name, :last_name, :email)", &Person{"Jane", "Citizen", "jane.citzen@example.com"})
 	tx.Commit()
 
+	var f func(*gin.Context)
+	f = func(c *gin.Context) {
+
+		//id := c.Query("id")
+		//page := c.DefaultQuery("page", "0")
+		//name := c.Query("name")
+		//message := c.PostFormMap("message")
+		//
+		//fmt.Printf("id: %s; page: %s; name: %s; message: %v", id, page, name, message)
+		var newExpanse IncomingExpense
+		c.BindJSON(&newExpanse)
+
+		tx := db.MustBegin()
+		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
+		tx.Commit()
+		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
+	}
+
 	jason := Person{}
-	err = db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
+	err := db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
+
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	expenses := []Expense{}
 	err = db.Select(&expenses, "SELECT * FROM expense ORDER BY created_at DESC")
@@ -53,22 +71,7 @@ func main() {
 		//})
 	})
 
-	r.POST("/post", func(c *gin.Context) {
-
-		//id := c.Query("id")
-		//page := c.DefaultQuery("page", "0")
-		//name := c.Query("name")
-		//message := c.PostFormMap("message")
-		//
-		//fmt.Printf("id: %s; page: %s; name: %s; message: %v", id, page, name, message)
-		var newExpanse IncomingExpense
-		c.BindJSON(&newExpanse)
-
-		tx := db.MustBegin()
-		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
-		tx.Commit()
-		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
-	})
+	r.POST("/post", f)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
