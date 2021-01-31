@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -25,33 +24,12 @@ func main() {
 	tx.NamedExec("INSERT INTO person (first_name, last_name, email) VALUES (:first_name, :last_name, :email)", &Person{"Jane", "Citizen", "jane.citzen@example.com"})
 	tx.Commit()
 
-	var f func(*gin.Context)
-	f = func(c *gin.Context) {
-
-		//id := c.Query("id")
-		//page := c.DefaultQuery("page", "0")
-		//name := c.Query("name")
-		//message := c.PostFormMap("message")
-		//
-		//fmt.Printf("id: %s; page: %s; name: %s; message: %v", id, page, name, message)
-		var newExpanse IncomingExpense
-		c.BindJSON(&newExpanse)
-
-		tx := db.MustBegin()
-		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
-		tx.Commit()
-		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
-	}
-
 	jason := Person{}
 	err := db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
 
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	expenses := []Expense{}
-	err = db.Select(&expenses, "SELECT * FROM expense ORDER BY created_at DESC")
 
 	//test := []string{}
 	//err = db.Select(&test, "SELECT costs FROM expense ")
@@ -62,16 +40,12 @@ func main() {
 
 	r := gin.Default()
 
-	r.GET("/expense", func(c *gin.Context) {
+	r.GET("/expense", listExpenses)
 
-		c.JSON(200, expenses)
-		//c.JSON(200, gin.H{
-		//	"message": jason.Email,
-		//	"bla":     jason.FirstName,
-		//})
-	})
+	//var ftest func(*gin.Context)
+	//ftest = &insertExpense(c *gin.Context)
 
-	r.POST("/post", f)
+	r.POST("/post", insertExpense)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

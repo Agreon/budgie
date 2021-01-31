@@ -23,7 +23,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS expense (
 	id uuid,
 	name text,
-	type text,
+	category text,
 	costs money,
 	date timestamp with time zone,
 	created_at timestamp with time zone,
@@ -57,18 +57,18 @@ const (
 )
 
 type Expense struct {
-	ID        string      `db:"id"`
-	Name      string      `db:"name"`
-	Type      ExpenseType `db:"type"`
-	Costs     string      `db:"costs"`
-	Time      time.Time   `db:"date"`
-	CreatedAt time.Time   `db:"created_at"`
-	UpdatedAt time.Time   `db:"updatstringed_at"`
+	ID        string      `db:"id" json:"id"`
+	Name      string      `db:"name" json:"name"`
+	Category  ExpenseType `db:"category" json:"category"`
+	Costs     string      `db:"costs" json:"costs"`
+	Date      time.Time   `db:"date" json:"date"`
+	CreatedAt time.Time   `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time   `db:"updated_at" json:"updated_at"`
 }
 
 type IncomingExpense struct {
-	Name string      `json:"name" binding:"required"`
-	Type ExpenseType `json:"type" binding:"required"`
-	Cost string      `json:"cost" binding:"required"`
-	Date string      `json:"date" binding:"required"`
+	Name     string      `json:"name" binding:"required"`
+	Category ExpenseType `json:"category" binding:"required"`
+	Cost     string      `json:"cost" binding:"required"`
+	Date     string      `json:"date" binding:"required"`
 }
