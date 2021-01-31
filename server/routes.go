@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func insertExpense(c *gin.Context) {
@@ -41,6 +42,7 @@ func listExpenses(c *gin.Context) {
 func login(c *gin.Context) {
 
 	userNameIn := c.Query("name")
+	pwIn := c.Query("pw")
 
 	// TODO authentification with jwt
 	db := GetDB()
@@ -49,5 +51,15 @@ func login(c *gin.Context) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	c.JSON(200, userOut)
+
+	if bcrypt.CompareHashAndPassword([]byte(userOut.PWHash), []byte(pwIn)) == nil {
+		c.JSON(200, gin.H{
+			"message": "Yes!",
+		})
+	} else {
+		c.JSON(200, gin.H{
+			"message": "Please try again",
+		})
+	}
+	//c.JSON(200, userOut)
 }
