@@ -23,7 +23,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS expense (
 	id uuid,
 	name text,
-	type text,
+	category text,
 	costs money,
 	date timestamp with time zone,
 	created_at timestamp with time zone,
@@ -36,32 +36,39 @@ type Person struct {
 	Email     string
 }
 
-type ExpenseType string
+type ExpenseCategory string
 
 const (
-	Food            ExpenseType = "Food"
-	Clothes                     = "Clothes"
-	DinnerOutside               = "DinnerOutside"
-	Rent                        = "Rent"
-	Electricity                 = "Electricity"
-	GEZ                         = "GEZ"
-	Insurance                   = "Insurance"
-	Cellphone                   = "Cellphone"
-	PublicTransport             = "PublicTransport"
-	Internet                    = "Internet"
-	HygieneMedicine             = "HygieneMedicine"
-	LeisureTime                 = "LeisureTime"
-	Education                   = "Education"
-	Travel                      = "Travel"
-	Other                       = "Other"
+	Food            ExpenseCategory = "Food"
+	Clothes                         = "Clothes"
+	DinnerOutside                   = "DinnerOutside"
+	Rent                            = "Rent"
+	Electricity                     = "Electricity"
+	GEZ                             = "GEZ"
+	Insurance                       = "Insurance"
+	Cellphone                       = "Cellphone"
+	PublicTransport                 = "PublicTransport"
+	Internet                        = "Internet"
+	HygieneMedicine                 = "HygieneMedicine"
+	LeisureTime                     = "LeisureTime"
+	Education                       = "Education"
+	Travel                          = "Travel"
+	Other                           = "Other"
 )
 
 type Expense struct {
-	ID        string      `db:"id"`
-	Name      string      `db:"name"`
-	Type      ExpenseType `db:"type"`
-	Costs     string      `db:"costs"`
-	Time      time.Time   `db:"date"`
-	CreatedAt time.Time   `db:"created_at"`
-	UpdatedAt time.Time   `db:"updated_at"`
+	ID        string          `db:"id" json:"id"`
+	Name      string          `db:"name" json:"name"`
+	Category  ExpenseCategory `db:"category" json:"category"`
+	Costs     string          `db:"costs" json:"costs"`
+	Date      time.Time       `db:"date" json:"date"`
+	CreatedAt time.Time       `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time       `db:"updated_at" json:"updated_at"`
+}
+
+type IncomingExpense struct {
+	Name     string          `json:"name" binding:"required"`
+	Category ExpenseCategory `json:"category" binding:"required"`
+	Cost     string          `json:"cost" binding:"required"`
+	Date     string          `json:"date" binding:"required"`
 }
