@@ -9,14 +9,14 @@ import (
 )
 
 func insertExpense(c *gin.Context) {
-	var newExpanse IncomingExpense
-	c.BindJSON(&newExpanse)
+	var newExpense IncomingExpense
+	c.BindJSON(&newExpense)
 
 	db := GetDB()
 	tx := db.MustBegin()
-	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpanse.Name, newExpanse.Category, newExpanse.Cost, newExpanse.Date)
+	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpense.Name, newExpense.Category, newExpense.Cost, newExpense.Date)
 	tx.Commit()
-	fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpanse.Name, newExpanse.Category, newExpanse.Cost, newExpanse.Date)
+	fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Cost, newExpense.Date)
 }
 
 func listExpenses(c *gin.Context) {
