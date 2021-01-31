@@ -21,24 +21,24 @@ import { Header } from '../components/Header';
 
 // TODO: Move to common lib? => converter https://github.com/tkrajina/typescriptify-golang-structs
 interface Expense {
-  ID: string;
-  Type: string;
-  Costs: string;
-  Name?: string;
-  Time: Date;
+  id: string;
+  category: string;
+  costs: string;
+  name?: string;
+  date: Date;
 }
 
 export const ExpenseItem: FC<{ item: Expense }> = ({ item }) => (
   <div style={tailwind('mt-2')}>
     <div style={tailwind('p-2 flex justify-between')}>
       <div style={tailwind('flex flex-col ml-1')}>
-        <Text category="h4" status="primary">{item.Type}</Text>
-        <Text appearance="hint">{item.Name}</Text>
+        <Text category="h4" status="primary">{item.category}</Text>
+        <Text appearance="hint">{item.name}</Text>
       </div>
       <div style={tailwind('flex flex-col justify-between mr-1 text-right')}>
-        <Text appearance="hint">{dayjs(item.Time).format('DD.MM.')}</Text>
+        <Text appearance="hint">{dayjs(item.date).format('DD.MM.')}</Text>
         <span style={tailwind('text-red-400 font-semibold')}>
-          {item.Costs}
+          {item.costs}
           {' '}
           €
         </span>
@@ -100,7 +100,7 @@ export const Expenses: FC<{
           style={tailwind('w-full')}
           renderItem={({ item }) => <ExpenseItem item={item} />}
           data={expenses}
-          keyExtractor={(item) => item.ID}
+          keyExtractor={(item) => item.id}
         />
       </ScrollView>
       <Button

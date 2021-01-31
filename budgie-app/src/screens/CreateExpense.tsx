@@ -26,10 +26,22 @@ const CalendarIcon = (props: IconProps) => (
   <Icon {...props} name="calendar" />
 );
 
-const types = [
-  'Snäckies',
-  'Futter',
-  'Unterhosen',
+const categories = [
+  'Food',
+  'Clothes',
+  'DinnerOutside',
+  'Rent',
+  'Electricity',
+  'GEZ',
+  'Insurance',
+  'Cellphone',
+  'PublicTransport',
+  'Internet',
+  'HygieneMedicine',
+  'LeisureTime',
+  'Education',
+  'Travel',
+  'Other',
 ];
 
 const LoadingIndicator = (props: any) => (
@@ -45,7 +57,7 @@ const LoadingIndicator = (props: any) => (
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'CreateExpense'>
 }> = ({ navigation }) => {
-  const [costs, setCosts] = useState('0');
+  const [cost, setCost] = useState('0');
   const [selectedIndex, setSelectedIndex] = React.useState(new IndexPath(0));
   const [name, setName] = useState<string | undefined>(undefined);
   const [date, setDate] = useState<Date>(new Date());
@@ -55,8 +67,8 @@ export const CreateExpense: FC<{
     setLoading(true);
     try {
       await axios.post('http://localhost:8080/expense', {
-        type: types[selectedIndex.row],
-        costs,
+        category: categories[selectedIndex.row],
+        cost,
         name,
         date,
       });
@@ -66,7 +78,7 @@ export const CreateExpense: FC<{
       console.error(e);
     }
     setLoading(false);
-  }, [costs, selectedIndex, name, date]);
+  }, [cost, selectedIndex, name, date, navigation]);
 
   const BackAction = () => (
     <TopNavigationAction icon={BackIcon} onPress={() => navigation.goBack()} />
@@ -78,8 +90,8 @@ export const CreateExpense: FC<{
       <View style={tailwind('flex pl-5 pr-5')}>
         <Input
           style={tailwind('mt-1')}
-          value={costs}
-          onChangeText={(text) => setCosts(text)}
+          value={cost}
+          onChangeText={(text) => setCost(text)}
           label="Cost"
           autoFocus
           keyboardType="decimal-pad"
@@ -88,11 +100,11 @@ export const CreateExpense: FC<{
           style={tailwind('mt-4')}
           label="Type"
           selectedIndex={selectedIndex}
-          value={types[selectedIndex.row]}
+          value={categories[selectedIndex.row]}
           onSelect={(index) => setSelectedIndex(index as IndexPath)}
         >
           {
-            types.map((type) => (
+            categories.map((type) => (
               <SelectItem key={type} title={type} />
             ))
           }
@@ -109,7 +121,6 @@ export const CreateExpense: FC<{
           value={name}
           onChangeText={(text) => setName(text)}
           label="Name"
-          autoFocus
         />
         <Button
           style={tailwind('mt-8')}
