@@ -13,10 +13,11 @@ import tailwind from 'tailwind-rn';
 import { ScrollView } from 'react-native-gesture-handler';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Icon, TopNavigation, Text, Spinner, IconProps,
+  Button, Icon, Text, Spinner, IconProps,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
+import { Header } from '../components/Header';
 
 // TODO: Move to common lib? => converter https://github.com/tkrajina/typescriptify-golang-structs
 interface Expense {
@@ -82,7 +83,7 @@ export const Expenses: FC<{
 
   return (
     <SafeAreaView style={tailwind('bg-white h-full w-full')}>
-      <TopNavigation title="Expenses" alignment="center" />
+      <Header title="Expenses" />
       {loading
         && (
           <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>

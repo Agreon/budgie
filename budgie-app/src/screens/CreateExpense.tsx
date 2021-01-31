@@ -11,12 +11,12 @@ import {
   Select,
   SelectItem,
   Spinner,
-  TopNavigation,
   TopNavigationAction,
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
 import { RootStackParamList } from '../../App';
+import { Header } from '../components/Header';
 
 const BackIcon = (props: IconProps) => (
   <Icon {...props} name="arrow-back" />
@@ -40,7 +40,6 @@ const LoadingIndicator = (props: any) => (
 
 /**
  * TODO:
- * - Abstände
  * - Required fields
  */
 export const CreateExpense: FC<{
@@ -75,7 +74,7 @@ export const CreateExpense: FC<{
 
   return (
     <SafeAreaView style={tailwind('bg-white h-full w-full')}>
-      <TopNavigation title="Create Expense" alignment="center" accessoryLeft={BackAction} />
+      <Header title="Create Expense" accessoryLeft={BackAction} />
       <View style={tailwind('flex pl-5 pr-5')}>
         <Input
           style={tailwind('mt-1')}
