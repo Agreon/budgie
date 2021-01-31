@@ -9,7 +9,7 @@ import (
 )
 
 func insertExpense(c *gin.Context) {
-	var newExpense IncomingExpense
+	var newExpense ExpenseInput
 	c.BindJSON(&newExpense)
 
 	db := GetDB()
@@ -22,7 +22,7 @@ func insertExpense(c *gin.Context) {
 func listExpenses(c *gin.Context) {
 	db := GetDB()
 	expenses := []Expense{}
-	err := db.Select(&expenses, "SELECT * FROM expense ORDER BY created_at DESC")
+	err := db.Select(&expenses, "SELECT * FROM expense where user_id=ORDER BY created_at DESC")
 
 	if err != nil {
 		log.Fatalln(err)
@@ -33,4 +33,18 @@ func listExpenses(c *gin.Context) {
 	//	"message": jason.Email,
 	//	"bla":     jason.FirstName,
 	//})rintf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpanse.Name, newExpanse.Type, newExpanse.Cost, newExpanse.Date)
+}
+
+func login(c *gin.Context) {
+
+	userNameIn := c.Query("name")
+
+	// TODO authentification with jwt
+	db := GetDB()
+	userOut := User{}
+	err := db.Get(&userOut, "SELECT * FROM users WHERE user_name=$1", userNameIn)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	c.JSON(200, userOut)
 }

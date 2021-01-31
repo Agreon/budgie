@@ -17,6 +17,10 @@ func main() {
 	tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($1, $2, $3)", "John", "Doe", "johndoeDNE@gmail.net")
 	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), $5)", "Snäckies", "Food", "14.56", "'1997-01-31 09:26:56.66 +02:00'", "'2020-01-16 8:00:00 US/Pacific'")
 	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), $5)", "Unterhosen", "Clothes", "2.00", "'1999-01-15 8:00:00 US/Pacific'", "'2020-01-16 8:00:00 US/Pacific'")
+
+	//tx.MustExec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", "Daniel", "1234")
+	//tx.MustExec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", "Bex", "asdf")
+
 	tx.MustExec("INSERT INTO place (country, city, telcode) VALUES ($1, $2, $3)", "United States", "New York", "1")
 	tx.MustExec("INSERT INTO place (country, telcode) VALUES ($1, $2)", "Hong Kong", "852")
 	tx.MustExec("INSERT INTO place (country, telcode) VALUES ($1, $2)", "Singapore", "65")
@@ -42,10 +46,9 @@ func main() {
 
 	r.GET("/expense", listExpenses)
 
-	//var ftest func(*gin.Context)
-	//ftest = &insertExpense(c *gin.Context)
+	r.POST("/expense", insertExpense)
 
-	r.POST("/post", insertExpense)
+	r.POST("/login", login)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
