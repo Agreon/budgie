@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS expense (
 	updated_at timestamp with time zone
 );
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS users (	
 	id uuid,
 	user_name text,
 	password text,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
 )	
-`
+` /* TODO somehow user table is not accepted (syntax error) */
 
 type Person struct {
 	FirstName string `db:"first_name"`

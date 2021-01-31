@@ -20,9 +20,12 @@ func insertExpense(c *gin.Context) {
 }
 
 func listExpenses(c *gin.Context) {
+
+	userID := c.Query("user_id") // TODO use jwt
+
 	db := GetDB()
 	expenses := []Expense{}
-	err := db.Select(&expenses, "SELECT * FROM expense where user_id=ORDER BY created_at DESC")
+	err := db.Select(&expenses, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
 
 	if err != nil {
 		log.Fatalln(err)
