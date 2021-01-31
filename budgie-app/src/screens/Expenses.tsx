@@ -2,10 +2,9 @@ import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
 import axios from 'axios';
-import { Entypo } from '@expo/vector-icons';
 
 import {
-  View, SafeAreaView, FlatList, RefreshControl, TouchableOpacity,
+  View, SafeAreaView, FlatList, RefreshControl,
 } from 'react-native';
 
 import * as dayjs from 'dayjs';
@@ -13,50 +12,31 @@ import * as dayjs from 'dayjs';
 import tailwind from 'tailwind-rn';
 import { ScrollView } from 'react-native-gesture-handler';
 import { StackNavigationProp } from '@react-navigation/stack';
+import {
+  Button, Icon, Text, Spinner, IconProps,
+} from '@ui-kitten/components';
+import { useIsFocused } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
+import { Header } from '../components/Header';
 
 // TODO: Move to common lib? => converter https://github.com/tkrajina/typescriptify-golang-structs
 interface Expense {
   id: string;
-  type: string;
+  category: string;
   costs: string;
   name?: string;
   date: Date;
 }
 
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    type: 'Futter',
-    costs: '33.33',
-    name: 'Mc Donalds',
-    date: new Date(),
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    type: 'Futter',
-    costs: '128.47',
-    name: 'Shiraz',
-    date: new Date(),
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    type: 'Futter',
-    costs: '3.12',
-    name: 'Kochen :/',
-    date: new Date(),
-  },
-];
-
 export const ExpenseItem: FC<{ item: Expense }> = ({ item }) => (
   <div style={tailwind('mt-2')}>
     <div style={tailwind('p-2 flex justify-between')}>
       <div style={tailwind('flex flex-col ml-1')}>
-        <h3 style={tailwind('mt-0 text-blue-500')}>{item.type}</h3>
-        <span style={tailwind('text-gray-500')}>{item.name}</span>
+        <Text category="h4" status="primary">{item.category}</Text>
+        <Text appearance="hint">{item.name}</Text>
       </div>
       <div style={tailwind('flex flex-col justify-between mr-1 text-right')}>
-        <span style={tailwind('text-gray-500')}>{dayjs(item.date).format('DD.MM.')}</span>
+        <Text appearance="hint">{dayjs(item.date).format('DD.MM.')}</Text>
         <span style={tailwind('text-red-400 font-semibold')}>
           {item.costs}
           {' '}
@@ -64,37 +44,32 @@ export const ExpenseItem: FC<{ item: Expense }> = ({ item }) => (
         </span>
       </div>
     </div>
+    {/* <Divider style={tailwind("m")} /> */}
     <hr style={tailwind('border-0 bg-gray-300 text-gray-500 h-px mb-0 ml-6 mr-6')} />
   </div>
 
 );
 
-export const AddExpenseButton: FC<{
-  navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
-}> = ({ navigation }) => (
-  <TouchableOpacity
-    onPress={() => navigation.navigate('CreateExpense')}
-  >
-    <div style={tailwind('flex justify-center items-center m-1 w-10 h-10 rounded-full bg-blue-500')}>
-      <Entypo name="plus" size={32} color="black" />
-    </div>
-  </TouchableOpacity>
+const PlusIcon = (props: IconProps) => (
+  <Icon {...props} name="plus-outline" />
 );
 
 /**
  * TODO: RefreshControl
  */
 export const Expenses: FC<{
-    navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
+  navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
-  const [notes] = useState<Expense[] | undefined>([]);
+  const isFocused = useIsFocused();
+
+  const [expenses, setExpenses] = useState<Expense[] | undefined>([]);
+
   const [loading, setLoading] = useState(false);
   const fetchData = useCallback(async () => {
-    console.log('Fetch');
     setLoading(true);
     try {
       const res = await axios.get('http://localhost:8080/expense');
-      console.log(res);
+      setExpenses(res.data);
     } catch (e) {
       console.log(e);
     }
@@ -104,13 +79,19 @@ export const Expenses: FC<{
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [isFocused]);
 
   return (
-    <SafeAreaView style={tailwind('h-full items-center bg-white')}>
-      {notes === undefined && <span style={tailwind('bg-blue-100')}>Loading</span>}
+    <SafeAreaView style={tailwind('bg-white h-full w-full')}>
+      <Header title="Expenses" />
+      {loading
+        && (
+          <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>
+            <Spinner size="giant" />
+          </View>
+        )}
       <ScrollView
-        style={tailwind('w-full')}
+        style={tailwind('w-full bg-white')}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={fetchData} />
         }
@@ -118,13 +99,16 @@ export const Expenses: FC<{
         <FlatList<Expense>
           style={tailwind('w-full')}
           renderItem={({ item }) => <ExpenseItem item={item} />}
-          data={DATA}
+          data={expenses}
           keyExtractor={(item) => item.id}
         />
       </ScrollView>
-      <View style={tailwind('w-full flex items-end mb-3 mr-5')}>
-        <AddExpenseButton navigation={navigation} />
-      </View>
+      <Button
+        style={tailwind('absolute right-6 bottom-5')}
+        status="info"
+        accessoryLeft={PlusIcon}
+        onPress={() => navigation.navigate('CreateExpense')}
+      />
     </SafeAreaView>
   );
 };
