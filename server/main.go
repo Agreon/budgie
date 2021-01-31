@@ -1,19 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=budgie password=postgres sslmode=disable")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	db := GetDB()
 
 	db.MustExec(schema)
 
@@ -30,15 +25,16 @@ func main() {
 	tx.Commit()
 
 	jason := Person{}
-	err = db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
+	err := db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
 
-	expenses := []Expense{}
-	err = db.Select(&expenses, "SELECT * FROM expense ORDER BY created_at DESC")
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	//test := []string{}
 	//err = db.Select(&test, "SELECT costs FROM expense ")
 	//fmt.Println(test[0])
-	fmt.Println(expenses[0].ID)
+	//fmt.Println(expenses[0].ID)
 	//food := Expense{}
 	//err = db.Get(&food, "SELECT * FROM expense WHERE type=$1", "Food")
 
@@ -50,13 +46,12 @@ func main() {
 
 	r.Use(cors.New(corsConfig))
 
-	r.GET("/expense", func(c *gin.Context) {
+	r.GET("/expense", listExpenses)
 
-		c.JSON(200, expenses)
-		//c.JSON(200, gin.H{
-		//	"message": jason.Email,
-		//	"bla":     jason.FirstName,
-		//})
-	})
+	//var ftest func(*gin.Context)
+	//ftest = &insertExpense(c *gin.Context)
+
+	r.POST("/post", insertExpense)
+
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
