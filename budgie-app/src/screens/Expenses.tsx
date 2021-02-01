@@ -4,7 +4,7 @@ import React, {
 import axios from 'axios';
 
 import {
-  View, SafeAreaView, FlatList, RefreshControl,
+  SafeAreaView, FlatList, RefreshControl,
 } from 'react-native';
 
 import * as dayjs from 'dayjs';
@@ -13,7 +13,7 @@ import tailwind from 'tailwind-rn';
 import { ScrollView } from 'react-native-gesture-handler';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Icon, Text, Spinner, IconProps,
+  Button, Icon, Text, IconProps,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
@@ -84,12 +84,6 @@ export const Expenses: FC<{
   return (
     <SafeAreaView style={tailwind('bg-white h-full w-full')}>
       <Header title="Expenses" />
-      {loading
-        && (
-          <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>
-            <Spinner size="giant" />
-          </View>
-        )}
       <ScrollView
         style={tailwind('w-full bg-white')}
         refreshControl={

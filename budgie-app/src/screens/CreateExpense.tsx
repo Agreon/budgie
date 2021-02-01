@@ -10,13 +10,13 @@ import {
   Input,
   Select,
   SelectItem,
-  Spinner,
   TopNavigationAction,
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 
 const BackIcon = (props: IconProps) => (
   <Icon {...props} name="arrow-back" />
@@ -44,16 +44,6 @@ const categories = [
   'Other',
 ];
 
-const LoadingIndicator = (props: any) => (
-  <View style={tailwind('justify-center items-center')} {...props}>
-    <Spinner size="small" />
-  </View>
-);
-
-/**
- * TODO:
- * - Required fields
- */
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'CreateExpense'>
 }> = ({ navigation }) => {
@@ -121,6 +111,7 @@ export const CreateExpense: FC<{
           value={name}
           onChangeText={(text) => setName(text)}
           label="Name"
+          caption="Optional"
         />
         <Button
           style={tailwind('mt-8')}
