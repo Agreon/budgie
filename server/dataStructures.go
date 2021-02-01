@@ -47,10 +47,9 @@ type Person struct {
 }
 
 type User struct {
-	ID       string `db:"id"`
-	UserName string `db:"user_name"`
-	Password string `db:"password"`
-	// TODO add pw hash
+	ID        string    `db:"id"`
+	UserName  string    `db:"user_name"`
+	Password  string    `db:"password"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }

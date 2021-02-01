@@ -18,8 +18,11 @@ func main() {
 	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), $6)", "Snäckies", "Food", "14.56", "576c37f5-f37e-4e3c-9132-06289a0d4834", "'1997-01-31 09:26:56.66 +02:00'", "'2020-01-16 8:00:00 US/Pacific'")
 	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), $6)", "Unterhosen", "Clothes", "2.00", "576c37f5-f37e-4e3c-9132-06289a0d4834", "'1999-01-15 8:00:00 US/Pacific'", "'2020-01-16 8:00:00 US/Pacific'")
 
-	//tx.MustExec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", "Daniel", "1234")
-	//tx.MustExec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", "Bex", "asdf")
+	//pwHash1, _ := bcrypt.GenerateFromPassword([]byte("1234"), 14)
+	//pwHash2, _ := bcrypt.GenerateFromPassword([]byte("asdf"), 14)
+	//
+	//tx.MustExec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", "Daniel", pwHash1)
+	//tx.MustExec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", "Bex", pwHash2)
 
 	tx.MustExec("INSERT INTO place (country, city, telcode) VALUES ($1, $2, $3)", "United States", "New York", "1")
 	tx.MustExec("INSERT INTO place (country, telcode) VALUES ($1, $2)", "Hong Kong", "852")
