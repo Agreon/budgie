@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -8,6 +9,12 @@ import (
 )
 
 func main() {
+	testToken := getToken("ExampleUserID")
+
+	fmt.Printf("%v\n", testToken)
+
+	checkTokenIsValid(testToken)
+
 	db := GetDB()
 
 	db.MustExec(schema)
