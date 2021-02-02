@@ -20,7 +20,7 @@ func getToken(UserID string) string {
 	return tokenString
 }
 
-func checkTokenIsValid(tokenString string) bool {
+func checkTokenIsValid(tokenString string) (string, bool) {
 	secret := []byte("HalloTestTest")
 
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -30,9 +30,9 @@ func checkTokenIsValid(tokenString string) bool {
 	if claims, ok := token.Claims.(*jwt.StandardClaims); ok && token.Valid {
 		fmt.Printf("%v\n", claims.Subject)
 		fmt.Println(err)
-		return true
+		return claims.Subject, true
 	} else {
 		fmt.Println(err)
-		return false
+		return "", false
 	}
 }

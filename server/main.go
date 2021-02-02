@@ -13,7 +13,9 @@ func main() {
 
 	fmt.Printf("%v\n", testToken)
 
-	checkTokenIsValid(testToken)
+	testUserID, _ := checkTokenIsValid(testToken)
+
+	fmt.Printf("%v\n", testUserID)
 
 	db := GetDB()
 
