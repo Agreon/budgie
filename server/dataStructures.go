@@ -12,12 +12,6 @@ CREATE TABLE IF NOT EXISTS person (
     email text
 );
 
-CREATE TABLE IF NOT EXISTS place (
-    country text,
-    city text NULL,
-    telcode integer
-);
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS expense (
@@ -38,7 +32,7 @@ CREATE TABLE IF NOT EXISTS users (
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
 )	
-` /* TODO somehow user table is not accepted (syntax error) */
+`
 
 type Person struct {
 	FirstName string `db:"first_name"`

@@ -10,7 +10,7 @@ func getToken(UserID string) string {
 	secret := []byte("HalloTestTest")
 
 	claims := &jwt.StandardClaims{
-		//ExpiresAt: 60, // TODO add refresh token
+		//ExpiresAt: 3600, // TODO add refresh token
 		Subject: UserID,
 	}
 
