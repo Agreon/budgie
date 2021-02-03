@@ -24,6 +24,9 @@ func insertExpense(c *gin.Context) {
 		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Cost, userID, newExpense.Date)
 		tx.Commit()
 		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Cost, newExpense.Date)
+
+		/* return input */
+		c.JSON(200, newExpense)
 	}
 }
 
