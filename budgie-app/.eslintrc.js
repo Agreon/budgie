@@ -24,6 +24,7 @@ module.exports = {
     'react/style-prop-object': 'off',
     'react/jsx-filename-extension': 'off',
     'react/prop-types': 'off',
+    'react/jsx-props-no-spreading': 'off',
     'no-use-before-define': 'off',
     'no-console': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],

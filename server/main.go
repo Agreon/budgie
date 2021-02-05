@@ -1,8 +1,7 @@
 package main
 
 import (
-	"log"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
@@ -28,14 +27,20 @@ func main() {
 	//tx.NamedExec("INSERT INTO person (first_name, last_name, email) VALUES (:first_name, :last_name, :email)", &Person{"Jane", "Citizen", "jane.citzen@example.com"})
 	tx.Commit()
 
-	jason := Person{}
-	err := db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
+	// jason := Person{}
+	// err := db.Get(&jason, "SELECT * FROM person WHERE first_name=$1", "Jason")
 
-	if err != nil {
-		log.Fatalln(err)
-	}
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 
 	r := gin.Default()
+
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"*"}
+	corsConfig.AddAllowMethods("GET")
+
+	r.Use(cors.New(corsConfig))
 
 	r.GET("/expense", listExpenses)
 
