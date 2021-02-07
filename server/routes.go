@@ -27,6 +27,8 @@ func insertExpense(c *gin.Context) {
 
 		/* return input */
 		c.JSON(200, newExpense)
+	} else {
+		c.AbortWithStatus(401)
 	}
 }
 
@@ -45,6 +47,8 @@ func listExpenses(c *gin.Context) {
 		}
 
 		c.JSON(200, expenses)
+	} else {
+		c.AbortWithStatus(401)
 	}
 	//c.JSON(200, gin.H{
 	//	"message": jason.Email,
@@ -72,8 +76,6 @@ func login(c *gin.Context) {
 		})
 		//tx.MustExec("UPDATE users SET token=$1 WHERE user_name=$2", token, userDatabase.UserName)
 	} else {
-		c.JSON(200, gin.H{
-			"message": "Please try again",
-		})
+		c.AbortWithStatus(401)
 	}
 }
