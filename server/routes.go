@@ -56,6 +56,36 @@ func listExpenses(c *gin.Context) {
 	//})
 }
 
+func listSingleExpense(c *gin.Context) {
+	tokenInput := c.GetHeader("token")
+
+	userID, tokenIsValid := checkTokenIsValid(tokenInput)
+
+	if tokenIsValid {
+		expenseID := c.Param("id")
+
+		db := GetDB()
+		expense := Expense{}
+		err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
+
+		log.Println(expenseID)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(400)
+			return
+		}
+
+		if expense.UserID != userID {
+			c.AbortWithStatus(403)
+			return
+		}
+
+		c.JSON(200, expense)
+	} else {
+		c.AbortWithStatus(401)
+	}
+}
+
 func login(c *gin.Context) {
 
 	userNameInput := c.Query("name")
