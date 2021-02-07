@@ -14,9 +14,9 @@ func insertExpense(c *gin.Context) {
 
 	db := GetDB()
 	tx := db.MustBegin()
-	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpense.Name, newExpense.Category, newExpense.Cost, newExpense.Date)
+	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date)
 	tx.Commit()
-	fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Cost, newExpense.Date)
+	fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date)
 }
 
 func listExpenses(c *gin.Context) {

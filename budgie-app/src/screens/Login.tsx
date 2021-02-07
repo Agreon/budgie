@@ -9,28 +9,11 @@ import React, {
 import { TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tailwind from 'tailwind-rn';
-import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from 'expo-splash-screen';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { LoadingIndicator } from '../components/LoadingIndicator';
-
-const setToken = async (token: string) => {
-  if (await SecureStore.isAvailableAsync()) {
-    return SecureStore.setItemAsync('access_token', token);
-  }
-
-  console.warn('No Secure Storage there');
-  localStorage.setItem('access_token', token);
-};
-
-const getToken = async () => {
-  if (await SecureStore.isAvailableAsync()) {
-    return SecureStore.getItemAsync('access_token');
-  }
-
-  return localStorage.getItem('access_token');
-};
+import { setToken, getToken } from '../util/token';
 
 /**
  * TODO:

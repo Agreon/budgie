@@ -69,6 +69,6 @@ type Expense struct {
 type IncomingExpense struct {
 	Name     string          `json:"name" binding:"required"`
 	Category ExpenseCategory `json:"category" binding:"required"`
-	Cost     string          `json:"cost" binding:"required"`
+	Costs     string         `json:"costs" binding:"required"`
 	Date     string          `json:"date" binding:"required"`
 }
