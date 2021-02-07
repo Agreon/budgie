@@ -18,12 +18,12 @@ func insertExpense(c *gin.Context) {
 		var newExpense ExpenseInput
 		c.BindJSON(&newExpense)
 
-		fmt.Printf("token is valid -> data: %v, bla: %v, cost: %v, date: %v, userID: %v\n", newExpense.Name, newExpense.Category, newExpense.Cost, newExpense.Date, userID)
+		fmt.Printf("token is valid -> data: %v, bla: %v, cost: %v, date: %v, userID: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date, userID)
 		db := GetDB()
 		tx := db.MustBegin()
-		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Cost, userID, newExpense.Date)
+		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, userID, newExpense.Date)
 		tx.Commit()
-		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Cost, newExpense.Date)
+		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date)
 
 		/* return input */
 		c.JSON(200, newExpense)
@@ -68,7 +68,6 @@ func listSingleExpense(c *gin.Context) {
 		expense := Expense{}
 		err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
 
-		log.Println(expenseID)
 		if err != nil {
 			log.Println(err)
 			c.AbortWithStatus(400)
@@ -77,6 +76,52 @@ func listSingleExpense(c *gin.Context) {
 
 		if expense.UserID != userID {
 			c.AbortWithStatus(403)
+			return
+		}
+
+		c.JSON(200, expense)
+	} else {
+		c.AbortWithStatus(401)
+	}
+}
+
+func updateExpense(c *gin.Context) {
+	tokenInput := c.GetHeader("token")
+
+	userID, tokenIsValid := checkTokenIsValid(tokenInput)
+
+	if tokenIsValid {
+		expenseID := c.Param("id")
+
+		db := GetDB()
+		expense := Expense{}
+
+		err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
+
+		/* check if expense exists */
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(404)
+			return
+		}
+
+		/* check if expense belongs to requesting user */
+		if expense.UserID != userID {
+			c.AbortWithStatus(403)
+			return
+		}
+
+		var updateExpense ExpenseInput
+		c.BindJSON(&updateExpense)
+
+		tx := db.MustBegin()
+		tx.MustExec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
+		tx.Commit()
+
+		err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
+
+		if err != nil {
+			log.Println(err)
 			return
 		}
 
@@ -105,7 +150,6 @@ func login(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"token": token,
 		})
-		//tx.MustExec("UPDATE users SET token=$1 WHERE user_name=$2", token, userDatabase.UserName)
 	} else {
 		c.AbortWithStatus(401)
 	}
