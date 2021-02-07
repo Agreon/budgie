@@ -85,3 +85,8 @@ type ExpenseInput struct {
 	Costs     string         `json:"costs" binding:"required"`
 	Date     string          `json:"date" binding:"required"`
 }
+
+type LoginData struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}

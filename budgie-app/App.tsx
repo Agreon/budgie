@@ -12,7 +12,6 @@ import { Login } from './src/screens/Login';
 const { Navigator, Screen } = createStackNavigator();
 
 export type RootStackParamList = {
-  'Splash': undefined,
   'Login': undefined,
   'Expenses': undefined,
   'CreateExpense': undefined
