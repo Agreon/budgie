@@ -87,18 +87,19 @@ func listSingleExpense(c *gin.Context) {
 }
 
 func login(c *gin.Context) {
-
-	userNameInput := c.Query("name")
-	passwordInput := c.Query("pw")
+	var loginData LoginData
+	c.BindJSON(&loginData)
 
 	db := GetDB()
 	userInDatabase := User{}
-	err := db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", userNameInput)
+	err := db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", loginData.Username)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		c.AbortWithStatus(401)
+		return
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(userInDatabase.Password), []byte(passwordInput)) == nil {
+	if bcrypt.CompareHashAndPassword([]byte(userInDatabase.Password), []byte(loginData.Password)) == nil {
 		/* get token and return it */
 		token := getToken(userInDatabase.ID)
 		c.JSON(200, gin.H{
