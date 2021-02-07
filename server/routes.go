@@ -43,7 +43,9 @@ func listExpenses(c *gin.Context) {
 		err := db.Select(&expenses, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
 
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
+			c.AbortWithStatus(500)
+			return
 		}
 
 		c.JSON(200, expenses)

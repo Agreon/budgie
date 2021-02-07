@@ -44,9 +44,6 @@ export const Login: FC<{
     } catch (e) {
       console.error(e);
     }
-    //
-    navigation.navigate('Expenses');
-
     setLoading(false);
   }, [username, password, navigation]);
 
