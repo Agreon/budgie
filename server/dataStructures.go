@@ -12,12 +12,6 @@ CREATE TABLE IF NOT EXISTS person (
     email text
 );
 
-CREATE TABLE IF NOT EXISTS place (
-    country text,
-    city text NULL,
-    telcode integer
-);
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS expense (
@@ -25,15 +19,33 @@ CREATE TABLE IF NOT EXISTS expense (
 	name text,
 	category text,
 	costs money,
+	user_id uuid,
 	date timestamp with time zone,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
-	)`
+);
+
+CREATE TABLE IF NOT EXISTS users (	
+	id uuid,
+	user_name text,
+	password text,
+	created_at timestamp with time zone,
+	updated_at timestamp with time zone
+)	
+`
 
 type Person struct {
 	FirstName string `db:"first_name"`
 	LastName  string `db:"last_name"`
 	Email     string
+}
+
+type User struct {
+	ID        string    `db:"id"`
+	UserName  string    `db:"user_name"`
+	Password  string    `db:"password"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type ExpenseCategory string
@@ -61,12 +73,13 @@ type Expense struct {
 	Name      string          `db:"name" json:"name"`
 	Category  ExpenseCategory `db:"category" json:"category"`
 	Costs     string          `db:"costs" json:"costs"`
+	UserID    string          `db:"user_id"`
 	Date      time.Time       `db:"date" json:"date"`
 	CreatedAt time.Time       `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time       `db:"updated_at" json:"updated_at"`
 }
 
-type IncomingExpense struct {
+type ExpenseInput struct {
 	Name     string          `json:"name" binding:"required"`
 	Category ExpenseCategory `json:"category" binding:"required"`
 	Costs     string         `json:"costs" binding:"required"`

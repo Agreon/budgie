@@ -5,7 +5,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
-import Toast from 'react-native-toast-message';
 import { Expenses } from './src/screens/Expenses';
 import { CreateExpense } from './src/screens/CreateExpense';
 import { Login } from './src/screens/Login';
@@ -23,7 +22,6 @@ export default function App() {
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />
-      <Toast ref={(ref) => Toast.setRef(ref)} />
       <ApplicationProvider {...eva} theme={eva.light}>
         <NavigationContainer>
           <Navigator
