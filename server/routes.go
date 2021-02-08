@@ -169,6 +169,46 @@ func deleteExpense(c *gin.Context) {
 	}
 }
 
+func addUser(c *gin.Context) {
+	var newUserData LoginData
+	err := c.BindJSON(&newUserData)
+	if err != nil {
+		return
+	}
+
+	pwHash, err := bcrypt.GenerateFromPassword([]byte(newUserData.Password), 14)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+		return
+	}
+
+	db := GetDB()
+	_, err = db.Exec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", newUserData.Username, pwHash)
+
+	/* if user already exists */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(409)
+		return
+	}
+
+	/* read user data from data base */
+	userInDatabase := User{}
+	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", newUserData.Username)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+		return
+	}
+
+	/* get token and return it */
+	token := getToken(userInDatabase.ID)
+	c.JSON(200, gin.H{
+		"token": token,
+	})
+}
+
 func login(c *gin.Context) {
 	var loginData LoginData
 	c.BindJSON(&loginData)

@@ -52,6 +52,8 @@ func main() {
 
 	r.POST("/expense", insertExpense)
 
+	r.POST("/user", addUser)
+
 	r.POST("/login", login)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
