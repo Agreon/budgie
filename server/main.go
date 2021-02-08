@@ -48,6 +48,8 @@ func main() {
 
 	r.PUT("/expense/:id", updateExpense)
 
+	r.DELETE("/expense/:id", deleteExpense)
+
 	r.POST("/expense", insertExpense)
 
 	r.POST("/login", login)
