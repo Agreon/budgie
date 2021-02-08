@@ -46,6 +46,8 @@ func main() {
 
 	r.GET("/expense/:id", listSingleExpense)
 
+	r.PUT("/expense/:id", updateExpense)
+
 	r.POST("/expense", insertExpense)
 
 	r.POST("/login", login)
