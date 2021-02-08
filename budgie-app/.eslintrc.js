@@ -32,6 +32,7 @@ module.exports = {
       'error',
       'ignorePackages', {
         tsx: 'never',
+        ts: 'never',
       },
     ],
   },
