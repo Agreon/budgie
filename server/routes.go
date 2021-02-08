@@ -133,6 +133,42 @@ func updateExpense(c *gin.Context) {
 	}
 }
 
+func deleteExpense(c *gin.Context) {
+	tokenInput := c.GetHeader("token")
+
+	userID, tokenIsValid := checkTokenIsValid(tokenInput)
+
+	if tokenIsValid {
+		expenseID := c.Param("id")
+
+		db := GetDB()
+		expense := Expense{}
+
+		err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
+
+		/* check if expense exists */
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(404)
+			return
+		}
+
+		/* check if expense belongs to requesting user */
+		if expense.UserID != userID {
+			c.AbortWithStatus(403)
+			return
+		}
+
+		tx := db.MustBegin()
+		tx.MustExec("DELETE FROM expense WHERE id=$1", expenseID)
+		tx.Commit()
+
+		c.Status(200)
+	} else {
+		c.AbortWithStatus(401)
+	}
+}
+
 func login(c *gin.Context) {
 	var loginData LoginData
 	c.BindJSON(&loginData)
