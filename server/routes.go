@@ -16,13 +16,22 @@ func insertExpense(c *gin.Context) {
 
 	if tokenIsValid {
 		var newExpense ExpenseInput
-		c.BindJSON(&newExpense)
+		err := c.BindJSON(&newExpense)
+		if err != nil {
+			return
+		}
 
 		fmt.Printf("token is valid -> data: %v, bla: %v, cost: %v, date: %v, userID: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date, userID)
 		db := GetDB()
-		tx := db.MustBegin()
-		tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, userID, newExpense.Date)
-		tx.Commit()
+		_, err = db.Exec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, userID, newExpense.Date)
+
+		/* if there is a database error */
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(500)
+			return
+		}
+
 		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date)
 
 		/* return input */
@@ -114,11 +123,19 @@ func updateExpense(c *gin.Context) {
 		}
 
 		var updateExpense ExpenseInput
-		c.BindJSON(&updateExpense)
+		err = c.BindJSON(&updateExpense)
+		if err != nil {
+			return
+		}
 
-		tx := db.MustBegin()
-		tx.MustExec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
-		tx.Commit()
+		_, err = db.Exec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
+
+		/* if there is a database error */
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(500)
+			return
+		}
 
 		err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
 
@@ -159,9 +176,14 @@ func deleteExpense(c *gin.Context) {
 			return
 		}
 
-		tx := db.MustBegin()
-		tx.MustExec("DELETE FROM expense WHERE id=$1", expenseID)
-		tx.Commit()
+		_, err = db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
+
+		/* if there was any execution error */
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(500)
+			return
+		}
 
 		c.Status(200)
 	} else {
@@ -211,11 +233,14 @@ func addUser(c *gin.Context) {
 
 func login(c *gin.Context) {
 	var loginData LoginData
-	c.BindJSON(&loginData)
+	err := c.BindJSON(&loginData)
+	if err != nil {
+		return
+	}
 
 	db := GetDB()
 	userInDatabase := User{}
-	err := db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", loginData.Username)
+	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", loginData.Username)
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(401)
