@@ -1,7 +1,6 @@
 import React, { FC, useCallback } from 'react';
 import { View, SafeAreaView } from 'react-native';
 import tailwind from 'tailwind-rn';
-
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
 import { RootStackParamList } from '../../App';

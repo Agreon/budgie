@@ -25,13 +25,13 @@ CREATE TABLE IF NOT EXISTS expense (
 	updated_at timestamp with time zone
 );
 
-CREATE TABLE IF NOT EXISTS users (	
+CREATE TABLE IF NOT EXISTS users (
 	id uuid,
 	user_name text,
 	password text,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
-)	
+)
 `
 
 type Person struct {
@@ -82,7 +82,7 @@ type Expense struct {
 type ExpenseInput struct {
 	Name     string          `json:"name" binding:"required"`
 	Category ExpenseCategory `json:"category" binding:"required"`
-	Costs     string         `json:"costs" binding:"required"`
+	Costs    string          `json:"costs" binding:"required"`
 	Date     string          `json:"date" binding:"required"`
 }
 
