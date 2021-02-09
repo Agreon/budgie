@@ -94,7 +94,7 @@ export const Expenses: FC<{
           renderItem={({ item }) => (
             <ExpenseItem
               item={item}
-              onPress={(id) => { console.log(11); navigation.navigate('EditExpense', { id }); }}
+              onPress={(id) => { navigation.navigate('EditExpense', { id }); }}
             />
           )}
           data={expenses}

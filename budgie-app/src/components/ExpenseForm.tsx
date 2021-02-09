@@ -39,6 +39,16 @@ const categories = [
   'Other',
 ];
 
+const getIndexOfCategory = (category: string) => {
+  const index = categories.findIndex((c) => c === category);
+  if (index < 0) {
+    console.warn('Could not find index for category', category);
+    return 0;
+  }
+
+  return index;
+};
+
 interface IProps {
     expense?: Expense;
     onSubmit: (expense: Omit<Expense, 'id'>) => Promise<void>;
@@ -46,8 +56,9 @@ interface IProps {
 
 export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
   const [costs, setCosts] = useState(expense?.costs || '');
-  // TODO: Set selected default
-  const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
+  const [selectedIndex, setSelectedIndex] = useState(
+    new IndexPath(expense ? getIndexOfCategory(expense.category) : 0),
+  );
   const [name, setName] = useState<string | undefined>(expense?.name);
   console.log(expense);
   const [date, setDate] = useState<Date>(expense?.date ? dayjs(expense.date).toDate() : new Date());
