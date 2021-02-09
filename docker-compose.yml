@@ -19,3 +19,19 @@ services:
     ports:
       - 5433:5432
 
+  server:
+    build: ./server
+    working_dir: /var/app
+    command: gow run main.go dataStructures.go routes.go database.go tokens.go
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_NAME
+      - DATABASE_USER
+      - DATABASE_PASSWORD
+    depends_on:
+      - db
+    ports:
+      - '8080:8080'
+    volumes:
+      - './server:/var/app'
