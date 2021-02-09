@@ -8,3 +8,4 @@ RUN go get -u github.com/dgrijalva/jwt-go
 RUN go get -u golang.org/x/crypto/bcrypt
 
 RUN go get -u github.com/mitranim/gow
+RUN go get -u github.com/joho/godotenv

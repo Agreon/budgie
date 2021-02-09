@@ -7,7 +7,7 @@ import (
 )
 
 func getToken(UserID string) string {
-	secret := []byte("HalloTestTest")
+	secret := []byte(config.JWTSecret)
 
 	claims := &jwt.StandardClaims{
 		//ExpiresAt: 3600, // TODO add refresh token
@@ -21,7 +21,7 @@ func getToken(UserID string) string {
 }
 
 func checkTokenIsValid(tokenString string) (string, bool) {
-	secret := []byte("HalloTestTest")
+	secret := []byte(config.JWTSecret)
 
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil

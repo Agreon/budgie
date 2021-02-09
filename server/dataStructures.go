@@ -25,13 +25,13 @@ CREATE TABLE IF NOT EXISTS expense (
 	updated_at timestamp with time zone
 );
 
-CREATE TABLE IF NOT EXISTS users (	
+CREATE TABLE IF NOT EXISTS users (
 	id uuid UNIQUE,
 	user_name text UNIQUE,
 	password text,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
-)	
+)
 `
 
 type Person struct {
