@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS person (
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS expense (
-	id uuid,
+	id uuid UNIQUE,
 	name text,
 	category text,
 	costs money,
@@ -80,7 +80,7 @@ type Expense struct {
 }
 
 type ExpenseInput struct {
-	Name     string          `json:"name" binding:"required"`
+	Name     string          `json:"name"`
 	Category ExpenseCategory `json:"category" binding:"required"`
 	Costs    string          `json:"costs" binding:"required"`
 	Date     string          `json:"date" binding:"required"`
