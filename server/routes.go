@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -198,7 +199,7 @@ func addUser(c *gin.Context) {
 		return
 	}
 
-	pwHash, err := bcrypt.GenerateFromPassword([]byte(newUserData.Password), 14)
+	pwHash, err := bcrypt.GenerateFromPassword([]byte(newUserData.Password), 10)
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(500)
@@ -206,7 +207,7 @@ func addUser(c *gin.Context) {
 	}
 
 	db := GetDB()
-	_, err = db.Exec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", newUserData.Username, pwHash)
+	_, err = db.Exec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", strings.ToLower(newUserData.Username), pwHash)
 
 	/* if user already exists */
 	if err != nil {
@@ -217,7 +218,7 @@ func addUser(c *gin.Context) {
 
 	/* read user data from data base */
 	userInDatabase := User{}
-	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", newUserData.Username)
+	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", strings.ToLower(newUserData.Username))
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(500)
@@ -240,7 +241,7 @@ func login(c *gin.Context) {
 
 	db := GetDB()
 	userInDatabase := User{}
-	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", loginData.Username)
+	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", strings.ToLower(loginData.Username))
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(401)
