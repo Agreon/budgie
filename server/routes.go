@@ -11,185 +11,159 @@ import (
 )
 
 func insertExpense(c *gin.Context) {
-	tokenInput := c.GetHeader("token")
-
-	userID, tokenIsValid := checkTokenIsValid(tokenInput)
-
-	if tokenIsValid {
-		var newExpense ExpenseInput
-		err := c.BindJSON(&newExpense)
-		if err != nil {
-			return
-		}
-
-		fmt.Printf("token is valid -> data: %v, bla: %v, cost: %v, date: %v, userID: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date, userID)
-		db := GetDB()
-		_, err = db.Exec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, userID, newExpense.Date)
-
-		/* if there is a database error */
-		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(500)
-			return
-		}
-
-		fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date)
-
-		/* return input */
-		c.JSON(200, newExpense)
-	} else {
-		c.AbortWithStatus(401)
+	var newExpense ExpenseInput
+	err := c.BindJSON(&newExpense)
+	if err != nil {
+		return
 	}
+
+	log.Println("Insert expense!")
+
+	/* get userID from middleware */
+	userID := c.MustGet("userID")
+
+	fmt.Printf("token is valid -> data: %v, bla: %v, cost: %v, date: %v, userID: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date, userID)
+	db := GetDB()
+	_, err = db.Exec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, userID, newExpense.Date)
+
+	/* if there is a database error */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+		return
+	}
+
+	fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date)
+
+	/* return input */
+	c.JSON(200, newExpense)
 }
 
 func listExpenses(c *gin.Context) {
-	tokenInput := c.GetHeader("token")
+	db := GetDB()
+	expenses := []Expense{}
 
-	userID, tokenIsValid := checkTokenIsValid(tokenInput)
+	/* get userID from middleware */
+	userID := c.MustGet("userID")
 
-	if tokenIsValid {
-		db := GetDB()
-		expenses := []Expense{}
-		err := db.Select(&expenses, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
+	err := db.Select(&expenses, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
 
-		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(500)
-			return
-		}
-
-		c.JSON(200, expenses)
-	} else {
-		c.AbortWithStatus(401)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+		return
 	}
-	//c.JSON(200, gin.H{
-	//	"message": jason.Email,
-	//	"bla":     jason.FirstName,
-	//})
+
+	c.JSON(200, expenses)
 }
 
 func listSingleExpense(c *gin.Context) {
-	tokenInput := c.GetHeader("token")
+	expenseID := c.Param("id")
 
-	userID, tokenIsValid := checkTokenIsValid(tokenInput)
+	/* get userID from middleware */
+	userID := c.MustGet("userID")
 
-	if tokenIsValid {
-		expenseID := c.Param("id")
+	db := GetDB()
+	expense := Expense{}
+	err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
 
-		db := GetDB()
-		expense := Expense{}
-		err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
-		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(400)
-			return
-		}
-
-		if expense.UserID != userID {
-			c.AbortWithStatus(403)
-			return
-		}
-
-		c.JSON(200, expense)
-	} else {
-		c.AbortWithStatus(401)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(400)
+		return
 	}
+
+	if expense.UserID != userID {
+		c.AbortWithStatus(403)
+		return
+	}
+
+	c.JSON(200, expense)
 }
 
 func updateExpense(c *gin.Context) {
-	tokenInput := c.GetHeader("token")
+	expenseID := c.Param("id")
 
-	userID, tokenIsValid := checkTokenIsValid(tokenInput)
+	db := GetDB()
+	expense := Expense{}
 
-	if tokenIsValid {
-		expenseID := c.Param("id")
+	err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
 
-		db := GetDB()
-		expense := Expense{}
-
-		err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
-		/* check if expense exists */
-		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(404)
-			return
-		}
-
-		/* check if expense belongs to requesting user */
-		if expense.UserID != userID {
-			c.AbortWithStatus(403)
-			return
-		}
-
-		var updateExpense ExpenseInput
-		err = c.BindJSON(&updateExpense)
-		if err != nil {
-			return
-		}
-
-		_, err = db.Exec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
-
-		/* if there is a database error */
-		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(500)
-			return
-		}
-
-		err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		c.JSON(200, expense)
-	} else {
-		c.AbortWithStatus(401)
+	/* check if expense exists */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(404)
+		return
 	}
+
+	/* get userID from middleware */
+	userID := c.MustGet("userID")
+
+	/* check if expense belongs to requesting user */
+	if expense.UserID != userID {
+		c.AbortWithStatus(403)
+		return
+	}
+
+	var updateExpense ExpenseInput
+	err = c.BindJSON(&updateExpense)
+	if err != nil {
+		return
+	}
+
+	_, err = db.Exec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
+
+	/* if there is a database error */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+		return
+	}
+
+	err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	c.JSON(200, expense)
 }
 
 func deleteExpense(c *gin.Context) {
-	tokenInput := c.GetHeader("token")
+	expenseID := c.Param("id")
 
-	userID, tokenIsValid := checkTokenIsValid(tokenInput)
+	db := GetDB()
+	expense := Expense{}
 
-	if tokenIsValid {
-		expenseID := c.Param("id")
+	err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
 
-		db := GetDB()
-		expense := Expense{}
-
-		err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
-		/* check if expense exists */
-		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(404)
-			return
-		}
-
-		/* check if expense belongs to requesting user */
-		if expense.UserID != userID {
-			c.AbortWithStatus(403)
-			return
-		}
-
-		_, err = db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
-
-		/* if there was any execution error */
-		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(500)
-			return
-		}
-
-		c.Status(200)
-	} else {
-		c.AbortWithStatus(401)
+	/* check if expense exists */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(404)
+		return
 	}
+
+	/* get userID from middleware */
+	userID := c.MustGet("userID")
+
+	/* check if expense belongs to requesting user */
+	if expense.UserID != userID {
+		c.AbortWithStatus(403)
+		return
+	}
+
+	_, err = db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
+
+	/* if there was any execution error */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+		return
+	}
+
+	c.Status(200)
 }
 
 func addUser(c *gin.Context) {

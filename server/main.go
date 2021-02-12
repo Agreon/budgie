@@ -36,7 +36,9 @@ func main() {
 	// 	log.Fatalln(err)
 	// }
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"*"}
@@ -44,15 +46,20 @@ func main() {
 
 	r.Use(cors.New(corsConfig))
 
-	r.GET("/expense", listExpenses)
+	useAuthentification := r.Group("/")
 
-	r.GET("/expense/:id", listSingleExpense)
+	useAuthentification.Use(authentification())
+	{
+		useAuthentification.POST("/expense", insertExpense)
 
-	r.PUT("/expense/:id", updateExpense)
+		useAuthentification.GET("/expense", listExpenses)
 
-	r.DELETE("/expense/:id", deleteExpense)
+		useAuthentification.GET("/expense/:id", listSingleExpense)
 
-	r.POST("/expense", insertExpense)
+		useAuthentification.PUT("/expense/:id", updateExpense)
+
+		useAuthentification.DELETE("/expense/:id", deleteExpense)
+	}
 
 	r.POST("/user", addUser)
 

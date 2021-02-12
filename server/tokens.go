@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 func getToken(UserID string) string {
@@ -34,5 +36,23 @@ func checkTokenIsValid(tokenString string) (string, bool) {
 	} else {
 		fmt.Println(err)
 		return "", false
+	}
+}
+
+func authentification() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenInput := c.GetHeader("token")
+
+		userID, tokenIsValid := checkTokenIsValid(tokenInput)
+
+		log.Println("Auth middleware active")
+
+		if !tokenIsValid {
+			c.AbortWithStatus(401)
+		} else {
+			c.Set("userID", userID)
+		}
+
+		c.Next()
 	}
 }
