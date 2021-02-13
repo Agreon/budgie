@@ -39,7 +39,7 @@ func checkTokenIsValid(tokenString string) (string, bool) {
 	}
 }
 
-func authentification() gin.HandlerFunc {
+func authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenInput := c.GetHeader("token")
 

@@ -46,19 +46,19 @@ func main() {
 
 	r.Use(cors.New(corsConfig))
 
-	useAuthentification := r.Group("/")
+	useAuthentication := r.Group("/")
 
-	useAuthentification.Use(authentification())
+	useAuthentication.Use(authentication())
 	{
-		useAuthentification.POST("/expense", insertExpense)
+		useAuthentication.POST("/expense", insertExpense)
 
-		useAuthentification.GET("/expense", listExpenses)
+		useAuthentication.GET("/expense", listExpenses)
 
-		useAuthentification.GET("/expense/:id", listSingleExpense)
+		useAuthentication.GET("/expense/:id", listSingleExpense)
 
-		useAuthentification.PUT("/expense/:id", updateExpense)
+		useAuthentication.PUT("/expense/:id", updateExpense)
 
-		useAuthentification.DELETE("/expense/:id", deleteExpense)
+		useAuthentication.DELETE("/expense/:id", deleteExpense)
 	}
 
 	r.POST("/user", addUser)
