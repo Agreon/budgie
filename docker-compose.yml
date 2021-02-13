@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db:
-    image: postgres
+    image: postgres:12
     environment:
       - POSTGRES_DB=$DATABASE_NAME
       - POSTGRES_USER=$DATABASE_USER
@@ -15,11 +15,8 @@ services:
     working_dir: /var/app
     command: gow run .
     environment:
-      - DATABASE_HOST=db
-      - DATABASE_PORT=5432
-      - DATABASE_NAME
-      - DATABASE_USER
-      - DATABASE_PASSWORD
+      - JWT_SECRET=$JWT_SECRET
+      - DATABASE_URL=postgres://$DATABASE_USER:$DATABASE_PASSWORD@db:5432/$DATABASE_NAME?sslmode=disable
     depends_on:
       - db
     ports:
