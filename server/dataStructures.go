@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS expense (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-	id uuid,
-	user_name text,
+	id uuid UNIQUE,
+	user_name text UNIQUE,
 	password text,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
