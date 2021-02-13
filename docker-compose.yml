@@ -4,25 +4,16 @@ services:
   db:
     image: postgres
     environment:
-      - POSTGRES_DB=budgie
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=$DATABASE_NAME
+      - POSTGRES_USER=$DATABASE_USER
+      - POSTGRES_PASSWORD=$DATABASE_PASSWORD
     ports:
       - 5432:5432
-
-  db_test:
-    image: postgres
-    environment:
-      - POSTGRES_DB=budgie_test
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - 5433:5432
 
   server:
     build: ./server
     working_dir: /var/app
-    command: gow run main.go dataStructures.go routes.go database.go tokens.go config.go
+    command: gow run .
     environment:
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
