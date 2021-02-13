@@ -1,23 +1,32 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
+import * as SplashScreen from 'expo-splash-screen';
 import { Expenses } from './src/screens/Expenses';
 import { CreateExpense } from './src/screens/CreateExpense';
 import { Login } from './src/screens/Login';
+import { EditExpense } from './src/screens/EditExpense';
 
 const { Navigator, Screen } = createStackNavigator();
 
 export type RootStackParamList = {
   'Login': undefined,
   'Expenses': undefined,
-  'CreateExpense': undefined
+  'CreateExpense': undefined,
+  'EditExpense': {id: string}
 };
 
 export default function App() {
+  useEffect(() => {
+    (async () => {
+      await SplashScreen.preventAutoHideAsync();
+    })();
+  }, []);
+
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />
@@ -37,6 +46,10 @@ export default function App() {
             <Screen
               name="CreateExpense"
               component={CreateExpense}
+            />
+            <Screen
+              name="EditExpense"
+              component={EditExpense}
             />
           </Navigator>
         </NavigationContainer>

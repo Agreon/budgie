@@ -4,13 +4,13 @@ import React, {
 import axios from 'axios';
 
 import {
-  SafeAreaView, FlatList, RefreshControl,
+  SafeAreaView, FlatList, RefreshControl, TouchableHighlight,
 } from 'react-native';
 
 import * as dayjs from 'dayjs';
-
+import * as SplashScreen from 'expo-splash-screen';
 import tailwind from 'tailwind-rn';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
   Button, Icon, Text, IconProps,
@@ -18,21 +18,20 @@ import {
 import { useIsFocused } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
+import { Expense } from '../util/types';
+import { getToken } from '../util/token';
 
-// TODO: Move to common lib? => converter https://github.com/tkrajina/typescriptify-golang-structs
-interface Expense {
-  id: string;
-  category: string;
-  costs: string;
-  name?: string;
-  date: Date;
+interface ExpenseItemProps {
+  item: Expense;
+  onPress: (id: string) => void
 }
+// <TouchableOpacity onPress={() => { console.log(1); onPress(item.id); }}>
 
-export const ExpenseItem: FC<{ item: Expense }> = ({ item }) => (
-  <div style={tailwind('mt-2')}>
+export const ExpenseItem: FC<ExpenseItemProps> = ({ item, onPress }) => (
+  <div style={tailwind('mt-2')} onClick={() => onPress(item.id)}>
     <div style={tailwind('p-2 flex justify-between')}>
       <div style={tailwind('flex flex-col ml-1')}>
-        <Text category="h4" status="primary">{item.category}</Text>
+        <Text category="h5" status="primary">{item.category}</Text>
         <Text appearance="hint">{item.name}</Text>
       </div>
       <div style={tailwind('flex flex-col justify-between mr-1 text-right')}>
@@ -47,16 +46,8 @@ export const ExpenseItem: FC<{ item: Expense }> = ({ item }) => (
     {/* <Divider style={tailwind("m")} /> */}
     <hr style={tailwind('border-0 bg-gray-300 text-gray-500 h-px mb-0 ml-6 mr-6')} />
   </div>
-
 );
 
-const PlusIcon = (props: IconProps) => (
-  <Icon {...props} name="plus-outline" />
-);
-
-/**
- * TODO: RefreshControl
- */
 export const Expenses: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
@@ -68,7 +59,12 @@ export const Expenses: FC<{
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:8080/expense');
+      const res = await axios.get('http://localhost:8080/expense', {
+        headers: {
+          token: await getToken(),
+        },
+      });
+
       setExpenses(res.data);
     } catch (e) {
       console.log(e);
@@ -78,7 +74,10 @@ export const Expenses: FC<{
   }, []);
 
   useEffect(() => {
-    fetchData();
+    (async () => {
+      await fetchData();
+      await SplashScreen.hideAsync();
+    })();
   }, [isFocused]);
 
   return (
@@ -92,7 +91,12 @@ export const Expenses: FC<{
       >
         <FlatList<Expense>
           style={tailwind('w-full')}
-          renderItem={({ item }) => <ExpenseItem item={item} />}
+          renderItem={({ item }) => (
+            <ExpenseItem
+              item={item}
+              onPress={(id) => { navigation.navigate('EditExpense', { id }); }}
+            />
+          )}
           data={expenses}
           keyExtractor={(item) => item.id}
         />
@@ -100,7 +104,9 @@ export const Expenses: FC<{
       <Button
         style={tailwind('absolute right-6 bottom-5')}
         status="info"
-        accessoryLeft={PlusIcon}
+        accessoryLeft={(props: IconProps) => (
+          <Icon {...props} name="plus-outline" />
+        )}
         onPress={() => navigation.navigate('CreateExpense')}
       />
     </SafeAreaView>
