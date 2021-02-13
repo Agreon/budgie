@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
+	loadDataFromEnv()
+
 	db := GetDB()
 
 	db.MustExec(schema)

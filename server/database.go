@@ -15,7 +15,7 @@ var once sync.Once
 func GetDB() *sqlx.DB {
 	once.Do(func() {
 		var err error
-		singleton, err = sqlx.Connect("postgres", "host=db user=postgres dbname=budgie password=postgres sslmode=disable")
+		singleton, err = sqlx.Connect("postgres", config.DatabaseURL)
 		if err != nil {
 			log.Fatalln(err)
 		}
