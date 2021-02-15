@@ -16,6 +16,7 @@ import {
   Button, Icon, Text, IconProps,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { Expense } from '../util/types';
@@ -66,8 +67,12 @@ export const Expenses: FC<{
       });
 
       setExpenses(res.data);
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.error(err);
+      Toast.show({
+        type: 'error',
+        text1: err.message || 'Unknown error',
+      });
     }
 
     setLoading(false);

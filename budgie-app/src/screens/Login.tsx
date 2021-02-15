@@ -10,6 +10,7 @@ import { TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tailwind from 'tailwind-rn';
 import * as SplashScreen from 'expo-splash-screen';
+import Toast from 'react-native-toast-message';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { LoadingIndicator } from '../components/LoadingIndicator';
@@ -41,8 +42,12 @@ export const Login: FC<{
 
       await setToken(res.data.token);
       navigation.navigate('Expenses');
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
+      Toast.show({
+        type: 'error',
+        text1: err.message || 'Unknown error',
+      });
     }
     setLoading(false);
   }, [username, password, navigation]);

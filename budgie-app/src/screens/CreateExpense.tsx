@@ -3,6 +3,7 @@ import { View, SafeAreaView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
+import Toast from 'react-native-toast-message';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { BackAction } from '../components/BackAction';
@@ -22,8 +23,12 @@ export const CreateExpense: FC<{
       });
 
       navigation.goBack();
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
+      Toast.show({
+        type: 'error',
+        text1: err.message || 'Unknown error',
+      });
     }
   }, [navigation]);
 
