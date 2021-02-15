@@ -9,3 +9,4 @@ RUN go get -u golang.org/x/crypto/bcrypt
 
 RUN go get -u github.com/mitranim/gow
 RUN go get -u github.com/joho/godotenv
+RUN go get -u github.com/google/uuid

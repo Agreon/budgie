@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,8 +17,6 @@ func insertExpense(c *gin.Context) {
 	if err != nil {
 		return
 	}
-
-	log.Println("Insert expense!")
 
 	/* get userID from middleware */
 	userID := c.MustGet("userID")
@@ -58,23 +57,9 @@ func listExpenses(c *gin.Context) {
 }
 
 func listSingleExpense(c *gin.Context) {
-	expenseID := c.Param("id")
+	expense, expenseID := getSingleExpenseFromDB(c)
 
-	/* get userID from middleware */
-	userID := c.MustGet("userID")
-
-	db := GetDB()
-	expense := Expense{}
-	err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(400)
-		return
-	}
-
-	if expense.UserID != userID {
-		c.AbortWithStatus(403)
+	if expenseID == "" {
 		return
 	}
 
@@ -82,35 +67,20 @@ func listSingleExpense(c *gin.Context) {
 }
 
 func updateExpense(c *gin.Context) {
-	expenseID := c.Param("id")
+	expense, expenseID := getSingleExpenseFromDB(c)
+
+	if expenseID == "" {
+		return
+	}
+
+	/* get updated data from body */
+	var updateExpense ExpenseInput
+	err := c.BindJSON(&updateExpense)
+	if err != nil {
+		return
+	}
 
 	db := GetDB()
-	expense := Expense{}
-
-	err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
-	/* check if expense exists */
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(404)
-		return
-	}
-
-	/* get userID from middleware */
-	userID := c.MustGet("userID")
-
-	/* check if expense belongs to requesting user */
-	if expense.UserID != userID {
-		c.AbortWithStatus(403)
-		return
-	}
-
-	var updateExpense ExpenseInput
-	err = c.BindJSON(&updateExpense)
-	if err != nil {
-		return
-	}
-
 	_, err = db.Exec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
 
 	/* if there is a database error */
@@ -124,6 +94,7 @@ func updateExpense(c *gin.Context) {
 
 	if err != nil {
 		log.Println(err)
+		c.AbortWithStatus(500)
 		return
 	}
 
@@ -131,30 +102,14 @@ func updateExpense(c *gin.Context) {
 }
 
 func deleteExpense(c *gin.Context) {
-	expenseID := c.Param("id")
+	_, expenseID := getSingleExpenseFromDB(c)
+
+	if expenseID == "" {
+		return
+	}
 
 	db := GetDB()
-	expense := Expense{}
-
-	err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
-	/* check if expense exists */
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(404)
-		return
-	}
-
-	/* get userID from middleware */
-	userID := c.MustGet("userID")
-
-	/* check if expense belongs to requesting user */
-	if expense.UserID != userID {
-		c.AbortWithStatus(403)
-		return
-	}
-
-	_, err = db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
+	_, err := db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
 
 	/* if there was any execution error */
 	if err != nil {
@@ -164,6 +119,40 @@ func deleteExpense(c *gin.Context) {
 	}
 
 	c.Status(200)
+}
+
+func getSingleExpenseFromDB(c *gin.Context) (Expense, string) {
+	expenseID := c.Param("id")
+	expense := Expense{}
+
+	/* check if input is a UUID */
+	_, err := uuid.Parse(expenseID)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(400)
+		return expense, ""
+	}
+
+	db := GetDB()
+	err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
+
+	/* check if expense exists */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(400)
+		return expense, ""
+	}
+
+	/* get userID from middleware */
+	userID := c.MustGet("userID")
+
+	/* check if expense belongs to requesting user */
+	if expense.UserID != userID {
+		c.AbortWithStatus(403)
+		return expense, ""
+	}
+
+	return expense, expenseID
 }
 
 func addUser(c *gin.Context) {
