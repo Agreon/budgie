@@ -6,3 +6,4 @@
 - github.com/dgrijalva/jwt-go
 - golang.org/x/crypto/bcrypt
 - github.com/joho/godotenv
+- github.com/google/uuid
