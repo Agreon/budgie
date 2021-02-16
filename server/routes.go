@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -21,7 +20,6 @@ func insertExpense(c *gin.Context) {
 	/* get userID from middleware */
 	userID := c.MustGet("userID")
 
-	fmt.Printf("token is valid -> data: %v, bla: %v, cost: %v, date: %v, userID: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date, userID)
 	db := GetDB()
 	_, err = db.Exec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, userID, newExpense.Date)
 
@@ -31,8 +29,6 @@ func insertExpense(c *gin.Context) {
 		c.AbortWithStatus(500)
 		return
 	}
-
-	fmt.Printf("URL to store: %v, bla: %v, cost: %v, date: %v\n", newExpense.Name, newExpense.Category, newExpense.Costs, newExpense.Date)
 
 	/* return input */
 	c.JSON(200, newExpense)

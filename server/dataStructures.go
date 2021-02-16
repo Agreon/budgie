@@ -31,6 +31,14 @@ CREATE TABLE IF NOT EXISTS users (
 	password text,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
+);
+
+CREATE TABLE IF NOT EXISTS tag (
+	id uuid UNIQUE,
+	name text,
+	user_id uuid,
+	created_at timestamp with time zone,
+	updated_at timestamp with time zone
 )
 `
 
@@ -46,6 +54,18 @@ type User struct {
 	Password  string    `db:"password"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type Tag struct {
+	ID        string    `db:"id"`
+	Name      string    `db:"name"`
+	UserID    string    `db:"user_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type TagInput struct {
+	Name string `json:"name" binding:"required"`
 }
 
 type ExpenseCategory string
