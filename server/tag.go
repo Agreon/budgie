@@ -39,8 +39,6 @@ func insertTag(c *gin.Context) {
 		return
 	}
 
-	/* TODO: return new tag entity? */
-
 	/* return input */
 	c.JSON(200, newTag)
 }
