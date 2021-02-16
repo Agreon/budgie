@@ -43,3 +43,21 @@ func insertTag(c *gin.Context) {
 	/* return input */
 	c.JSON(200, newTag)
 }
+
+func listTags(c *gin.Context) {
+	db := GetDB()
+	tags := []Tag{}
+
+	/* get userID from middleware */
+	userID := c.MustGet("userID")
+
+	err := db.Select(&tags, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC", userID)
+
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+		return
+	}
+
+	c.JSON(200, tags)
+}

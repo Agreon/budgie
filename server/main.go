@@ -61,6 +61,8 @@ func main() {
 		useAuthentication.DELETE("/expense/:id", deleteExpense)
 
 		useAuthentication.POST("/tag", insertTag)
+
+		useAuthentication.GET("/tag", listTags)
 	}
 
 	r.POST("/user", addUser)
