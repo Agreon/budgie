@@ -49,17 +49,17 @@ type Person struct {
 }
 
 type User struct {
-	ID        string    `db:"id"`
-	UserName  string    `db:"user_name"`
-	Password  string    `db:"password"`
+	ID        string    `db:"id" json:"id"`
+	UserName  string    `db:"user_name" json:"name"`
+	Password  string    `db:"password" json:"password"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type Tag struct {
-	ID        string    `db:"id"`
-	Name      string    `db:"name"`
-	UserID    string    `db:"user_id"`
+	ID        string    `db:"id" json:"id"`
+	Name      string    `db:"name" json:"name"`
+	UserID    string    `db:"user_id" json:"user_id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
