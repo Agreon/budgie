@@ -63,6 +63,8 @@ func main() {
 		useAuthentication.POST("/tag", insertTag)
 
 		useAuthentication.GET("/tag", listTags)
+
+		useAuthentication.PUT("/tag/:id", updateTag)
 	}
 
 	r.POST("/user", addUser)
