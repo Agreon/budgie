@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { SafeAreaView, View } from 'react-native';
+import { Keyboard, SafeAreaView, View } from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
   Button,
@@ -128,7 +128,10 @@ export const EditExpense: FC<{
         accessoryRight={() => (
           <TopNavigationAction
             icon={DeleteIcon}
-            onPress={() => setDeleteDialogVisible(true)}
+            onPress={() => {
+              Keyboard.dismiss();
+              setDeleteDialogVisible(true);
+            }}
           />
         )}
       />

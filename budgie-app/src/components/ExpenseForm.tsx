@@ -13,7 +13,7 @@ import {
   Select,
   SelectItem,
 } from '@ui-kitten/components';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Expense } from '../util/types';
 

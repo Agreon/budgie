@@ -4,15 +4,15 @@ import React, {
 import axios from 'axios';
 
 import {
-  SafeAreaView, FlatList, RefreshControl,
+  SafeAreaView, FlatList, RefreshControl, View,
 } from 'react-native';
 
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import tailwind from 'tailwind-rn';
 import { ScrollView } from 'react-native-gesture-handler';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Icon, Text,
+  Button, Divider, Icon, Text,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
@@ -27,24 +27,23 @@ interface ExpenseItemProps {
 }
 
 export const ExpenseItem: FC<ExpenseItemProps> = ({ item, onPress }) => (
-  <div style={tailwind('mt-2')} onClick={() => onPress(item.id)}>
-    <div style={tailwind('p-2 flex justify-between')}>
-      <div style={tailwind('flex flex-col ml-1')}>
-        <Text category="h5" status="primary">{item.category}</Text>
+  <View style={tailwind('mt-2')} onTouchEnd={() => onPress(item.id)}>
+    <View style={tailwind('p-2 flex-row justify-between')}>
+      <View style={tailwind('flex-col ml-1')}>
+        <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
         <Text appearance="hint">{item.name}</Text>
-      </div>
-      <div style={tailwind('flex flex-col justify-between mr-1 text-right')}>
-        <Text appearance="hint">{dayjs(item.date).format('DD.MM.')}</Text>
-        <span style={tailwind('text-red-400 font-semibold')}>
+      </View>
+      <View style={tailwind('flex-col justify-between mr-1')}>
+        <Text appearance="hint" style={tailwind('text-right')}>{dayjs(item.date).format('DD.MM.')}</Text>
+        <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
           {item.costs}
           {' '}
           €
-        </span>
-      </div>
-    </div>
-    {/* <Divider style={tailwind("m")} /> */}
-    <hr style={tailwind('border-0 bg-gray-300 text-gray-500 h-px mb-0 ml-6 mr-6')} />
-  </div>
+        </Text>
+      </View>
+    </View>
+    <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />
+  </View>
 );
 
 export const Expenses: FC<{

@@ -13,6 +13,6 @@ export const Header: FC<{
     alignment="center"
     accessoryLeft={accessoryLeft}
     accessoryRight={accessoryRight}
-    style={tailwind('mt-2')}
+    style={tailwind('mt-4')}
   />
 );
