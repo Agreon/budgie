@@ -60,7 +60,7 @@ const DeleteExpenseDialog: FC<{
         </View>
       )}
     >
-      <Text>Are you sure you want to delete this Expense?</Text>
+      <Text>Are you sure you want to delete this expense?</Text>
     </Card>
   </Modal>
 );
