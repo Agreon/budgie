@@ -4,7 +4,7 @@ import React, {
 import axios from 'axios';
 
 import {
-  SafeAreaView, FlatList, RefreshControl, View,
+  SafeAreaView, FlatList, RefreshControl, View, TouchableWithoutFeedback,
 } from 'react-native';
 
 import dayjs from 'dayjs';
@@ -15,6 +15,7 @@ import {
   Button, Divider, Icon, Text,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
+import * as SplashScreen from 'expo-splash-screen';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { Expense } from '../util/types';
@@ -27,23 +28,25 @@ interface ExpenseItemProps {
 }
 
 export const ExpenseItem: FC<ExpenseItemProps> = ({ item, onPress }) => (
-  <View style={tailwind('mt-2')} onTouchEnd={() => onPress(item.id)}>
-    <View style={tailwind('p-2 flex-row justify-between')}>
-      <View style={tailwind('flex-col ml-1')}>
-        <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
-        <Text appearance="hint">{item.name}</Text>
+  <TouchableWithoutFeedback delayPressIn={0} onPressIn={() => onPress(item.id)}>
+    <View style={tailwind('mt-2')}>
+      <View style={tailwind('p-2 flex-row justify-between')}>
+        <View style={tailwind('flex-col ml-1')}>
+          <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
+          <Text appearance="hint">{item.name}</Text>
+        </View>
+        <View style={tailwind('flex-col justify-between mr-1')}>
+          <Text appearance="hint" style={tailwind('text-right')}>{dayjs(item.date).format('DD.MM.')}</Text>
+          <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
+            {item.costs}
+            {' '}
+            €
+          </Text>
+        </View>
       </View>
-      <View style={tailwind('flex-col justify-between mr-1')}>
-        <Text appearance="hint" style={tailwind('text-right')}>{dayjs(item.date).format('DD.MM.')}</Text>
-        <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
-          {item.costs}
-          {' '}
-          €
-        </Text>
-      </View>
+      <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />
     </View>
-    <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />
-  </View>
+  </TouchableWithoutFeedback>
 );
 
 export const Expenses: FC<{
@@ -75,6 +78,8 @@ export const Expenses: FC<{
 
   useEffect(() => {
     (async () => {
+      await SplashScreen.hideAsync();
+
       await fetchData();
     })();
   }, [isFocused]);

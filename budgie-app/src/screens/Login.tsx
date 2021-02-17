@@ -52,10 +52,10 @@ export const Login: FC<{
   useEffect(() => {
     (async () => {
       const existingToken = await getToken();
-      await SplashScreen.hideAsync();
 
       // TODO: Also check for expiry
       if (!existingToken) {
+        await SplashScreen.hideAsync();
         return;
       }
 

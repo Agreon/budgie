@@ -21,13 +21,9 @@ export type RootStackParamList = {
   'EditExpense': { id: string }
 };
 
-export default function App() {
-  useEffect(() => {
-    (async () => {
-      await SplashScreen.preventAutoHideAsync();
-    })();
-  }, []);
+SplashScreen.preventAutoHideAsync().then(() => console.log('prevented')).catch((error) => console.error(error));
 
+export default function App() {
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />

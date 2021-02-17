@@ -4,12 +4,8 @@ import React, {
 import { Keyboard, SafeAreaView, View } from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
-  Button,
-  Card,
   Icon,
   IconProps,
-  Modal,
-  Text,
   Spinner, TopNavigationAction,
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -22,47 +18,10 @@ import { ExpenseForm } from '../components/ExpenseForm';
 import { Expense } from '../util/types';
 import { getToken } from '../util/token';
 import { useToast } from '../ToastProvider';
+import { Dialog } from '../components/Dialog';
 
 const DeleteIcon = (props: IconProps) => (
   <Icon {...props} name="trash-outline" />
-);
-
-const DeleteExpenseDialog: FC<{
-  visible: boolean
-  onSubmit: () => void
-  onClose: () => void
-}> = ({ visible, onSubmit, onClose }) => (
-  <Modal
-    visible={visible}
-    backdropStyle={{
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    }}
-  >
-    <Card
-      footer={(props) => (
-        <View {...props} style={tailwind('flex-1 flex-row justify-end m-2')}>
-          <Button
-            size="small"
-            status="basic"
-            onPress={onClose}
-            style={{ marginHorizontal: 2 }}
-          >
-            Cancel
-          </Button>
-          <Button
-            size="small"
-            status="danger"
-            onPress={onSubmit}
-            style={{ marginHorizontal: 2 }}
-          >
-            Delete
-          </Button>
-        </View>
-      )}
-    >
-      <Text>Are you sure you want to delete this expense?</Text>
-    </Card>
-  </Modal>
 );
 
 export const EditExpense: FC<{
@@ -146,8 +105,9 @@ export const EditExpense: FC<{
               expense={expense}
               onSubmit={onSave}
             />
-            <DeleteExpenseDialog
+            <Dialog
               visible={deleteDialogVisible}
+              text="Are you sure you want to delete this expense?"
               onClose={() => setDeleteDialogVisible(false)}
               onSubmit={onDelete}
             />
