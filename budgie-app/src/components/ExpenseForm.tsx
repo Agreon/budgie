@@ -116,6 +116,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         onChangeText={(text) => setName(text)}
         label="Name"
         caption="Optional"
+        onSubmitEditing={onSave}
       />
       <Button
         style={tailwind('mt-8')}

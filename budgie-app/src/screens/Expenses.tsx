@@ -4,29 +4,27 @@ import React, {
 import axios from 'axios';
 
 import {
-  SafeAreaView, FlatList, RefreshControl, TouchableHighlight,
+  SafeAreaView, FlatList, RefreshControl,
 } from 'react-native';
 
 import * as dayjs from 'dayjs';
-import * as SplashScreen from 'expo-splash-screen';
 import tailwind from 'tailwind-rn';
-import { ScrollView, TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Icon, Text, IconProps,
+  Button, Icon, Text,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { Expense } from '../util/types';
 import { getToken } from '../util/token';
+import { useToast } from '../ToastProvider';
 
 interface ExpenseItemProps {
   item: Expense;
   onPress: (id: string) => void
 }
-// <TouchableOpacity onPress={() => { console.log(1); onPress(item.id); }}>
 
 export const ExpenseItem: FC<ExpenseItemProps> = ({ item, onPress }) => (
   <div style={tailwind('mt-2')} onClick={() => onPress(item.id)}>
@@ -53,8 +51,9 @@ export const Expenses: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
   const isFocused = useIsFocused();
+  const { showToast } = useToast();
 
-  const [expenses, setExpenses] = useState<Expense[] | undefined>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const [loading, setLoading] = useState(false);
   const fetchData = useCallback(async () => {
@@ -69,19 +68,15 @@ export const Expenses: FC<{
       setExpenses(res.data);
     } catch (err) {
       console.error(err);
-      Toast.show({
-        type: 'error',
-        text1: err.message || 'Unknown error',
-      });
+      showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
 
     setLoading(false);
-  }, []);
+  }, [setExpenses]);
 
   useEffect(() => {
     (async () => {
       await fetchData();
-      await SplashScreen.hideAsync();
     })();
   }, [isFocused]);
 
@@ -99,17 +94,17 @@ export const Expenses: FC<{
           renderItem={({ item }) => (
             <ExpenseItem
               item={item}
-              onPress={(id) => { navigation.navigate('EditExpense', { id }); }}
+              onPress={id => { navigation.navigate('EditExpense', { id }); }}
             />
           )}
           data={expenses}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
         />
       </ScrollView>
       <Button
         style={tailwind('absolute right-6 bottom-5')}
         status="info"
-        accessoryLeft={(props: IconProps) => (
+        accessoryLeft={props => (
           <Icon {...props} name="plus-outline" />
         )}
         onPress={() => navigation.navigate('CreateExpense')}

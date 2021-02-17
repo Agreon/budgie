@@ -15,13 +15,13 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import axios from 'axios';
-import Toast from 'react-native-toast-message';
 import { RootStackParamList } from '../../App';
 import { BackAction } from '../components/BackAction';
 import { Header } from '../components/Header';
 import { ExpenseForm } from '../components/ExpenseForm';
 import { Expense } from '../util/types';
 import { getToken } from '../util/token';
+import { useToast } from '../ToastProvider';
 
 const DeleteIcon = (props: IconProps) => (
   <Icon {...props} name="trash-outline" />
@@ -69,6 +69,8 @@ export const EditExpense: FC<{
     route: RouteProp<RootStackParamList, 'EditExpense'>
     navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
+  const { showToast } = useToast();
+
   const [expense, setExpense] = useState<Expense | null>(null);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
@@ -83,10 +85,7 @@ export const EditExpense: FC<{
         setExpense(res.data);
       } catch (err) {
         console.error(err);
-        Toast.show({
-          type: 'error',
-          text1: err.message || 'Unknown error',
-        });
+        showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
     })();
   }, [id]);
@@ -101,10 +100,7 @@ export const EditExpense: FC<{
       navigation.navigate('Expenses');
     } catch (err) {
       console.error(err);
-      Toast.show({
-        type: 'error',
-        text1: err.message || 'Unknown error',
-      });
+      showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
   }, [id]);
 
@@ -120,10 +116,7 @@ export const EditExpense: FC<{
       navigation.navigate('Expenses');
     } catch (err) {
       console.error(err);
-      Toast.show({
-        type: 'error',
-        text1: err.message || 'Unknown error',
-      });
+      showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
   }, [id]);
 

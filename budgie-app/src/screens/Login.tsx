@@ -10,15 +10,14 @@ import { TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tailwind from 'tailwind-rn';
 import * as SplashScreen from 'expo-splash-screen';
-import Toast from 'react-native-toast-message';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { setToken, getToken } from '../util/token';
+import { useToast } from '../ToastProvider';
 
 /**
  * TODO:
- * - error display
  * Show splash screen until we know if a login is necessary
  *  - https://docs.expo.io/versions/latest/sdk/splash-screen/
  *
@@ -31,6 +30,7 @@ export const Login: FC<{
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const { showToast } = useToast();
 
   const loginUser = useCallback(async () => {
     setLoading(true);
@@ -44,10 +44,7 @@ export const Login: FC<{
       navigation.navigate('Expenses');
     } catch (err) {
       console.error(err);
-      Toast.show({
-        type: 'error',
-        text1: err.message || 'Unknown error',
-      });
+      showToast({ message: 'Login failed', status: 'danger' });
     }
     setLoading(false);
   }, [username, password, navigation]);
@@ -55,10 +52,10 @@ export const Login: FC<{
   useEffect(() => {
     (async () => {
       const existingToken = await getToken();
+      await SplashScreen.hideAsync();
 
       // TODO: Also check for expiry
       if (!existingToken) {
-        await SplashScreen.hideAsync();
         return;
       }
 
@@ -92,6 +89,7 @@ export const Login: FC<{
           onChangeText={(text) => setPassword(text)}
           accessoryRight={renderIcon}
           secureTextEntry={secureTextEntry}
+          onSubmitEditing={loginUser}
           label="Password"
         />
         <Button

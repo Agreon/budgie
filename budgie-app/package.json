@@ -28,7 +28,6 @@
     "react-native-safe-area-context": "3.1.9",
     "react-native-screens": "~2.15.2",
     "react-native-svg": "^12.1.0",
-    "react-native-toast-message": "^1.4.4",
     "react-native-web": "~0.13.12",
     "tailwind-rn": "^3.0.0"
   },
@@ -49,6 +48,5 @@
     "tailwindcss": "^2.0.2",
     "typescript": "~4.0.0"
   },
-  "private": true,
-  "postinstall": "./fix-imports.sh"
+  "private": true
 }

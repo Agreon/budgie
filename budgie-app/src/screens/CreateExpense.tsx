@@ -3,17 +3,19 @@ import { View, SafeAreaView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
-import Toast from 'react-native-toast-message';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { BackAction } from '../components/BackAction';
 import { ExpenseForm } from '../components/ExpenseForm';
 import { Expense } from '../util/types';
 import { getToken } from '../util/token';
+import { useToast } from '../ToastProvider';
 
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'CreateExpense'>
 }> = ({ navigation }) => {
+  const { showToast } = useToast();
+
   const createExpense = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
       await axios.post('http://localhost:8080/expense', expenseData, {
@@ -25,10 +27,7 @@ export const CreateExpense: FC<{
       navigation.goBack();
     } catch (err) {
       console.error(err);
-      Toast.show({
-        type: 'error',
-        text1: err.message || 'Unknown error',
-      });
+      showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
   }, [navigation]);
 
