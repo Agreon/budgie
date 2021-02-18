@@ -25,7 +25,7 @@ func insertTag(c *gin.Context) {
 	err = db.Get(&tag, "SELECT * FROM tag WHERE name=$1 AND user_id=$2", newTag.Name, userID)
 	if err == nil {
 		log.Println("Tag already exists.")
-		c.AbortWithStatus(400)
+		c.AbortWithStatus(409)
 		return
 	}
 

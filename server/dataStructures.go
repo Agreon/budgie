@@ -93,7 +93,7 @@ type Expense struct {
 	Name      string          `db:"name" json:"name"`
 	Category  ExpenseCategory `db:"category" json:"category"`
 	Costs     string          `db:"costs" json:"costs"`
-	UserID    string          `db:"user_id"`
+	UserID    string          `db:"user_id" json:"user_id`
 	Date      time.Time       `db:"date" json:"date"`
 	CreatedAt time.Time       `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time       `db:"updated_at" json:"updated_at"`
