@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS expense (
 	id uuid UNIQUE,
 	name text,
 	category text,
-	costs money,
+	costs numeric,
 	user_id uuid,
 	date timestamp with time zone,
 	created_at timestamp with time zone,
