@@ -16,8 +16,8 @@ func main() {
 	tx := db.MustBegin()
 	//tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($2, $1, $3)", "Jason", "Moiron", "jmoiron@jmoiron.net")
 	//tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($1, $2, $3)", "John", "Doe", "johndoeDNE@gmail.net")
-	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), $6)", "Snäckies", "Food", "14.56", "12ca8358-756a-43e2-bc47-1eb515f224d5", "'1997-01-31 09:26:56.66 +02:00'", "'2020-01-16 8:00:00 US/Pacific'")
-	tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), $6)", "Unterhosen", "Clothes", "2.00", "1428601f-3bb4-4c51-b9e3-fef560eee979", "'1999-01-15 8:00:00 US/Pacific'", "'2020-01-16 8:00:00 US/Pacific'")
+	// tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), $6)", "Snäckies", "Food", "14.56", "12ca8358-756a-43e2-bc47-1eb515f224d5", "'1997-01-31 09:26:56.66 +02:00'", "'2020-01-16 8:00:00 US/Pacific'")
+	// tx.MustExec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), $6)", "Unterhosen", "Clothes", "2.00", "1428601f-3bb4-4c51-b9e3-fef560eee979", "'1999-01-15 8:00:00 US/Pacific'", "'2020-01-16 8:00:00 US/Pacific'")
 
 	// pwHash1, _ := bcrypt.GenerateFromPassword([]byte("1234"), 10)
 	//pwHash2, _ := bcrypt.GenerateFromPassword([]byte("asdf"), 10)

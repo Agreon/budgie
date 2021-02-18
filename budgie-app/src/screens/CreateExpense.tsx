@@ -9,10 +9,13 @@ import { BackAction } from '../components/BackAction';
 import { ExpenseForm } from '../components/ExpenseForm';
 import { Expense } from '../util/types';
 import { getToken } from '../util/token';
+import { useToast } from '../ToastProvider';
 
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'CreateExpense'>
 }> = ({ navigation }) => {
+  const { showToast } = useToast();
+
   const createExpense = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
       await axios.post('http://localhost:8080/expense', expenseData, {
@@ -22,8 +25,9 @@ export const CreateExpense: FC<{
       });
 
       navigation.goBack();
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
+      showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
   }, [navigation]);
 

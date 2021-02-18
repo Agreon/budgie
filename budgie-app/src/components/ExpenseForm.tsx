@@ -13,7 +13,7 @@ import {
   Select,
   SelectItem,
 } from '@ui-kitten/components';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Expense } from '../util/types';
 
@@ -64,6 +64,8 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
   const [date, setDate] = useState<Date>(expense?.date ? dayjs(expense.date).toDate() : new Date());
 
   const [loading, setLoading] = useState(false);
+  console.log(costs);
+
   const onSave = useCallback(async () => {
     setLoading(true);
     try {
@@ -76,7 +78,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
     } finally {
       setLoading(false);
     }
-  }, [loading, expense]);
+  }, [loading, expense, selectedIndex, costs, name, date]);
 
   return (
     <View>
@@ -96,10 +98,10 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         onSelect={(index) => setSelectedIndex(index as IndexPath)}
       >
         {
-                    categories.map((type) => (
-                      <SelectItem key={type} title={type} />
-                    ))
-                }
+          categories.map((type) => (
+            <SelectItem key={type} title={type} />
+          ))
+        }
       </Select>
       <Datepicker
         style={tailwind('mt-4')}
@@ -114,6 +116,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         onChangeText={(text) => setName(text)}
         label="Name"
         caption="Optional"
+        onSubmitEditing={onSave}
       />
       <Button
         style={tailwind('mt-8')}

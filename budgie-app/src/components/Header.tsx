@@ -5,12 +5,14 @@ import tailwind from 'tailwind-rn';
 
 export const Header: FC<{
     title: string;
-    accessoryLeft?: RenderProp
-}> = ({ title, accessoryLeft }) => (
+    accessoryLeft?: RenderProp;
+    accessoryRight?: RenderProp;
+}> = ({ title, accessoryLeft, accessoryRight }) => (
   <TopNavigation
     title={() => <Text style={tailwind('text-xl font-bold')}>{title}</Text>}
     alignment="center"
     accessoryLeft={accessoryLeft}
-    style={tailwind('mt-2')}
+    accessoryRight={accessoryRight}
+    style={tailwind('mt-4')}
   />
 );

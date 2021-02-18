@@ -14,10 +14,10 @@ import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { setToken, getToken } from '../util/token';
+import { useToast } from '../ToastProvider';
 
 /**
  * TODO:
- * - error display
  * Show splash screen until we know if a login is necessary
  *  - https://docs.expo.io/versions/latest/sdk/splash-screen/
  *
@@ -30,6 +30,7 @@ export const Login: FC<{
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const { showToast } = useToast();
 
   const loginUser = useCallback(async () => {
     setLoading(true);
@@ -41,8 +42,9 @@ export const Login: FC<{
 
       await setToken(res.data.token);
       navigation.navigate('Expenses');
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
+      showToast({ message: 'Login failed', status: 'danger' });
     }
     setLoading(false);
   }, [username, password, navigation]);
@@ -87,6 +89,7 @@ export const Login: FC<{
           onChangeText={(text) => setPassword(text)}
           accessoryRight={renderIcon}
           secureTextEntry={secureTextEntry}
+          onSubmitEditing={loginUser}
           label="Password"
         />
         <Button
