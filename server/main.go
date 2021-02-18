@@ -59,6 +59,12 @@ func main() {
 		useAuthentication.PUT("/expense/:id", updateExpense)
 
 		useAuthentication.DELETE("/expense/:id", deleteExpense)
+
+		useAuthentication.POST("/tag", insertTag)
+
+		useAuthentication.GET("/tag", listTags)
+
+		useAuthentication.PUT("/tag/:id", updateTag)
 	}
 
 	r.POST("/user", addUser)

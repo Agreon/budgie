@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS expense (
 	id uuid UNIQUE,
 	name text,
 	category text,
-	costs money,
+	costs numeric,
 	user_id uuid,
 	date timestamp with time zone,
 	created_at timestamp with time zone,
@@ -31,6 +31,14 @@ CREATE TABLE IF NOT EXISTS users (
 	password text,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
+);
+
+CREATE TABLE IF NOT EXISTS tag (
+	id uuid UNIQUE,
+	name text,
+	user_id uuid,
+	created_at timestamp with time zone,
+	updated_at timestamp with time zone
 )
 `
 
@@ -41,11 +49,23 @@ type Person struct {
 }
 
 type User struct {
-	ID        string    `db:"id"`
-	UserName  string    `db:"user_name"`
-	Password  string    `db:"password"`
+	ID        string    `db:"id" json:"id"`
+	UserName  string    `db:"user_name" json:"name"`
+	Password  string    `db:"password" json:"password"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type Tag struct {
+	ID        string    `db:"id" json:"id"`
+	Name      string    `db:"name" json:"name"`
+	UserID    string    `db:"user_id" json:"user_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type TagInput struct {
+	Name string `json:"name" binding:"required"`
 }
 
 type ExpenseCategory string
@@ -73,7 +93,7 @@ type Expense struct {
 	Name      string          `db:"name" json:"name"`
 	Category  ExpenseCategory `db:"category" json:"category"`
 	Costs     string          `db:"costs" json:"costs"`
-	UserID    string          `db:"user_id"`
+	UserID    string          `db:"user_id" json:"user_id`
 	Date      time.Time       `db:"date" json:"date"`
 	CreatedAt time.Time       `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time       `db:"updated_at" json:"updated_at"`
