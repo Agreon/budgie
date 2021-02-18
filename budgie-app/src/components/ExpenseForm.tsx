@@ -16,6 +16,7 @@ import {
 import dayjs from 'dayjs';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Expense } from '../util/types';
+import { TagSelection } from './TagSelection';
 
 const CalendarIcon = (props: IconProps) => (
   <Icon {...props} name="calendar" />
@@ -50,8 +51,8 @@ const getIndexOfCategory = (category: string) => {
 };
 
 interface IProps {
-    expense?: Expense;
-    onSubmit: (expense: Omit<Expense, 'id'>) => Promise<void>;
+  expense?: Expense;
+  onSubmit: (expense: Omit<Expense, 'id'>) => Promise<void>;
 }
 
 export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
@@ -60,11 +61,17 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
     new IndexPath(expense ? getIndexOfCategory(expense.category) : 0),
   );
   const [name, setName] = useState<string | undefined>(expense?.name);
-  console.log(expense);
   const [date, setDate] = useState<Date>(expense?.date ? dayjs(expense.date).toDate() : new Date());
 
+  // TODO: Get this from outside components
+  const availableTags = [
+    { name: 'Rewe', id: '1' },
+    { name: 'DB', id: '2' },
+    { name: 'Test', id: '3' },
+  ];
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+
   const [loading, setLoading] = useState(false);
-  console.log(costs);
 
   const onSave = useCallback(async () => {
     setLoading(true);
@@ -87,7 +94,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         value={costs}
         onChangeText={(text) => setCosts(text)}
         label="Cost"
-        autoFocus
+        autoFocus={!expense}
         keyboardType="decimal-pad"
       />
       <Select
@@ -117,6 +124,17 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         label="Name"
         caption="Optional"
         onSubmitEditing={onSave}
+      />
+      <TagSelection
+        available={availableTags}
+        selected={selectedTags}
+        onToggle={tagId => (
+          selectedTags.find(s => s.id === tagId)
+            ? setSelectedTags(prevSelected => prevSelected.filter(s => s.id !== tagId))
+            : setSelectedTags(
+              prevSelected => [...prevSelected, availableTags.find(s => s.id === tagId)!],
+            )
+        )}
       />
       <Button
         style={tailwind('mt-8')}
