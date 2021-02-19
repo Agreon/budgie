@@ -9,6 +9,10 @@ import (
 func main() {
 	loadDataFromEnv()
 
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"*"}
+	corsConfig.AddAllowHeaders("token")
+
 	db := GetDB()
 
 	db.MustExec(expenseTable)
@@ -22,10 +26,6 @@ func main() {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"*"}
-	corsConfig.AddAllowHeaders("token")
-
 	r.Use(cors.New(corsConfig))
 
 	useAuthentication := r.Group("/")
@@ -36,17 +36,17 @@ func main() {
 
 		useAuthentication.GET("/expense", listExpenses)
 
-		useAuthentication.GET("/expense/:id", listSingleExpense)
+		useAuthentication.GET("/expense/:id", validateUUID(), listSingleExpense)
 
-		useAuthentication.PUT("/expense/:id", updateExpense)
+		useAuthentication.PUT("/expense/:id", validateUUID(), updateExpense)
 
-		useAuthentication.DELETE("/expense/:id", deleteExpense)
+		useAuthentication.DELETE("/expense/:id", validateUUID(), deleteExpense)
 
 		useAuthentication.POST("/tag", insertTag)
 
 		useAuthentication.GET("/tag", listTags)
 
-		useAuthentication.PUT("/tag/:id", updateTag)
+		useAuthentication.PUT("/tag/:id", validateUUID(), updateTag)
 	}
 
 	r.POST("/user", addUser)

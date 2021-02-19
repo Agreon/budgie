@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -87,19 +86,11 @@ func listTags(c *gin.Context) {
 }
 
 func updateTag(c *gin.Context) {
-	tagID := c.Param("id")
-
-	/* check if input is a UUID */
-	_, err := uuid.Parse(tagID)
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(400)
-		return
-	}
+	tagID := c.MustGet("entityID")
 
 	db := GetDB()
 	tag := Tag{}
-	err = db.Get(&tag, "SELECT * FROM tag WHERE id=$1", tagID)
+	err := db.Get(&tag, "SELECT * FROM tag WHERE id=$1", tagID)
 
 	/* check if tag exists */
 	if err != nil {

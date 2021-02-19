@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -169,19 +168,11 @@ func deleteExpense(c *gin.Context) {
 }
 
 func getSingleExpenseFromDB(c *gin.Context) (Expense, string) {
-	expenseID := c.Param("id")
+	expenseID := c.MustGet("entityID")
 	expense := Expense{}
 
-	/* check if input is a UUID */
-	_, err := uuid.Parse(expenseID)
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(400)
-		return expense, ""
-	}
-
 	db := GetDB()
-	err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
+	err := db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
 
 	/* check if expense exists */
 	if err != nil {
@@ -199,5 +190,5 @@ func getSingleExpenseFromDB(c *gin.Context) (Expense, string) {
 		return expense, ""
 	}
 
-	return expense, expenseID
+	return expense, expenseID.(string)
 }
