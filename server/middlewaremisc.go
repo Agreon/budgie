@@ -18,9 +18,8 @@ func validateUUID() gin.HandlerFunc {
 			log.Println(err)
 			c.AbortWithStatus(400)
 			return
-		} else {
-			c.Set("entityID", uuID)
 		}
+		c.Set("entityID", uuID)
 
 		c.Next()
 	}
