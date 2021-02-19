@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -43,9 +43,15 @@ func authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenInput := c.GetHeader("token")
 
-		userID, tokenIsValid := checkTokenIsValid(tokenInput)
+		/* check if input is valid (required format: x.x.x) */
+		if strings.Count(tokenInput, ".") != 2 {
+			c.AbortWithStatus(401)
+			return
+		}
 
-		log.Println("Auth middleware active")
+		fmt.Println("This is your token: ", tokenInput)
+
+		userID, tokenIsValid := checkTokenIsValid(tokenInput)
 
 		if !tokenIsValid {
 			c.AbortWithStatus(401)
