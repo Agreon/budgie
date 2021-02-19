@@ -1,8 +1,6 @@
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import axios from 'axios';
-
 import {
   SafeAreaView, FlatList, RefreshControl, View, TouchableWithoutFeedback,
 } from 'react-native';
@@ -19,15 +17,13 @@ import * as SplashScreen from 'expo-splash-screen';
 import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { Expense } from '../util/types';
-import { getToken } from '../util/token';
 import { useToast } from '../ToastProvider';
+import { useApi } from '../hooks/use-request';
 
-interface ExpenseItemProps {
+export const ExpenseItem: FC<{
   item: Expense;
   onPress: (id: string) => void
-}
-
-export const ExpenseItem: FC<ExpenseItemProps> = ({ item, onPress }) => (
+}> = ({ item, onPress }) => (
   <TouchableWithoutFeedback delayPressIn={0} onPressIn={() => onPress(item.id)}>
     <View style={tailwind('mt-2')}>
       <View style={tailwind('p-2 flex-row justify-between')}>
@@ -52,6 +48,7 @@ export const ExpenseItem: FC<ExpenseItemProps> = ({ item, onPress }) => (
 export const Expenses: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
+  const api = useApi(navigation);
   const isFocused = useIsFocused();
   const { showToast } = useToast();
 
@@ -61,20 +58,15 @@ export const Expenses: FC<{
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:8080/expense', {
-        headers: {
-          token: await getToken(),
-        },
-      });
+      const { data } = await api.get('expense');
 
-      setExpenses(res.data);
+      setExpenses(data);
     } catch (err) {
-      console.error(err);
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
 
     setLoading(false);
-  }, [setExpenses]);
+  }, [setExpenses, showToast]);
 
   useEffect(() => {
     (async () => {
