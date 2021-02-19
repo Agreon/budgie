@@ -58,6 +58,12 @@ type ExpenseInput struct {
 	Category ExpenseCategory `json:"category" binding:"required"`
 	Costs    string          `json:"costs" binding:"required"`
 	Date     string          `json:"date" binding:"required"`
+	TagIDs   []string        `json:"tag_id"`
+}
+
+type ExpenseOutput struct {
+	Expense Expense
+	Tags    []ExpenseTagOutput
 }
 
 func insertExpense(c *gin.Context) {
@@ -71,12 +77,29 @@ func insertExpense(c *gin.Context) {
 	userID := c.MustGet("userID")
 
 	db := GetDB()
-	_, err = db.Exec("INSERT INTO expense VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newExpense.Name, newExpense.Category, newExpense.Costs, userID, newExpense.Date)
+	rows, err := db.NamedQuery("INSERT INTO expense VALUES (uuid_generate_v4(), :name, :category, :costs, :user_id, :date, now(), now()) RETURNING id",
+		map[string]interface{}{
+			"name":     newExpense.Name,
+			"category": newExpense.Category,
+			"costs":    newExpense.Costs,
+			"user_id":  userID.(string),
+			"date":     newExpense.Date})
 
 	/* if there is a database error */
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(500)
+		return
+	}
+	/* read back generated expense ID */
+	var expenseID string
+	if rows.Next() {
+		rows.Scan(&expenseID)
+		log.Println("This is the expense ID: ", expenseID)
+	}
+	err = insertTagsOfExpense(c, &newExpense.TagIDs, expenseID)
+	/* if tags could not be inserted */
+	if err != nil {
 		return
 	}
 
@@ -103,13 +126,21 @@ func listExpenses(c *gin.Context) {
 }
 
 func listSingleExpense(c *gin.Context) {
-	expense, expenseID := getSingleExpenseFromDB(c)
+	expenseOutput := ExpenseOutput{}
+	var err error
+	var expenseID string
+	expenseOutput.Expense, expenseID = getSingleExpenseFromDB(c)
 
 	if expenseID == "" {
 		return
 	}
 
-	c.JSON(200, expense)
+	expenseOutput.Tags, err = getTagsOfExpense(c, expenseID)
+	if err != nil {
+		return
+	}
+
+	c.JSON(200, expenseOutput)
 }
 
 func updateExpense(c *gin.Context) {
