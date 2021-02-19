@@ -18,6 +18,7 @@ func main() {
 	db.MustExec(expenseTable)
 	db.MustExec(userTable)
 	db.MustExec(tagTable)
+	db.MustExec(expenseTagTable)
 
 	tx := db.MustBegin()
 	tx.Commit()
