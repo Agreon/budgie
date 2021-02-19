@@ -2,11 +2,35 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
+
+var tagTable = `
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS tag (
+	id uuid UNIQUE,
+	name text,
+	user_id uuid,
+	created_at timestamp with time zone,
+	updated_at timestamp with time zone
+)`
+
+type Tag struct {
+	ID        string    `db:"id" json:"id"`
+	Name      string    `db:"name" json:"name"`
+	UserID    string    `db:"user_id" json:"user_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type TagInput struct {
+	Name string `json:"name" binding:"required"`
+}
 
 func insertTag(c *gin.Context) {
 	var newTag TagInput
@@ -62,19 +86,11 @@ func listTags(c *gin.Context) {
 }
 
 func updateTag(c *gin.Context) {
-	tagID := c.Param("id")
-
-	/* check if input is a UUID */
-	_, err := uuid.Parse(tagID)
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(400)
-		return
-	}
+	tagID := c.MustGet("entityID")
 
 	db := GetDB()
 	tag := Tag{}
-	err = db.Get(&tag, "SELECT * FROM tag WHERE id=$1", tagID)
+	err := db.Get(&tag, "SELECT * FROM tag WHERE id=$1", tagID)
 
 	/* check if tag exists */
 	if err != nil {
