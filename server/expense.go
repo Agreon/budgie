@@ -2,13 +2,64 @@ package main
 
 import (
 	"log"
-	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
-	"golang.org/x/crypto/bcrypt"
 )
+
+var expenseTable = `
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS expense (
+	id uuid UNIQUE,
+	name text,
+	category text,
+	costs numeric,
+	user_id uuid,
+	date timestamp with time zone,
+	created_at timestamp with time zone,
+	updated_at timestamp with time zone
+)`
+
+type ExpenseCategory string
+
+const (
+	Food            ExpenseCategory = "Food"
+	Clothes                         = "Clothes"
+	DinnerOutside                   = "DinnerOutside"
+	Rent                            = "Rent"
+	Electricity                     = "Electricity"
+	GEZ                             = "GEZ"
+	Insurance                       = "Insurance"
+	Cellphone                       = "Cellphone"
+	PublicTransport                 = "PublicTransport"
+	Internet                        = "Internet"
+	HygieneMedicine                 = "HygieneMedicine"
+	LeisureTime                     = "LeisureTime"
+	Education                       = "Education"
+	Travel                          = "Travel"
+	Other                           = "Other"
+)
+
+type Expense struct {
+	ID        string          `db:"id" json:"id"`
+	Name      string          `db:"name" json:"name"`
+	Category  ExpenseCategory `db:"category" json:"category"`
+	Costs     string          `db:"costs" json:"costs"`
+	UserID    string          `db:"user_id" json:"user_id"`
+	Date      time.Time       `db:"date" json:"date"`
+	CreatedAt time.Time       `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time       `db:"updated_at" json:"updated_at"`
+}
+
+type ExpenseInput struct {
+	Name     string          `json:"name"`
+	Category ExpenseCategory `json:"category" binding:"required"`
+	Costs    string          `json:"costs" binding:"required"`
+	Date     string          `json:"date" binding:"required"`
+}
 
 func insertExpense(c *gin.Context) {
 	var newExpense ExpenseInput
@@ -149,71 +200,4 @@ func getSingleExpenseFromDB(c *gin.Context) (Expense, string) {
 	}
 
 	return expense, expenseID
-}
-
-func addUser(c *gin.Context) {
-	var newUserData LoginData
-	err := c.BindJSON(&newUserData)
-	if err != nil {
-		return
-	}
-
-	pwHash, err := bcrypt.GenerateFromPassword([]byte(newUserData.Password), 10)
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
-		return
-	}
-
-	db := GetDB()
-	_, err = db.Exec("INSERT INTO users VALUES (uuid_generate_v4(), $1, $2, now(), now())", strings.ToLower(newUserData.Username), pwHash)
-
-	/* if user already exists */
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(409)
-		return
-	}
-
-	/* read user data from data base */
-	userInDatabase := User{}
-	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", strings.ToLower(newUserData.Username))
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
-		return
-	}
-
-	/* get token and return it */
-	token := getToken(userInDatabase.ID)
-	c.JSON(200, gin.H{
-		"token": token,
-	})
-}
-
-func login(c *gin.Context) {
-	var loginData LoginData
-	err := c.BindJSON(&loginData)
-	if err != nil {
-		return
-	}
-
-	db := GetDB()
-	userInDatabase := User{}
-	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", strings.ToLower(loginData.Username))
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(401)
-		return
-	}
-
-	if bcrypt.CompareHashAndPassword([]byte(userInDatabase.Password), []byte(loginData.Password)) == nil {
-		/* get token and return it */
-		token := getToken(userInDatabase.ID)
-		c.JSON(200, gin.H{
-			"token": token,
-		})
-	} else {
-		c.AbortWithStatus(401)
-	}
 }
