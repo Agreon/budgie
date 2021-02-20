@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback, useState,
 } from 'react';
-import { View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
   Button,
@@ -16,7 +16,7 @@ import {
 import dayjs from 'dayjs';
 import { LoadingIndicator } from './LoadingIndicator';
 import { Expense } from '../util/types';
-import { TagSelection } from './TagSelection';
+import { Tag, TagSelection } from './TagSelection';
 
 const CalendarIcon = (props: IconProps) => (
   <Icon {...props} name="calendar" />
@@ -78,7 +78,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
     try {
       await onSubmit({
         category: categories[selectedIndex.row],
-        costs,
+        costs: costs.replace(/,/g, '.'),
         name,
         date,
       });
@@ -95,7 +95,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         onChangeText={(text) => setCosts(text)}
         label="Cost"
         autoFocus={!expense}
-        keyboardType="decimal-pad"
+        keyboardType="number-pad"
       />
       <Select
         style={tailwind('mt-4')}
@@ -103,6 +103,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         selectedIndex={selectedIndex}
         value={categories[selectedIndex.row]}
         onSelect={(index) => setSelectedIndex(index as IndexPath)}
+        onFocus={() => Keyboard.dismiss()}
       >
         {
           categories.map((type) => (
@@ -114,6 +115,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         style={tailwind('mt-4')}
         label="Date"
         date={date}
+        onFocus={() => Keyboard.dismiss()}
         onSelect={(nextDate) => setDate(nextDate)}
         accessoryRight={CalendarIcon}
       />
@@ -121,8 +123,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         style={tailwind('mt-4')}
         value={name}
         onChangeText={(text) => setName(text)}
-        label="Name"
-        caption="Optional"
+        label="Name (optional)"
         onSubmitEditing={onSave}
       />
       <TagSelection

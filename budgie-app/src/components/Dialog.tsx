@@ -13,7 +13,11 @@ export const Dialog: FC<{
     onSubmit: () => void
     onClose: () => void
   }> = ({
-    visible, content, header, onSubmit, onClose,
+    visible,
+    header,
+    content,
+    onSubmit,
+    onClose,
   }) => (
     <Modal
       visible={visible}
@@ -24,8 +28,9 @@ export const Dialog: FC<{
     >
       <Card
         header={header}
+        style={tailwind('ml-5 mr-5')}
         footer={(props) => (
-          <View {...props} style={tailwind('flex-1 flex-row justify-end m-2')}>
+          <View {...props} style={tailwind('flex-1 flex-row justify-between m-2 mb-10')}>
             <Button
               size="small"
               status="basic"
