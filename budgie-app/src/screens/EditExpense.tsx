@@ -10,15 +10,14 @@ import {
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-import axios from 'axios';
 import { RootStackParamList } from '../../App';
 import { BackAction } from '../components/BackAction';
 import { Header } from '../components/Header';
 import { ExpenseForm } from '../components/ExpenseForm';
 import { Expense } from '../util/types';
-import { getToken } from '../util/token';
 import { useToast } from '../ToastProvider';
 import { Dialog } from '../components/Dialog';
+import { useApi } from '../hooks/use-request';
 
 const DeleteIcon = (props: IconProps) => (
   <Icon {...props} name="trash-outline" />
@@ -28,6 +27,7 @@ export const EditExpense: FC<{
     route: RouteProp<RootStackParamList, 'EditExpense'>
     navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
+  const api = useApi(navigation);
   const { showToast } = useToast();
 
   const [expense, setExpense] = useState<Expense | null>(null);
@@ -36,48 +36,33 @@ export const EditExpense: FC<{
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/expense/${id}`, {
-          headers: {
-            token: await getToken(),
-          },
-        });
-        setExpense(res.data);
+        const { data } = await api.get(`expense/${id}`);
+        setExpense(data);
       } catch (err) {
-        console.error(err);
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
     })();
-  }, [id]);
+  }, [id, api, showToast]);
 
   const onSave = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
-      await axios.put(`http://localhost:8080/expense/${id}`, expenseData, {
-        headers: {
-          token: await getToken(),
-        },
-      });
+      await api.put(`expense/${id}`, expenseData);
       navigation.navigate('Expenses');
     } catch (err) {
-      console.error(err);
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
-  }, [id]);
+  }, [id, api, navigation, showToast]);
 
   const onDelete = useCallback(async () => {
     // TODO: Some kind of loading state would be nice.
     setDeleteDialogVisible(false);
     try {
-      await axios.delete(`http://localhost:8080/expense/${id}`, {
-        headers: {
-          token: await getToken(),
-        },
-      });
+      await api.delete(`expense/${id}`);
       navigation.navigate('Expenses');
     } catch (err) {
-      console.error(err);
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
-  }, [id]);
+  }, [id, api, navigation, showToast]);
 
   return (
     <SafeAreaView style={tailwind('bg-white h-full w-full')}>

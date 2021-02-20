@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback, useState,
 } from 'react';
-import { View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
   Button,
@@ -60,11 +60,9 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
     new IndexPath(expense ? getIndexOfCategory(expense.category) : 0),
   );
   const [name, setName] = useState<string | undefined>(expense?.name);
-  console.log(expense);
   const [date, setDate] = useState<Date>(expense?.date ? dayjs(expense.date).toDate() : new Date());
 
   const [loading, setLoading] = useState(false);
-  console.log(costs);
 
   const onSave = useCallback(async () => {
     setLoading(true);
@@ -87,7 +85,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         value={costs}
         onChangeText={(text) => setCosts(text)}
         label="Cost"
-        autoFocus
+        autoFocus={!expense}
         keyboardType="decimal-pad"
       />
       <Select
@@ -109,6 +107,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         date={date}
         onSelect={(nextDate) => setDate(nextDate)}
         accessoryRight={CalendarIcon}
+        onPressOut={() => Keyboard.dismiss()}
       />
       <Input
         style={tailwind('mt-4')}
