@@ -1,25 +1,29 @@
 import {
   Button, Card, Modal, Text,
 } from '@ui-kitten/components';
+import { RenderProp } from '@ui-kitten/components/devsupport';
 import React, { FC } from 'react';
-import { View } from 'react-native';
+import { View, ViewProps } from 'react-native';
 import tailwind from 'tailwind-rn';
 
 export const Dialog: FC<{
     visible: boolean
-    text: string
+    content: string | React.ReactNode
+    header?: RenderProp<ViewProps>
     onSubmit: () => void
     onClose: () => void
   }> = ({
-    visible, text, onSubmit, onClose,
+    visible, content, header, onSubmit, onClose,
   }) => (
     <Modal
       visible={visible}
       backdropStyle={{
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
       }}
+      onBackdropPress={onClose}
     >
       <Card
+        header={header}
         footer={(props) => (
           <View {...props} style={tailwind('flex-1 flex-row justify-end m-2')}>
             <Button
@@ -41,7 +45,7 @@ export const Dialog: FC<{
           </View>
         )}
       >
-        <Text>{text}</Text>
+        {typeof content === 'string' ? <Text>{content}</Text> : content}
       </Card>
     </Modal>
   );
