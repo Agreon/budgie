@@ -1,7 +1,9 @@
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { Keyboard, SafeAreaView, View } from 'react-native';
+import {
+  Keyboard, ScrollView, View,
+} from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
   Icon,
@@ -80,7 +82,7 @@ export const EditExpense: FC<{
   }, [id]);
 
   return (
-    <SafeAreaView style={tailwind('bg-white h-full w-full')}>
+    <ScrollView style={tailwind('bg-white h-full w-full')}>
       <Header
         title="Edit Expense"
         accessoryLeft={() => <BackAction navigation={navigation} />}
@@ -114,6 +116,6 @@ export const EditExpense: FC<{
           </View>
         )
       }
-    </SafeAreaView>
+    </ScrollView>
   );
 };

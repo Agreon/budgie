@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback, useState,
 } from 'react';
-import { View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
   Button,
@@ -71,7 +71,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
     try {
       await onSubmit({
         category: categories[selectedIndex.row],
-        costs,
+        costs: costs.replace(/,/g, '.'),
         name,
         date,
       });
@@ -88,7 +88,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         onChangeText={(text) => setCosts(text)}
         label="Cost"
         autoFocus
-        keyboardType="decimal-pad"
+        keyboardType="number-pad"
       />
       <Select
         style={tailwind('mt-4')}
@@ -96,6 +96,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         selectedIndex={selectedIndex}
         value={categories[selectedIndex.row]}
         onSelect={(index) => setSelectedIndex(index as IndexPath)}
+        onFocus={() => Keyboard.dismiss()}
       >
         {
           categories.map((type) => (
@@ -107,6 +108,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         style={tailwind('mt-4')}
         label="Date"
         date={date}
+        onFocus={() => Keyboard.dismiss()}
         onSelect={(nextDate) => setDate(nextDate)}
         accessoryRight={CalendarIcon}
       />
@@ -114,8 +116,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         style={tailwind('mt-4')}
         value={name}
         onChangeText={(text) => setName(text)}
-        label="Name"
-        caption="Optional"
+        label="Name (Optional)"
         onSubmitEditing={onSave}
       />
       <Button
