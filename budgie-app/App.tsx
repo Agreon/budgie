@@ -11,11 +11,13 @@ import { CreateExpense } from './src/screens/CreateExpense';
 import { Login } from './src/screens/Login';
 import { EditExpense } from './src/screens/EditExpense';
 import { ToastProvider } from './src/ToastProvider';
+import { Register } from './src/screens/Register';
 
 const { Navigator, Screen } = createStackNavigator();
 
 export type RootStackParamList = {
   'Login': undefined,
+  'Register': undefined,
   'Expenses': undefined,
   'CreateExpense': undefined,
   'EditExpense': { id: string }
@@ -36,6 +38,10 @@ export default function App() {
               <Screen
                 name="Login"
                 component={Login}
+              />
+              <Screen
+                name="Register"
+                component={Register}
               />
               <Screen
                 name="Expenses"
