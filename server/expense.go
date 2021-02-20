@@ -175,6 +175,11 @@ func updateExpense(c *gin.Context) {
 		return
 	}
 
+	err = updateTagsOfExpense(c, &updateExpense.TagIDs, expenseID)
+	if err != nil {
+		return
+	}
+
 	c.JSON(200, expense)
 }
 
