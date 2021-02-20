@@ -2,7 +2,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import {
   Button, Icon, IconProps, Input,
 } from '@ui-kitten/components';
-import axios from 'axios';
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
@@ -15,39 +14,35 @@ import { Header } from '../components/Header';
 import { LoadingIndicator } from '../components/LoadingIndicator';
 import { setToken, getToken } from '../util/token';
 import { useToast } from '../ToastProvider';
+import { useApi } from '../hooks/use-request';
 
 /**
  * TODO:
- * Show splash screen until we know if a login is necessary
- *  - https://docs.expo.io/versions/latest/sdk/splash-screen/
- *
- * - global axios redirect 403 handler
+ * Splash Screen is hidden too early
  */
 export const Login: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Login'>
 }> = ({ navigation }) => {
+  const api = useApi(navigation);
+  const { showToast } = useToast();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
-  const { showToast } = useToast();
 
   const loginUser = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:8080/login', {
-        username,
-        password,
-      });
+      const res = await api.post('login', { username, password });
 
       await setToken(res.data.token);
       navigation.navigate('Expenses');
     } catch (err) {
-      console.error(err);
       showToast({ message: 'Login failed', status: 'danger' });
     }
     setLoading(false);
-  }, [username, password, navigation]);
+  }, [username, password, navigation, showToast]);
 
   useEffect(() => {
     (async () => {

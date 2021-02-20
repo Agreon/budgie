@@ -8,6 +8,14 @@ export const setToken = async (token: string) => {
   return localStorage.setItem('access_token', token);
 };
 
+export const deleteToken = async () => {
+  if (await SecureStore.isAvailableAsync()) {
+    return SecureStore.deleteItemAsync('access_token');
+  }
+
+  return localStorage.removeItem('access_token');
+};
+
 export const getToken = async () => {
   if (await SecureStore.isAvailableAsync()) {
     return SecureStore.getItemAsync('access_token');
