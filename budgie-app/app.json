@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "budgie-app",
-    "slug": "budgie-app",
+    "name": "budgie",
+    "slug": "budgie",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "splash": {
-      "image": "./assets/budgie-splash.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
