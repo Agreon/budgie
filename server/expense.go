@@ -157,6 +157,13 @@ func updateExpense(c *gin.Context) {
 		return
 	}
 
+	/* updating tags here will prevent data being written if there
+	was any error in tags or expenses */
+	err = updateTagsOfExpense(c, &updateExpense.TagIDs, expenseID)
+	if err != nil {
+		return
+	}
+
 	db := GetDB()
 	_, err = db.Exec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
 
@@ -172,11 +179,6 @@ func updateExpense(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(500)
-		return
-	}
-
-	err = updateTagsOfExpense(c, &updateExpense.TagIDs, expenseID)
-	if err != nil {
 		return
 	}
 
@@ -197,6 +199,12 @@ func deleteExpense(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(500)
+		return
+	}
+
+	err = deleteTagsOfExpense(c, expenseID)
+	/* if there was any execution error */
+	if err != nil {
 		return
 	}
 

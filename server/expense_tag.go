@@ -159,3 +159,16 @@ func updateTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) err
 
 	return err
 }
+
+func deleteTagsOfExpense(c *gin.Context, expenseID string) error {
+	db := GetDB()
+	_, err := db.Exec("DELETE FROM expense_tag WHERE expense_id=$1", expenseID)
+
+	/* if there is a database error */
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(500)
+	}
+
+	return err
+}
