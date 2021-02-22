@@ -11,6 +11,7 @@ import { CreateExpense } from './src/screens/CreateExpense';
 import { Login } from './src/screens/Login';
 import { EditExpense } from './src/screens/EditExpense';
 import { ToastProvider } from './src/ToastProvider';
+import { EntityProvider } from './src/EntityProvider';
 
 const { Navigator, Screen } = createStackNavigator();
 
@@ -29,28 +30,30 @@ export default function App() {
       <IconRegistry icons={EvaIconsPack} />
       <ApplicationProvider {...eva} theme={eva.light}>
         <ToastProvider>
-          <NavigationContainer>
-            <Navigator
-              headerMode="none"
-            >
-              <Screen
-                name="Login"
-                component={Login}
-              />
-              <Screen
-                name="Expenses"
-                component={Expenses}
-              />
-              <Screen
-                name="CreateExpense"
-                component={CreateExpense}
-              />
-              <Screen
-                name="EditExpense"
-                component={EditExpense}
-              />
-            </Navigator>
-          </NavigationContainer>
+          <EntityProvider>
+            <NavigationContainer>
+              <Navigator
+                headerMode="none"
+              >
+                <Screen
+                  name="Login"
+                  component={Login}
+                />
+                <Screen
+                  name="Expenses"
+                  component={Expenses}
+                />
+                <Screen
+                  name="CreateExpense"
+                  component={CreateExpense}
+                />
+                <Screen
+                  name="EditExpense"
+                  component={EditExpense}
+                />
+              </Navigator>
+            </NavigationContainer>
+          </EntityProvider>
         </ToastProvider>
       </ApplicationProvider>
     </>

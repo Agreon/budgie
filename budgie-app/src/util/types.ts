@@ -5,4 +5,4 @@ export interface Expense {
     costs: string;
     name?: string;
     date: Date;
-  }
+}

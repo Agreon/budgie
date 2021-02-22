@@ -1,16 +1,11 @@
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { useMemo } from 'react';
-import { RootStackParamList } from '../../App';
 import { useToast } from '../ToastProvider';
 import { deleteToken, getToken } from '../util/token';
 
-export const useApi = (
-  navigation: StackNavigationProp<RootStackParamList, keyof RootStackParamList>,
-) => {
-  const { showToast } = useToast();
-
-  const api = useMemo(() => {
+export const useRequest = () => {
+  const request = useMemo(() => {
     const client = axios.create({
       baseURL: 'http://localhost:8080',
     });
@@ -29,7 +24,19 @@ export const useApi = (
       };
     });
 
-    client.interceptors.response.use(undefined, async (error) => {
+    return client;
+  }, []);
+
+  return request;
+};
+
+export const useApi = () => {
+  const request = useRequest();
+  const navigation = useNavigation();
+  const { showToast } = useToast();
+
+  const api = useMemo(() => {
+    request.interceptors.response.use(undefined, async (error) => {
       if (error.response?.status === 401) {
         await deleteToken();
         showToast({ status: 'danger', message: 'Please log in again' });
@@ -37,13 +44,13 @@ export const useApi = (
         return navigation.navigate('Login');
       }
 
-      console.log('Err', error);
+      console.log('Err', JSON.stringify(error));
 
       throw error;
     });
 
-    return client;
-  }, [showToast]);
+    return request;
+  }, [request, navigation, showToast]);
 
   return api;
 };

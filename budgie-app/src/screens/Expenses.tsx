@@ -17,7 +17,8 @@ import { RootStackParamList } from '../../App';
 import { Header } from '../components/Header';
 import { Expense } from '../util/types';
 import { useToast } from '../ToastProvider';
-import { useApi } from '../hooks/use-request';
+import { useExpenses } from '../EntityProvider';
+import { deleteToken } from '../util/token';
 
 export const ExpenseItem: FC<{
   item: Expense;
@@ -47,25 +48,30 @@ export const ExpenseItem: FC<{
 export const Expenses: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
-  const api = useApi(navigation);
   const isFocused = useIsFocused();
   const { showToast } = useToast();
 
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const { expenses, refetch } = useExpenses();
 
   const [loading, setLoading] = useState(false);
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('expense');
-
-      setExpenses(data);
+      await refetch();
     } catch (err) {
+      // TODO: Move into handler
+      if (err.response?.status === 401) {
+        await deleteToken();
+        showToast({ status: 'danger', message: 'Please log in again' });
+
+        navigation.navigate('Login');
+        return;
+      }
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
 
     setLoading(false);
-  }, [setExpenses, showToast]);
+  }, [refetch, navigation, showToast]);
 
   useEffect(() => {
     (async () => {
@@ -83,6 +89,7 @@ export const Expenses: FC<{
         style={tailwind('w-full')}
         stickyHeaderIndices={[0]}
         ListHeaderComponent={() => <Header title="Expenses" />}
+        ListEmptyComponent={() => <Text>There are no expenses yet</Text>}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={fetchData} />
         }
@@ -94,6 +101,8 @@ export const Expenses: FC<{
         )}
         data={expenses}
         keyExtractor={item => item.id}
+        onEndReachedThreshold={0.5}
+        onEndReached={() => console.log('END: TODO Load more expenses')}
       />
       <Button
         style={tailwind('absolute right-6 bottom-5')}

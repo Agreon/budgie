@@ -29,7 +29,7 @@ export const EditExpense: FC<{
     route: RouteProp<RootStackParamList, 'EditExpense'>
     navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
-  const api = useApi(navigation);
+  const api = useApi();
   const { showToast } = useToast();
 
   const [expense, setExpense] = useState<Expense | null>(null);

@@ -8,22 +8,31 @@ import { BackAction } from '../components/BackAction';
 import { ExpenseForm } from '../components/ExpenseForm';
 import { Expense } from '../util/types';
 import { useToast } from '../ToastProvider';
-import { useApi } from '../hooks/use-request';
+import { useExpenses } from '../EntityProvider';
+import { deleteToken } from '../util/token';
 
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'CreateExpense'>
 }> = ({ navigation }) => {
-  const api = useApi(navigation);
+  const { createExpense: create } = useExpenses();
+
   const { showToast } = useToast();
 
   const createExpense = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
-      await api.post('expense', expenseData);
+      await create(expenseData);
       navigation.goBack();
     } catch (err) {
+      if (err.response?.status === 401) {
+        await deleteToken();
+        showToast({ status: 'danger', message: 'Please log in again' });
+
+        navigation.navigate('Login');
+        return;
+      }
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
-  }, [api, navigation, showToast]);
+  }, [create, navigation, showToast]);
 
   return (
     <SafeAreaView style={tailwind('bg-white h-full w-full')}>
