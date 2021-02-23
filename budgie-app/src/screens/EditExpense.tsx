@@ -20,6 +20,7 @@ import { Expense } from '../util/types';
 import { useToast } from '../ToastProvider';
 import { Dialog } from '../components/Dialog';
 import { useApi } from '../hooks/use-request';
+import { Tag } from '../components/TagSelection';
 
 const DeleteIcon = (props: IconProps) => (
   <Icon {...props} name="trash-outline" />
@@ -29,22 +30,25 @@ export const EditExpense: FC<{
     route: RouteProp<RootStackParamList, 'EditExpense'>
     navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
-  const api = useApi(navigation);
+  const api = useApi();
   const { showToast } = useToast();
 
   const [expense, setExpense] = useState<Expense | null>(null);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
         const { data } = await api.get(`expense/${id}`);
+        const { data: tags } = await api.get('tag');
         setExpense(data);
+        setAvailableTags(tags);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
     })();
-  }, [id, api, showToast]);
+  }, [id]);
 
   const onSave = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
@@ -93,6 +97,7 @@ export const EditExpense: FC<{
           <View style={tailwind('flex pl-5 pr-5')}>
             <ExpenseForm
               expense={expense}
+              availableTags={availableTags}
               onSubmit={onSave}
             />
             <Dialog

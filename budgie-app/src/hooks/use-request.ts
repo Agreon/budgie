@@ -1,13 +1,11 @@
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { useMemo } from 'react';
-import { RootStackParamList } from '../../App';
 import { useToast } from '../ToastProvider';
 import { deleteToken, getToken } from '../util/token';
 
-export const useApi = (
-  navigation: StackNavigationProp<RootStackParamList, keyof RootStackParamList>,
-) => {
+export const useApi = () => {
+  const navigation = useNavigation();
   const { showToast } = useToast();
 
   const api = useMemo(() => {

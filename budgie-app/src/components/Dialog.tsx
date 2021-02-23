@@ -1,20 +1,17 @@
 import {
-  Button, Card, Modal, Text,
+  Button, Layout, Modal, Text,
 } from '@ui-kitten/components';
-import { RenderProp } from '@ui-kitten/components/devsupport';
 import React, { FC } from 'react';
-import { View, ViewProps } from 'react-native';
+import { View } from 'react-native';
 import tailwind from 'tailwind-rn';
 
 export const Dialog: FC<{
     visible: boolean
     content: string | React.ReactNode
-    header?: RenderProp<ViewProps>
     onSubmit: () => void
     onClose: () => void
   }> = ({
     visible,
-    header,
     content,
     onSubmit,
     onClose,
@@ -25,32 +22,26 @@ export const Dialog: FC<{
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
       }}
       onBackdropPress={onClose}
+      style={tailwind('w-full p-10')}
     >
-      <Card
-        header={header}
-        style={tailwind('ml-5 mr-5')}
-        footer={(props) => (
-          <View {...props} style={tailwind('flex-1 flex-row justify-between m-2 mb-10')}>
-            <Button
-              size="small"
-              status="basic"
-              onPress={onClose}
-              style={{ marginHorizontal: 2 }}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="small"
-              status="danger"
-              onPress={onSubmit}
-              style={{ marginHorizontal: 2 }}
-            >
-              Delete
-            </Button>
-          </View>
-        )}
-      >
+      <Layout style={tailwind('flex-1 p-5 pb-3')}>
         {typeof content === 'string' ? <Text>{content}</Text> : content}
-      </Card>
+        <View style={tailwind('flex-1 flex-row justify-between mt-3')}>
+          <Button
+            size="small"
+            status="basic"
+            onPress={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="small"
+            status="danger"
+            onPress={onSubmit}
+          >
+            Delete
+          </Button>
+        </View>
+      </Layout>
     </Modal>
   );

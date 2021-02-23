@@ -27,6 +27,8 @@ module.exports = {
     'no-use-before-define': 'off',
     'no-console': 'off',
     'arrow-parens': 'off',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/no-use-before-define': ['error'],
     'import/extensions': [
       'error',

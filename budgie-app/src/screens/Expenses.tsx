@@ -47,7 +47,7 @@ export const ExpenseItem: FC<{
 export const Expenses: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
-  const api = useApi(navigation);
+  const api = useApi();
   const isFocused = useIsFocused();
   const { showToast } = useToast();
 
@@ -69,8 +69,9 @@ export const Expenses: FC<{
 
   useEffect(() => {
     (async () => {
-      await SplashScreen.hideAsync();
+      if (!isFocused) return;
 
+      await SplashScreen.hideAsync();
       await fetchData();
     })();
   }, [isFocused]);

@@ -52,10 +52,11 @@ const getIndexOfCategory = (category: string) => {
 
 interface IProps {
   expense?: Expense;
+  availableTags: Tag[];
   onSubmit: (expense: Omit<Expense, 'id'>) => Promise<void>;
 }
 
-export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
+export const ExpenseForm: FC<IProps> = ({ expense, availableTags, onSubmit }) => {
   const [costs, setCosts] = useState(expense?.costs || '');
   const [selectedIndex, setSelectedIndex] = useState(
     new IndexPath(expense ? getIndexOfCategory(expense.category) : 0),
@@ -63,12 +64,6 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
   const [name, setName] = useState<string | undefined>(expense?.name);
   const [date, setDate] = useState<Date>(expense?.date ? dayjs(expense.date).toDate() : new Date());
 
-  // TODO: Get this from outside components
-  const availableTags = [
-    { name: 'Rewe', id: '1' },
-    { name: 'DB', id: '2' },
-    { name: 'Test', id: '3' },
-  ];
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -81,11 +76,12 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         costs: costs.replace(/,/g, '.'),
         name,
         date,
+        tags: selectedTags,
       });
     } finally {
       setLoading(false);
     }
-  }, [loading, expense, selectedIndex, costs, name, date]);
+  }, [loading, expense, selectedIndex, costs, name, date, selectedTags]);
 
   return (
     <View>
@@ -129,13 +125,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
       <TagSelection
         available={availableTags}
         selected={selectedTags}
-        onToggle={tagId => (
-          selectedTags.find(s => s.id === tagId)
-            ? setSelectedTags(prevSelected => prevSelected.filter(s => s.id !== tagId))
-            : setSelectedTags(
-              prevSelected => [...prevSelected, availableTags.find(s => s.id === tagId)!],
-            )
-        )}
+        onSelectionChanged={selected => setSelectedTags(selected)}
       />
       <Button
         style={tailwind('mt-8')}

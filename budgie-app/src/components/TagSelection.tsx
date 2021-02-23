@@ -6,9 +6,13 @@ import {
   Icon,
   IconProps,
   Input,
+  Layout,
+  Modal,
   Text,
 } from '@ui-kitten/components';
-import { Dialog } from './Dialog';
+import { useApi } from '../hooks/use-request';
+import { LoadingIndicator } from './LoadingIndicator';
+import { useToast } from '../ToastProvider';
 
 const PlusIcon = (props: IconProps) => (
   <Icon {...props} name="plus-outline" />
@@ -43,43 +47,74 @@ const CreateTagDialog: FC<{
 }> = ({
   visible, onSubmit, onClose,
 }) => {
+  const api = useApi();
+  const { showToast } = useToast();
+
   const [name, setName] = useState('');
-  const onCreate = useCallback(() => {
-    console.log('TODO: API call');
-    onSubmit();
-  }, [onSubmit]);
+  const [loading, setLoading] = useState(false);
+
+  const onCreate = useCallback(async () => {
+    try {
+      await api.post('/tag', { name });
+      onSubmit();
+    } catch (err) {
+      showToast({ status: 'danger', message: err.message || 'Unknown error' });
+    }
+    setLoading(false);
+  }, [api, onSubmit, name, showToast]);
 
   return (
-    <Dialog
+    <Modal
       visible={visible}
-      onSubmit={onCreate}
-      onClose={onClose}
-      header={(props) => (
-        <View {...props}>
+      backdropStyle={{
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      }}
+      onBackdropPress={onClose}
+      style={tailwind('w-full p-10')}
+    >
+      <Layout style={tailwind('flex-1 p-5 pb-3')}>
+        <View style={tailwind('mb-2')}>
           <Text category="s1">Create Tag</Text>
         </View>
-      )}
-      content={(
         <Input
           style={tailwind('mt-1')}
           value={name}
           onChangeText={(text) => setName(text)}
           label="Name"
           autoFocus
+          onSubmitEditing={onCreate}
         />
-      )}
-    />
+        <View style={tailwind('flex-1 flex-row justify-between mt-2')}>
+          <Button
+            size="small"
+            status="basic"
+            onPress={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="small"
+            onPress={onCreate}
+            disabled={loading}
+            accessoryLeft={loading ? LoadingIndicator : undefined}
+          >
+            Create
+          </Button>
+        </View>
+      </Layout>
+    </Modal>
   );
 };
 
 /**
- * TODO: Rather provide a onSelectionChanged instead of onToggle
+ * TODO:
+ *  - Directly select tag after it was created
  */
 export const TagSelection: FC<{
   available: Tag[],
   selected: Tag[],
-  onToggle: (tagId: string) => void
-}> = ({ available, selected, onToggle }) => {
+  onSelectionChanged: (selected: Tag[]) => void
+}> = ({ available, selected, onSelectionChanged }) => {
   const [createTagDialogVisible, setCreateTagDialogVisible] = useState(false);
 
   return (
@@ -94,7 +129,11 @@ export const TagSelection: FC<{
             key={tag.id}
             name={tag.name}
             selected={selected.find(s => s.id === tag.id) !== undefined}
-            onPress={() => onToggle(tag.id)}
+            onPress={() => (
+              selected.find(s => s.id === tag.id)
+                ? onSelectionChanged(selected.filter(s => s.id !== tag.id))
+                : onSelectionChanged([...selected, available.find(s => s.id === tag.id)!])
+            )}
           />
         ))}
       </View>
