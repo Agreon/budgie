@@ -73,7 +73,6 @@ func insertExpense(c *gin.Context) {
 		return
 	}
 
-	/* get userID from middleware */
 	userID := c.MustGet("userID")
 
 	db := GetDB()
@@ -95,7 +94,6 @@ func insertExpense(c *gin.Context) {
 	var expenseID string
 	if rows.Next() {
 		rows.Scan(&expenseID)
-		log.Println("This is the expense ID: ", expenseID)
 	}
 	err = insertTagsOfExpense(c, &newExpense.TagIDs, expenseID)
 	/* if tags could not be inserted */
@@ -111,7 +109,6 @@ func listExpenses(c *gin.Context) {
 	db := GetDB()
 	expenses := []Expense{}
 
-	/* get userID from middleware */
 	userID := c.MustGet("userID")
 
 	err := db.Select(&expenses, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
@@ -225,7 +222,6 @@ func getSingleExpenseFromDB(c *gin.Context) (Expense, string) {
 		return expense, ""
 	}
 
-	/* get userID from middleware */
 	userID := c.MustGet("userID")
 
 	/* check if expense belongs to requesting user */

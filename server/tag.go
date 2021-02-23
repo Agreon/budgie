@@ -38,7 +38,6 @@ func insertTag(c *gin.Context) {
 		return
 	}
 
-	/* get userID from middleware */
 	userID := c.MustGet("userID")
 
 	db := GetDB()
@@ -70,7 +69,6 @@ func listTags(c *gin.Context) {
 	db := GetDB()
 	tags := []Tag{}
 
-	/* get userID from middleware */
 	userID := c.MustGet("userID")
 
 	err := db.Select(&tags, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC", userID)
@@ -98,7 +96,6 @@ func updateTag(c *gin.Context) {
 		return
 	}
 
-	/* get userID from middleware */
 	userID := c.MustGet("userID")
 
 	/* check if tag belongs to requesting user */
