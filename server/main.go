@@ -33,26 +33,26 @@ func main() {
 
 	useAuthentication.Use(authentication())
 	{
-		useAuthentication.POST("/expense", insertExpense)
+		useAuthentication.POST("/expense", errorHandler(), insertExpense)
 
-		useAuthentication.GET("/expense", listExpenses)
+		useAuthentication.GET("/expense", errorHandler(), listExpenses)
 
-		useAuthentication.GET("/expense/:id", validateUUID(), listSingleExpense)
+		useAuthentication.GET("/expense/:id", validateUUID(), errorHandler(), listSingleExpense)
 
-		useAuthentication.PUT("/expense/:id", validateUUID(), updateExpense)
+		useAuthentication.PUT("/expense/:id", validateUUID(), errorHandler(), updateExpense)
 
-		useAuthentication.DELETE("/expense/:id", validateUUID(), deleteExpense)
+		useAuthentication.DELETE("/expense/:id", validateUUID(), errorHandler(), deleteExpense)
 
-		useAuthentication.POST("/tag", insertTag)
+		useAuthentication.POST("/tag", errorHandler(), insertTag)
 
-		useAuthentication.GET("/tag", listTags)
+		useAuthentication.GET("/tag", errorHandler(), listTags)
 
-		useAuthentication.PUT("/tag/:id", validateUUID(), updateTag)
+		useAuthentication.PUT("/tag/:id", validateUUID(), errorHandler(), updateTag)
 	}
 
-	r.POST("/user", addUser)
+	r.POST("/user", errorHandler(), addUser)
 
-	r.POST("/login", login)
+	r.POST("/login", errorHandler(), login)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

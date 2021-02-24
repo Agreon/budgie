@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,11 +29,10 @@ type ExpenseTagOutput struct {
 	TagName string `db:"name" json:"tag_name"`
 }
 
-func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) error {
-	err := checkIfTagsExist(c, tagIDs)
+func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (error, int) {
+	err, errCode := checkIfTagsExist(c, tagIDs)
 	if err != nil {
-		// TODO add error handler
-		return err
+		return err, errCode
 	}
 
 	db := GetDB()
@@ -44,16 +42,14 @@ func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) err
 
 		/* if there is a database error */
 		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(500)
-			return err
+			return err, 500
 		}
 	}
 
-	return err
+	return nil, 200
 }
 
-func checkIfTagsExist(c *gin.Context, tagIDs *[]string) error {
+func checkIfTagsExist(c *gin.Context, tagIDs *[]string) (error, int) {
 	tags := []Tag{}
 	userID := c.MustGet("userID")
 	var err error
@@ -61,9 +57,7 @@ func checkIfTagsExist(c *gin.Context, tagIDs *[]string) error {
 	for _, tagID := range *tagIDs {
 		/* check if tag ID is a uuid */
 		if _, err = uuid.Parse(tagID); err != nil {
-			log.Println(err)
-			c.AbortWithStatus(400)
-			return err
+			return err, 400
 		}
 	}
 
@@ -71,53 +65,45 @@ func checkIfTagsExist(c *gin.Context, tagIDs *[]string) error {
 
 	query, args, err := sqlx.In("SELECT * FROM tag WHERE user_id=(?) and id IN (?) ", userID, *tagIDs)
 	if err != nil {
-		//log.Println(err)
-		//c.AbortWithStatus(500)
-		return err
+		return err, 500
 	}
 
 	query = db.Rebind(query)
 
 	err = db.Select(&tags, query, args...)
 	if err != nil {
-		//log.Println(err)
-		return err
+		return err, 500
 	}
 
 	if len(tags) != len(*tagIDs) {
-		//log.Println(errors.New("Tag does not exist or does not belong to this user"))
-		//c.AbortWithStatus(400)
-		return errors.New("Tag does not exist or does not belong to this user")
+		return errors.New("Tag does not exist or does not belong to this user"), 400
 	}
 
-	return nil
+	return nil, 200
 }
 
-func getTagsOfExpense(c *gin.Context, expenseID string) ([]ExpenseTagOutput, error) {
+func getTagsOfExpense(c *gin.Context, expenseID string) ([]ExpenseTagOutput, error, int) {
 	tags := []ExpenseTagOutput{}
 
 	db := GetDB()
 	err := db.Select(&tags, "SELECT id, name FROM tag LEFT JOIN expense_tag ON expense_tag.tag_id = tag.id WHERE expense_tag.expense_id=$1", expenseID)
 
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
-		return tags, err
+		return tags, err, 500
 	}
 
-	return tags, err
+	return tags, err, 200
 }
 
-func updateTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) error {
-	err := checkIfTagsExist(c, tagIDs)
+func updateTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (error, int) {
+	err, errCode := checkIfTagsExist(c, tagIDs)
 	if err != nil {
-		// TODO add error handler
-		return err
+		return err, errCode
 	}
 
-	err = deleteTagsOfExpense(c, expenseID)
+	err, errCode = deleteTagsOfExpense(c, expenseID)
 	if err != nil {
-		return err // TODO error handling
+		return err, errCode
 	}
 
 	db := GetDB()
@@ -127,24 +113,21 @@ func updateTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) err
 
 		/* if there is a database error */
 		if err != nil {
-			log.Println(err)
-			c.AbortWithStatus(500)
-			return err
+			return err, 500
 		}
 	}
 
-	return err
+	return err, 200
 }
 
-func deleteTagsOfExpense(c *gin.Context, expenseID string) error {
+func deleteTagsOfExpense(c *gin.Context, expenseID string) (error, int) {
 	db := GetDB()
 	_, err := db.Exec("DELETE FROM expense_tag WHERE expense_id=$1", expenseID)
 
 	/* if there is a database error */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		return err, 500
 	}
 
-	return err
+	return err, 200
 }

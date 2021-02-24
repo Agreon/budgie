@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +35,7 @@ func insertTag(c *gin.Context) {
 	var newTag TagInput
 	err := c.BindJSON(&newTag)
 	if err != nil {
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
@@ -46,8 +47,7 @@ func insertTag(c *gin.Context) {
 	var tag Tag
 	err = db.Get(&tag, "SELECT * FROM tag WHERE name=$1 AND user_id=$2", newTag.Name, userID)
 	if err == nil {
-		log.Println("Tag already exists.")
-		c.AbortWithStatus(409)
+		saveErrorInfo(c, errors.New("Tag already exists."), 400)
 		return
 	}
 
@@ -56,8 +56,7 @@ func insertTag(c *gin.Context) {
 
 	/* if there is a database error */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
@@ -74,8 +73,7 @@ func listTags(c *gin.Context) {
 	err := db.Select(&tags, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC", userID)
 
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
@@ -91,8 +89,7 @@ func updateTag(c *gin.Context) {
 
 	/* check if tag exists */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(400)
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
@@ -100,7 +97,7 @@ func updateTag(c *gin.Context) {
 
 	/* check if tag belongs to requesting user */
 	if tag.UserID != userID {
-		c.AbortWithStatus(403)
+		saveErrorInfo(c, errors.New("Tag does not belong to this user!"), 403)
 		return
 	}
 
@@ -108,6 +105,7 @@ func updateTag(c *gin.Context) {
 	var updateTag TagInput
 	err = c.BindJSON(&updateTag)
 	if err != nil {
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
@@ -115,16 +113,14 @@ func updateTag(c *gin.Context) {
 
 	/* if there is a database error */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
 	err = db.Get(&tag, "SELECT * FROM tag WHERE id=$1", tagID)
 
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 

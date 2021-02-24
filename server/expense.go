@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -68,8 +68,8 @@ type ExpenseOutput struct {
 
 func insertExpense(c *gin.Context) {
 	var newExpense ExpenseInput
-	err := c.BindJSON(&newExpense)
-	if err != nil {
+	if err := c.BindJSON(&newExpense); err != nil {
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
@@ -86,8 +86,7 @@ func insertExpense(c *gin.Context) {
 
 	/* if there is a database error */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 	/* read back generated expense ID */
@@ -95,9 +94,11 @@ func insertExpense(c *gin.Context) {
 	if rows.Next() {
 		rows.Scan(&expenseID)
 	}
-	err = insertTagsOfExpense(c, &newExpense.TagIDs, expenseID)
+	var errCode int
+	err, errCode = insertTagsOfExpense(c, &newExpense.TagIDs, expenseID)
 	/* if tags could not be inserted */
 	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
@@ -114,8 +115,7 @@ func listExpenses(c *gin.Context) {
 	err := db.Select(&expenses, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
 
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
@@ -125,15 +125,18 @@ func listExpenses(c *gin.Context) {
 func listSingleExpense(c *gin.Context) {
 	expenseOutput := ExpenseOutput{}
 	var err error
+	var errCode int
 	var expenseID string
-	expenseOutput.Expense, expenseID = getSingleExpenseFromDB(c)
+	expenseOutput.Expense, expenseID, err, errCode = getSingleExpenseFromDB(c)
 
-	if expenseID == "" {
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
-	expenseOutput.Tags, err = getTagsOfExpense(c, expenseID)
+	expenseOutput.Tags, err, errCode = getTagsOfExpense(c, expenseID)
 	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
@@ -141,23 +144,26 @@ func listSingleExpense(c *gin.Context) {
 }
 
 func updateExpense(c *gin.Context) {
-	expense, expenseID := getSingleExpenseFromDB(c)
+	expense, expenseID, err, errCode := getSingleExpenseFromDB(c)
 
-	if expenseID == "" {
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
 	/* get updated data from body */
 	var updateExpense ExpenseInput
-	err := c.BindJSON(&updateExpense)
+	err = c.BindJSON(&updateExpense)
 	if err != nil {
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
 	/* updating tags here will prevent data being written if there
 	was any error in tags or expenses */
-	err = updateTagsOfExpense(c, &updateExpense.TagIDs, expenseID)
+	err, errCode = updateTagsOfExpense(c, &updateExpense.TagIDs, expenseID)
 	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
@@ -166,16 +172,14 @@ func updateExpense(c *gin.Context) {
 
 	/* if there is a database error */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
 	err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
 
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
@@ -183,32 +187,33 @@ func updateExpense(c *gin.Context) {
 }
 
 func deleteExpense(c *gin.Context) {
-	_, expenseID := getSingleExpenseFromDB(c)
+	_, expenseID, err, errCode := getSingleExpenseFromDB(c)
 
-	if expenseID == "" {
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
 	db := GetDB()
-	_, err := db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
+	_, err = db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
 
 	/* if there was any execution error */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
-	err = deleteTagsOfExpense(c, expenseID)
+	err, errCode = deleteTagsOfExpense(c, expenseID)
 	/* if there was any execution error */
 	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
 	c.Status(200)
 }
 
-func getSingleExpenseFromDB(c *gin.Context) (Expense, string) {
+func getSingleExpenseFromDB(c *gin.Context) (Expense, string, error, int) {
 	expenseID := c.MustGet("entityID")
 	expense := Expense{}
 
@@ -217,18 +222,15 @@ func getSingleExpenseFromDB(c *gin.Context) (Expense, string) {
 
 	/* check if expense exists */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(400)
-		return expense, ""
+		return expense, "", err, 400
 	}
 
 	userID := c.MustGet("userID")
 
 	/* check if expense belongs to requesting user */
 	if expense.UserID != userID {
-		c.AbortWithStatus(403)
-		return expense, ""
+		return expense, "", errors.New("Expense does not belong to this user!"), 403
 	}
 
-	return expense, expenseID.(string)
+	return expense, expenseID.(string), nil, 200
 }
