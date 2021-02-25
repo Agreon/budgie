@@ -1,11 +1,9 @@
 import { TopNavigation, Text } from '@ui-kitten/components';
 import { RenderProp } from '@ui-kitten/components/devsupport';
 import React, { FC } from 'react';
+import { StatusBar } from 'react-native';
 import tailwind from 'tailwind-rn';
 
-/**
- * TODO: Scroll-lists are looking through
- */
 export const Header: FC<{
     title: string;
     accessoryLeft?: RenderProp;
@@ -16,6 +14,9 @@ export const Header: FC<{
     alignment="center"
     accessoryLeft={accessoryLeft}
     accessoryRight={accessoryRight}
-    style={tailwind('bg-white mt-4')}
+    style={{
+      ...tailwind('bg-white'),
+      marginTop: StatusBar.currentHeight,
+    }}
   />
 );

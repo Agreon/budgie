@@ -54,6 +54,7 @@ export const Expenses: FC<{
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const [loading, setLoading] = useState(false);
+  // TODO: Extract to use-request or something similar.
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,7 +66,7 @@ export const Expenses: FC<{
     }
 
     setLoading(false);
-  }, [setExpenses, showToast]);
+  }, [api, setExpenses, showToast, setLoading]);
 
   useEffect(() => {
     (async () => {

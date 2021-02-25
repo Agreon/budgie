@@ -18,6 +18,7 @@ const PlusIcon = (props: IconProps) => (
   <Icon {...props} name="plus-outline" />
 );
 
+// TODO: Move
 export interface Tag {
   id: string;
   name: string;

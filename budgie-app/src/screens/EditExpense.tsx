@@ -23,7 +23,7 @@ import { useApi } from '../hooks/use-request';
 import { Tag } from '../components/TagSelection';
 
 const DeleteIcon = (props: IconProps) => (
-  <Icon {...props} name="trash-outline" />
+  <Icon {...props} name="trash-2-outline" />
 );
 
 export const EditExpense: FC<{
