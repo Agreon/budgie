@@ -33,7 +33,7 @@
     "tailwind-rn": "^3.0.1"
   },
   "devDependencies": {
-    "@babel/core": "~7.9.0",
+    "@babel/core": "~7.13.1",
     "@expo/webpack-config": "^0.12.60",
     "@types/react": "~16.9.35",
     "@types/react-dom": "~16.9.8",
