@@ -53,8 +53,6 @@ func insertTag(c *gin.Context) {
 
 	/* insert new tag */
 	_, err = db.Exec("INSERT INTO tag VALUES (uuid_generate_v4(), $1, $2, now(), now())", newTag.Name, userID)
-
-	/* if there is a database error */
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -71,7 +69,6 @@ func listTags(c *gin.Context) {
 	userID := c.MustGet("userID")
 
 	err := db.Select(&tags, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC", userID)
-
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -110,15 +107,12 @@ func updateTag(c *gin.Context) {
 	}
 
 	_, err = db.Exec("UPDATE tag SET name=$1, updated_at=now() WHERE id=$2", updateTag.Name, tagID)
-
-	/* if there is a database error */
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
 	err = db.Get(&tag, "SELECT * FROM tag WHERE id=$1", tagID)
-
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return

@@ -31,7 +31,6 @@ func checkTokenIsValid(tokenString string) (string, bool) {
 
 	if claims, ok := token.Claims.(*jwt.StandardClaims); ok && token.Valid {
 		fmt.Printf("%v\n", claims.Subject)
-		fmt.Println(err)
 		return claims.Subject, true
 	} else {
 		fmt.Println(err)
@@ -48,8 +47,6 @@ func authentication() gin.HandlerFunc {
 			c.AbortWithStatus(401)
 			return
 		}
-
-		fmt.Println("This is your token: ", tokenInput)
 
 		userID, tokenIsValid := checkTokenIsValid(tokenInput)
 

@@ -83,8 +83,6 @@ func insertExpense(c *gin.Context) {
 			"costs":    newExpense.Costs,
 			"user_id":  userID.(string),
 			"date":     newExpense.Date})
-
-	/* if there is a database error */
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -102,7 +100,6 @@ func insertExpense(c *gin.Context) {
 		return
 	}
 
-	/* return input */
 	c.JSON(200, newExpense)
 }
 
@@ -126,15 +123,13 @@ func listSingleExpense(c *gin.Context) {
 	expenseOutput := ExpenseOutput{}
 	var err error
 	var errCode int
-	var expenseID string
-	expenseOutput.Expense, expenseID, err, errCode = getSingleExpenseFromDB(c)
-
+	expenseOutput.Expense, err, errCode = getSingleExpenseFromDB(c)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
 	}
 
-	expenseOutput.Tags, err, errCode = getTagsOfExpense(c, expenseID)
+	expenseOutput.Tags, err, errCode = getTagsOfExpense(c, expenseOutput.Expense.ID)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
@@ -144,7 +139,7 @@ func listSingleExpense(c *gin.Context) {
 }
 
 func updateExpense(c *gin.Context) {
-	expense, expenseID, err, errCode := getSingleExpenseFromDB(c)
+	expense, err, errCode := getSingleExpenseFromDB(c)
 
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
@@ -153,31 +148,27 @@ func updateExpense(c *gin.Context) {
 
 	/* get updated data from body */
 	var updateExpense ExpenseInput
-	err = c.BindJSON(&updateExpense)
-	if err != nil {
+	if err = c.BindJSON(&updateExpense); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}
 
 	/* updating tags here will prevent data being written if there
 	was any error in tags or expenses */
-	err, errCode = updateTagsOfExpense(c, &updateExpense.TagIDs, expenseID)
+	err, errCode = updateTagsOfExpense(c, &updateExpense.TagIDs, expense.ID)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
 	}
 
 	db := GetDB()
-	_, err = db.Exec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expenseID)
-
-	/* if there is a database error */
+	_, err = db.Exec("UPDATE expense SET name=$1, category=$2, costs=$3, date=$4, updated_at=now() WHERE id=$5", updateExpense.Name, updateExpense.Category, updateExpense.Costs, updateExpense.Date, expense.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
-	err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expenseID)
-
+	err = db.Get(&expense, "SELECT * FROM expense WHERE id=$1", expense.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -187,7 +178,7 @@ func updateExpense(c *gin.Context) {
 }
 
 func deleteExpense(c *gin.Context) {
-	_, expenseID, err, errCode := getSingleExpenseFromDB(c)
+	expense, err, errCode := getSingleExpenseFromDB(c)
 
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
@@ -195,16 +186,13 @@ func deleteExpense(c *gin.Context) {
 	}
 
 	db := GetDB()
-	_, err = db.Exec("DELETE FROM expense WHERE id=$1", expenseID)
-
-	/* if there was any execution error */
+	_, err = db.Exec("DELETE FROM expense WHERE id=$1", expense.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
-	err, errCode = deleteTagsOfExpense(c, expenseID)
-	/* if there was any execution error */
+	err, errCode = deleteTagsOfExpense(c, expense.ID)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
@@ -213,7 +201,7 @@ func deleteExpense(c *gin.Context) {
 	c.Status(200)
 }
 
-func getSingleExpenseFromDB(c *gin.Context) (Expense, string, error, int) {
+func getSingleExpenseFromDB(c *gin.Context) (Expense, error, int) {
 	expenseID := c.MustGet("entityID")
 	expense := Expense{}
 
@@ -222,15 +210,15 @@ func getSingleExpenseFromDB(c *gin.Context) (Expense, string, error, int) {
 
 	/* check if expense exists */
 	if err != nil {
-		return expense, "", err, 400
+		return expense, err, 400
 	}
 
 	userID := c.MustGet("userID")
 
 	/* check if expense belongs to requesting user */
 	if expense.UserID != userID {
-		return expense, "", errors.New("Expense does not belong to this user!"), 403
+		return expense, errors.New("Expense does not belong to this user!"), 403
 	}
 
-	return expense, expenseID.(string), nil, 200
+	return expense, nil, 200
 }
