@@ -13,11 +13,11 @@ import {
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-import { RootStackParamList } from '../../App';
-import { Header } from '../components/Header';
-import { Expense } from '../util/types';
-import { useToast } from '../ToastProvider';
-import { useApi } from '../hooks/use-request';
+import { RootStackParamList } from '../../../App';
+import { Header } from '../../components/Header';
+import { Expense } from '../../util/types';
+import { useToast } from '../../ToastProvider';
+import { useApi } from '../../hooks/use-request';
 
 export const ExpenseItem: FC<{
   item: Expense;

@@ -58,12 +58,12 @@ type ExpenseInput struct {
 	Category ExpenseCategory `json:"category" binding:"required"`
 	Costs    string          `json:"costs" binding:"required"`
 	Date     string          `json:"date" binding:"required"`
-	TagIDs   []string        `json:"tag_id"`
+	TagIDs   []string        `json:"tag_ids"`
 }
 
 type ExpenseOutput struct {
-	Expense Expense
-	Tags    []ExpenseTagOutput
+	Expense Expense            `json:"expense"`
+	Tags    []ExpenseTagOutput `json:"tags"`
 }
 
 func insertExpense(c *gin.Context) {
@@ -150,7 +150,6 @@ func updateExpense(c *gin.Context) {
 	var expense Expense
 	var errCode int
 	expense, err, errCode = getSingleExpenseFromDB(c)
-
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
@@ -182,7 +181,6 @@ func updateExpense(c *gin.Context) {
 
 func deleteExpense(c *gin.Context) {
 	expense, err, errCode := getSingleExpenseFromDB(c)
-
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return

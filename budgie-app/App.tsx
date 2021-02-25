@@ -7,20 +7,15 @@ import {
   ApplicationProvider,
   BottomNavigation,
   BottomNavigationTab,
-  Drawer,
-  DrawerItem,
   IconRegistry,
-  IndexPath,
 } from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import * as SplashScreen from 'expo-splash-screen';
-import { DrawerContentComponentProps } from '@react-navigation/drawer';
-import tailwind from 'tailwind-rn';
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Expenses } from './src/screens/Expenses';
-import { CreateExpense } from './src/screens/CreateExpense';
+import { Expenses } from './src/screens/expenses';
+import { CreateExpense } from './src/screens/expenses/CreateExpense';
 import { Login } from './src/screens/Login';
-import { EditExpense } from './src/screens/EditExpense';
+import { EditExpense } from './src/screens/expenses/EditExpense';
 import { ToastProvider } from './src/ToastProvider';
 import { Tags } from './src/screens/Tags';
 
@@ -59,17 +54,6 @@ SplashScreen.preventAutoHideAsync().then(() => console.log('prevented')).catch((
 /**
  * TODO: Add icons, beautify
  */
-const DrawerContent = ({ navigation, state }: DrawerContentComponentProps) => (
-  <Drawer
-    selectedIndex={new IndexPath(state.index)}
-    onSelect={index => navigation.navigate(state.routeNames[index.row])}
-    style={tailwind('mt-10')}
-  >
-    <DrawerItem title="Expenses" />
-    <DrawerItem title="Tags" />
-  </Drawer>
-);
-
 const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => (
   <BottomNavigation
     selectedIndex={state.index}
