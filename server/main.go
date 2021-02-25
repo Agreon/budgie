@@ -19,6 +19,7 @@ func main() {
 	db.MustExec(userTable)
 	db.MustExec(tagTable)
 	db.MustExec(expenseTagTable)
+	db.MustExec(incomeTable)
 
 	tx := db.MustBegin()
 	tx.Commit()
@@ -42,6 +43,16 @@ func main() {
 		useAuthentication.PUT("/expense/:id", validateUUID(), errorHandler(), updateExpense)
 
 		useAuthentication.DELETE("/expense/:id", validateUUID(), errorHandler(), deleteExpense)
+
+		useAuthentication.POST("/income", errorHandler(), insertIncome)
+
+		useAuthentication.GET("/income", errorHandler(), listIncomes)
+
+		useAuthentication.GET("/income/:id", validateUUID(), errorHandler(), listSingleIncome)
+
+		useAuthentication.PUT("/income/:id", validateUUID(), errorHandler(), updateIncome)
+
+		useAuthentication.DELETE("/income/:id", validateUUID(), errorHandler(), deleteIncome)
 
 		useAuthentication.POST("/tag", errorHandler(), insertTag)
 
