@@ -139,17 +139,20 @@ func listSingleExpense(c *gin.Context) {
 }
 
 func updateExpense(c *gin.Context) {
-	expense, err, errCode := getSingleExpenseFromDB(c)
-
-	if err != nil {
-		saveErrorInfo(c, err, errCode)
+	/* get updated data from body */
+	var updateExpense ExpenseInput
+	var err error
+	if err = c.BindJSON(&updateExpense); err != nil {
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
-	/* get updated data from body */
-	var updateExpense ExpenseInput
-	if err = c.BindJSON(&updateExpense); err != nil {
-		saveErrorInfo(c, err, 400)
+	var expense Expense
+	var errCode int
+	expense, err, errCode = getSingleExpenseFromDB(c)
+
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 

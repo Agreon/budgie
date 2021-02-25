@@ -28,7 +28,6 @@ func errorHandler() gin.HandlerFunc {
 }
 
 func saveErrorInfo(c *gin.Context, errMessage error, errCode int) {
-	log.Println("Set this error: ", errMessage)
 	c.Set("ErrorMessage", errMessage)
 	c.Set("ErrorCode", strconv.Itoa(errCode))
 }
