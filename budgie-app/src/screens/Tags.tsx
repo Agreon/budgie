@@ -2,17 +2,41 @@ import { useIsFocused } from '@react-navigation/native';
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { RefreshControl } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  RefreshControl, SafeAreaView, View, FlatList,
+} from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
+  Button,
+  Divider,
+  Icon,
   Text,
 } from '@ui-kitten/components';
 import { Header } from '../components/Header';
-import { Tag } from '../components/TagSelection';
 import { useApi } from '../hooks/use-request';
 import { useToast } from '../ToastProvider';
+import { Tag } from '../util/types';
+
+const TagItem: FC<{
+  item: Tag;
+}> = ({ item }) => (
+  <View style={tailwind('mt-2')}>
+    <View style={tailwind('p-2 flex-row justify-between')}>
+      <View style={tailwind('ml-1')}>
+        <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.name}</Text>
+      </View>
+      <View style={tailwind('flex-row mr-1')}>
+        <Text category="h6" style={tailwind('text-red-400 font-bold text-right mr-4')}>
+          Edit
+        </Text>
+        <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
+          Delete
+        </Text>
+      </View>
+    </View>
+    <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />
+  </View>
+);
 
 export const Tags: FC = () => {
   const api = useApi();
@@ -49,17 +73,22 @@ export const Tags: FC = () => {
       style={tailwind('h-full w-full bg-white')}
     >
       <FlatList<Tag>
-        style={tailwind('w-full')}
+        style={tailwind('h-full w-full')}
         stickyHeaderIndices={[0]}
         ListHeaderComponent={() => <Header title="Tags" />}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={fetchData} />
         }
-        renderItem={({ item }) => (
-          <Text>{item.name}</Text>
-        )}
+        renderItem={TagItem}
         data={tags}
         keyExtractor={item => item.id}
+      />
+      <Button
+        style={tailwind('absolute right-6 bottom-5')}
+        status="info"
+        accessoryLeft={props => (
+          <Icon {...props} name="plus-outline" />
+        )}
       />
     </SafeAreaView>
   );

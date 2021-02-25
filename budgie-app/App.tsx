@@ -7,6 +7,7 @@ import {
   ApplicationProvider,
   BottomNavigation,
   BottomNavigationTab,
+  Icon,
   IconRegistry,
 } from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
@@ -51,16 +52,13 @@ const ExpensesStack = () => (
 
 SplashScreen.preventAutoHideAsync().then(() => console.log('prevented')).catch((error) => console.error(error));
 
-/**
- * TODO: Add icons, beautify
- */
 const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => (
   <BottomNavigation
     selectedIndex={state.index}
     onSelect={index => navigation.navigate(state.routeNames[index])}
   >
-    <BottomNavigationTab title="Expenses" />
-    <BottomNavigationTab title="Tags" />
+    <BottomNavigationTab title="EXPENSES" icon={props => <Icon {...props} name="trending-down-outline" />} />
+    <BottomNavigationTab title="TAGS" icon={props => <Icon {...props} name="pricetags-outline" />} />
   </BottomNavigation>
 );
 

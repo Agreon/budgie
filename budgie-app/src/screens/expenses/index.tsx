@@ -19,7 +19,7 @@ import { Expense } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
 
-export const ExpenseItem: FC<{
+const ExpenseItem: FC<{
   item: Expense;
   onPress: (id: string) => void
 }> = ({ item, onPress }) => (
