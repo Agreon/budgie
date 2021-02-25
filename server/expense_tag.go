@@ -25,8 +25,8 @@ type ExpenseTag struct {
 }
 
 type ExpenseTagOutput struct {
-	TagID   string `db:"id" json:"tag_id"`
-	TagName string `db:"name" json:"tag_name"`
+	TagID   string `db:"id" json:"id"`
+	TagName string `db:"name" json:"name"`
 }
 
 func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (error, int) {
@@ -47,6 +47,9 @@ func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (er
 }
 
 func checkIfTagsExist(c *gin.Context, tagIDs *[]string) (error, int) {
+	if len(*tagIDs) == 0 {
+		return nil, 200
+	}
 	tags := []Tag{}
 	userID := c.MustGet("userID")
 	var err error
