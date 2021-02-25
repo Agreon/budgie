@@ -6,6 +6,9 @@ import { RefreshControl } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tailwind from 'tailwind-rn';
+import {
+  Text,
+} from '@ui-kitten/components';
 import { Header } from '../components/Header';
 import { Tag } from '../components/TagSelection';
 import { useApi } from '../hooks/use-request';
@@ -23,7 +26,7 @@ export const Tags: FC = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('tags');
+      const { data } = await api.get('tag');
 
       setTags(data);
     } catch (err) {
@@ -53,7 +56,7 @@ export const Tags: FC = () => {
           <RefreshControl refreshing={loading} onRefresh={fetchData} />
         }
         renderItem={({ item }) => (
-          <span>{item.name}</span>
+          <Text>{item.name}</Text>
         )}
         data={tags}
         keyExtractor={item => item.id}
