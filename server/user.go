@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"errors"
 	"strings"
 	"time"
 
@@ -37,13 +37,13 @@ func addUser(c *gin.Context) {
 	var newUserData LoginData
 	err := c.BindJSON(&newUserData)
 	if err != nil {
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
 	pwHash, err := bcrypt.GenerateFromPassword([]byte(newUserData.Password), 10)
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
@@ -52,8 +52,7 @@ func addUser(c *gin.Context) {
 
 	/* if user already exists */
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(409)
+		saveErrorInfo(c, err, 409)
 		return
 	}
 
@@ -61,8 +60,7 @@ func addUser(c *gin.Context) {
 	userInDatabase := User{}
 	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", strings.ToLower(newUserData.Username))
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(500)
+		saveErrorInfo(c, err, 500)
 		return
 	}
 
@@ -77,6 +75,7 @@ func login(c *gin.Context) {
 	var loginData LoginData
 	err := c.BindJSON(&loginData)
 	if err != nil {
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
@@ -84,8 +83,7 @@ func login(c *gin.Context) {
 	userInDatabase := User{}
 	err = db.Get(&userInDatabase, "SELECT * FROM users WHERE user_name=$1", strings.ToLower(loginData.Username))
 	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(401)
+		saveErrorInfo(c, err, 401)
 		return
 	}
 
@@ -96,6 +94,6 @@ func login(c *gin.Context) {
 			"token": token,
 		})
 	} else {
-		c.AbortWithStatus(401)
+		saveErrorInfo(c, errors.New("Wrong password."), 401)
 	}
 }
