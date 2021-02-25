@@ -1,5 +1,3 @@
-import { Tag } from '../components/TagSelection';
-
 // TODO: Move to common lib? => converter https://github.com/tkrajina/typescriptify-golang-structs
 export interface Expense {
     id: string;
@@ -8,4 +6,9 @@ export interface Expense {
     name?: string;
     date: Date;
     tags?: Tag[];
+  }
+
+export interface Tag {
+    id: string;
+    name: string;
   }

@@ -6,10 +6,10 @@ import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import * as SplashScreen from 'expo-splash-screen';
-import { Expenses } from './src/screens/Expenses';
-import { CreateExpense } from './src/screens/CreateExpense';
+import { Expenses } from './src/screens/expenses';
+import { CreateExpense } from './src/screens/expenses/CreateExpense';
 import { Login } from './src/screens/Login';
-import { EditExpense } from './src/screens/EditExpense';
+import { EditExpense } from './src/screens/expenses/EditExpense';
 import { ToastProvider } from './src/ToastProvider';
 
 const { Navigator, Screen } = createStackNavigator();

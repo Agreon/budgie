@@ -5,14 +5,13 @@ import { View, SafeAreaView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Spinner } from '@ui-kitten/components';
-import { RootStackParamList } from '../../App';
-import { Header } from '../components/Header';
-import { BackAction } from '../components/BackAction';
-import { ExpenseForm } from '../components/ExpenseForm';
-import { Expense } from '../util/types';
-import { useToast } from '../ToastProvider';
-import { useApi } from '../hooks/use-request';
-import { Tag } from '../components/TagSelection';
+import { RootStackParamList } from '../../../App';
+import { Header } from '../../components/Header';
+import { BackAction } from '../../components/BackAction';
+import { ExpenseForm } from './ExpenseForm';
+import { Expense, Tag } from '../../util/types';
+import { useToast } from '../../ToastProvider';
+import { useApi } from '../../hooks/use-request';
 
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'CreateExpense'>
@@ -35,7 +34,10 @@ export const CreateExpense: FC<{
 
   const createExpense = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
-      await api.post('expense', expenseData);
+      await api.post('expense', {
+        ...expenseData,
+        tag_ids: expenseData.tags?.map(t => t.id) || [],
+      });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -58,6 +60,7 @@ export const CreateExpense: FC<{
             <ExpenseForm
               availableTags={availableTags}
               onSubmit={createExpense}
+              setAvailableTags={setAvailableTags}
             />
           </View>
         )

@@ -10,39 +10,18 @@ import {
   Modal,
   Text,
 } from '@ui-kitten/components';
-import { useApi } from '../hooks/use-request';
-import { LoadingIndicator } from './LoadingIndicator';
-import { useToast } from '../ToastProvider';
+import { LoadingIndicator } from '../../components/LoadingIndicator';
+import { useApi } from '../../hooks/use-request';
+import { useToast } from '../../ToastProvider';
+import { Tag } from '../../util/types';
 
 const PlusIcon = (props: IconProps) => (
   <Icon {...props} name="plus-outline" />
 );
 
-export interface Tag {
-  id: string;
-  name: string;
-}
-
-const TagItem: FC<{
-  name: string,
-  selected: boolean,
-  onPress: () => void
-}> = ({ name, selected, onPress }) => {
-  const selectedStyle = selected ? ' bg-blue-500' : '';
-
-  return (
-    <TouchableWithoutFeedback delayPressIn={0} onPressIn={() => onPress()}>
-      <View style={tailwind(`border rounded border-gray-300 pb-2 pt-2 pl-3 pr-3 mr-2${selectedStyle}`)}>
-        <Text style={selected ? tailwind('text-white') : {}}>{name}</Text>
-      </View>
-    </TouchableWithoutFeedback>
-
-  );
-};
-
 const CreateTagDialog: FC<{
   visible: boolean
-  onSubmit: () => void
+  onSubmit: (tag: Tag) => void
   onClose: () => void
 }> = ({
   visible, onSubmit, onClose,
@@ -55,8 +34,8 @@ const CreateTagDialog: FC<{
 
   const onCreate = useCallback(async () => {
     try {
-      await api.post('/tag', { name });
-      onSubmit();
+      const { data } = await api.post('/tag', { name });
+      onSubmit(data);
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
@@ -106,15 +85,34 @@ const CreateTagDialog: FC<{
   );
 };
 
-/**
- * TODO:
- *  - Directly select tag after it was created
- */
+const TagItem: FC<{
+  name: string,
+  selected: boolean,
+  onPress: () => void
+}> = ({ name, selected, onPress }) => {
+  const selectedStyle = selected ? ' bg-blue-500' : '';
+
+  return (
+    <TouchableWithoutFeedback delayPressIn={0} onPressIn={() => onPress()}>
+      <View style={tailwind(`border rounded border-gray-300 pb-2 pt-2 pl-3 pr-3 mr-2${selectedStyle}`)}>
+        <Text style={selected ? tailwind('text-white') : {}}>{name}</Text>
+      </View>
+    </TouchableWithoutFeedback>
+
+  );
+};
+
 export const TagSelection: FC<{
   available: Tag[],
   selected: Tag[],
   onSelectionChanged: (selected: Tag[]) => void
-}> = ({ available, selected, onSelectionChanged }) => {
+  onTagCreated: (tag: Tag) => void
+}> = ({
+  available,
+  selected,
+  onSelectionChanged,
+  onTagCreated,
+}) => {
   const [createTagDialogVisible, setCreateTagDialogVisible] = useState(false);
 
   return (
@@ -123,24 +121,33 @@ export const TagSelection: FC<{
         <Text category="c1">Tags</Text>
         <Button appearance="ghost" accessoryLeft={PlusIcon} onPress={() => setCreateTagDialogVisible(true)} />
       </View>
-      <View style={tailwind('flex-row p-2 border border-gray-300 rounded-sm')}>
-        {available.map(tag => (
-          <TagItem
-            key={tag.id}
-            name={tag.name}
-            selected={selected.find(s => s.id === tag.id) !== undefined}
-            onPress={() => (
-              selected.find(s => s.id === tag.id)
-                ? onSelectionChanged(selected.filter(s => s.id !== tag.id))
-                : onSelectionChanged([...selected, available.find(s => s.id === tag.id)!])
-            )}
-          />
-        ))}
-      </View>
+      {available.length ? (
+        <View style={tailwind('flex-row p-2 border border-gray-300 rounded-sm')}>
+          {available.map(tag => (
+            <TagItem
+              key={tag.id}
+              name={tag.name}
+              selected={selected.find(s => s.id === tag.id) !== undefined}
+              onPress={() => (
+                selected.find(s => s.id === tag.id)
+                  ? onSelectionChanged(selected.filter(s => s.id !== tag.id))
+                  : onSelectionChanged([...selected, available.find(s => s.id === tag.id)!])
+              )}
+            />
+          ))}
+        </View>
+      ) : (
+        <Text>
+          No Tags available yet. Create one ;)
+        </Text>
+      )}
       <CreateTagDialog
         visible={createTagDialogVisible}
         onClose={() => setCreateTagDialogVisible(false)}
-        onSubmit={() => setCreateTagDialogVisible(false)}
+        onSubmit={tag => {
+          onTagCreated(tag);
+          setCreateTagDialogVisible(false);
+        }}
       />
     </View>
   );
