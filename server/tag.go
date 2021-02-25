@@ -30,6 +30,10 @@ type Tag struct {
 type TagInput struct {
 	Name string `json:"name" binding:"required"`
 }
+type TagOutput struct {
+	Name string `json:"name"`
+	ID   string `json:"id"`
+}
 
 func insertTag(c *gin.Context) {
 	var newTag TagInput
@@ -52,14 +56,25 @@ func insertTag(c *gin.Context) {
 	}
 
 	/* insert new tag */
-	_, err = db.Exec("INSERT INTO tag VALUES (uuid_generate_v4(), $1, $2, now(), now())", newTag.Name, userID)
+	rows, err := db.NamedQuery("INSERT INTO tag VALUES (uuid_generate_v4(), :name, :user_id, now(), now()) RETURNING id",
+		map[string]interface{}{
+			"name":    newTag.Name,
+			"user_id": userID.(string)})
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
+	/* read back generated tag ID */
+	var tagID string
+	if rows.Next() {
+		rows.Scan(&tagID)
+	}
 
-	/* return input */
-	c.JSON(200, newTag)
+	/* return tag */
+	var tagOutput TagOutput
+	tagOutput.Name = newTag.Name
+	tagOutput.ID = tagID
+	c.JSON(200, tagOutput)
 }
 
 func listTags(c *gin.Context) {
