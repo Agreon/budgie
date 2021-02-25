@@ -15,9 +15,6 @@ import { useApi } from '../../hooks/use-request';
 import { useToast } from '../../ToastProvider';
 import { Tag } from '../../util/types';
 
-const PlusIcon = (props: IconProps) => (
-  <Icon {...props} name="plus-outline" />
-);
 
 const CreateTagDialog: FC<{
   visible: boolean
@@ -119,7 +116,7 @@ export const TagSelection: FC<{
     <View>
       <View style={tailwind('flex-row justify-between items-center mb-1')}>
         <Text category="c1">Tags</Text>
-        <Button appearance="ghost" accessoryLeft={PlusIcon} onPress={() => setCreateTagDialogVisible(true)} />
+        <Button appearance="ghost" accessoryLeft={props => (  <Icon {...props} name="plus-outline" />)} onPress={() => setCreateTagDialogVisible(true)} />
       </View>
       {available.length ? (
         <View style={tailwind('flex-row p-2 border border-gray-300 rounded-sm')}>
