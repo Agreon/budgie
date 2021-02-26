@@ -12,14 +12,14 @@ import {
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../App';
-import { BackAction } from '../components/BackAction';
-import { Header } from '../components/Header';
-import { ExpenseForm } from '../components/ExpenseForm';
-import { Expense } from '../util/types';
-import { useToast } from '../ToastProvider';
-import { Dialog } from '../components/Dialog';
-import { useApi } from '../hooks/use-request';
+import { RootStackParamList } from '../../../App';
+import { BackAction } from '../../components/BackAction';
+import { Header } from '../../components/Header';
+import { ExpenseForm } from './ExpenseForm';
+import { Expense, Tag } from '../../util/types';
+import { useToast } from '../../ToastProvider';
+import { Dialog } from '../../components/Dialog';
+import { useApi } from '../../hooks/use-request';
 
 const DeleteIcon = (props: IconProps) => (
   <Icon {...props} name="trash-outline" />
@@ -29,26 +29,37 @@ export const EditExpense: FC<{
     route: RouteProp<RootStackParamList, 'EditExpense'>
     navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
-  const api = useApi(navigation);
+  const api = useApi();
   const { showToast } = useToast();
 
   const [expense, setExpense] = useState<Expense | null>(null);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
         const { data } = await api.get(`expense/${id}`);
-        setExpense(data);
+        const { data: tags } = await api.get('tag');
+        console.log(data);
+        setExpense({
+          ...data.expense,
+          tags: data.tags,
+        });
+        setAvailableTags(tags);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
     })();
-  }, [id, api, showToast]);
+  }, [id]);
 
   const onSave = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
-      await api.put(`expense/${id}`, expenseData);
+      console.log(expenseData);
+      await api.put(`expense/${id}`, {
+        ...expenseData,
+        tag_ids: expenseData.tags?.map(t => t.id) || [],
+      });
       navigation.navigate('Expenses');
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -93,11 +104,13 @@ export const EditExpense: FC<{
           <View style={tailwind('flex pl-5 pr-5')}>
             <ExpenseForm
               expense={expense}
+              availableTags={availableTags}
               onSubmit={onSave}
+              setAvailableTags={setAvailableTags}
             />
             <Dialog
               visible={deleteDialogVisible}
-              text="Are you sure you want to delete this expense?"
+              content="Are you sure you want to delete this expense?"
               onClose={() => setDeleteDialogVisible(false)}
               onSubmit={onDelete}
             />

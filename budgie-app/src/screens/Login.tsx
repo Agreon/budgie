@@ -23,7 +23,7 @@ import { useApi } from '../hooks/use-request';
 export const Login: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Login'>
 }> = ({ navigation }) => {
-  const api = useApi(navigation);
+  const api = useApi();
   const { showToast } = useToast();
 
   const [username, setUsername] = useState('');

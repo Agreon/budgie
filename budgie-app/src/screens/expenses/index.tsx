@@ -13,11 +13,11 @@ import {
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-import { RootStackParamList } from '../../App';
-import { Header } from '../components/Header';
-import { Expense } from '../util/types';
-import { useToast } from '../ToastProvider';
-import { useApi } from '../hooks/use-request';
+import { RootStackParamList } from '../../../App';
+import { Header } from '../../components/Header';
+import { Expense } from '../../util/types';
+import { useToast } from '../../ToastProvider';
+import { useApi } from '../../hooks/use-request';
 
 export const ExpenseItem: FC<{
   item: Expense;
@@ -47,7 +47,7 @@ export const ExpenseItem: FC<{
 export const Expenses: FC<{
   navigation: StackNavigationProp<RootStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
-  const api = useApi(navigation);
+  const api = useApi();
   const isFocused = useIsFocused();
   const { showToast } = useToast();
 
@@ -69,8 +69,9 @@ export const Expenses: FC<{
 
   useEffect(() => {
     (async () => {
-      await SplashScreen.hideAsync();
+      if (!isFocused) return;
 
+      await SplashScreen.hideAsync();
       await fetchData();
     })();
   }, [isFocused]);

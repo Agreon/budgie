@@ -14,8 +14,9 @@ import {
   SelectItem,
 } from '@ui-kitten/components';
 import dayjs from 'dayjs';
-import { LoadingIndicator } from './LoadingIndicator';
-import { Expense } from '../util/types';
+import { LoadingIndicator } from '../../components/LoadingIndicator';
+import { Expense, Tag } from '../../util/types';
+import { TagSelection } from './TagSelection';
 
 const CalendarIcon = (props: IconProps) => (
   <Icon {...props} name="calendar" />
@@ -50,17 +51,26 @@ const getIndexOfCategory = (category: string) => {
 };
 
 interface IProps {
-    expense?: Expense;
-    onSubmit: (expense: Omit<Expense, 'id'>) => Promise<void>;
+  expense?: Expense;
+  availableTags: Tag[];
+  setAvailableTags: (tags: Tag[]) => void;
+  onSubmit: (expense: Omit<Expense, 'id'>) => Promise<void>;
 }
 
-export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
+export const ExpenseForm: FC<IProps> = ({
+  expense,
+  availableTags,
+  setAvailableTags,
+  onSubmit,
+}) => {
   const [costs, setCosts] = useState(expense?.costs || '');
   const [selectedIndex, setSelectedIndex] = useState(
     new IndexPath(expense ? getIndexOfCategory(expense.category) : 0),
   );
   const [name, setName] = useState<string | undefined>(expense?.name);
   const [date, setDate] = useState<Date>(expense?.date ? dayjs(expense.date).toDate() : new Date());
+
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(expense?.tags || []);
 
   const [loading, setLoading] = useState(false);
 
@@ -72,11 +82,17 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         costs: costs.replace(/,/g, '.'),
         name,
         date,
+        tags: selectedTags,
       });
     } finally {
       setLoading(false);
     }
-  }, [loading, expense, selectedIndex, costs, name, date]);
+  }, [loading, expense, selectedIndex, costs, name, date, selectedTags]);
+
+  const onTagCreated = useCallback((tag: Tag) => {
+    setAvailableTags([...availableTags].concat(tag));
+    setSelectedTags([...selectedTags].concat(tag));
+  }, [availableTags, setAvailableTags, selectedTags, setSelectedTags]);
 
   return (
     <View>
@@ -86,7 +102,7 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         onChangeText={(text) => setCosts(text)}
         label="Cost"
         autoFocus={!expense}
-        keyboardType="number-pad"
+        keyboardType="numeric"
       />
       <Select
         style={tailwind('mt-4')}
@@ -116,6 +132,12 @@ export const ExpenseForm: FC<IProps> = ({ expense, onSubmit }) => {
         onChangeText={(text) => setName(text)}
         label="Name (optional)"
         onSubmitEditing={onSave}
+      />
+      <TagSelection
+        available={availableTags}
+        selected={selectedTags}
+        onSelectionChanged={selected => setSelectedTags(selected)}
+        onTagCreated={onTagCreated}
       />
       <Button
         style={tailwind('mt-8')}

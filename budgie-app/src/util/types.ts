@@ -5,4 +5,10 @@ export interface Expense {
     costs: string;
     name?: string;
     date: Date;
+    tags?: Tag[];
+  }
+
+export interface Tag {
+    id: string;
+    name: string;
   }
