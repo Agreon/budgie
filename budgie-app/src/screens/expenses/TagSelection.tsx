@@ -45,9 +45,7 @@ const CreateTagDialog: FC<{
   return (
     <Modal
       visible={visible}
-      backdropStyle={{
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      }}
+      backdropStyle={tailwind('bg-black bg-opacity-50')}
       onBackdropPress={onClose}
       style={tailwind('w-full p-10')}
     >

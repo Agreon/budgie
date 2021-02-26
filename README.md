@@ -21,9 +21,9 @@ List             |  Create
 - User defined Tags for Expenses for improved statistics
 - Fancy dashboards and statistics overview
 - Incomes
-- Reoccuring expenses and incomes
+- Reoccurring expenses and incomes
 - Offline support
 - External User Register
 - Splitwise import
 - Import of exported banking data
-- Ai backed scan of recipes
+- AI-backed scan of receipts
