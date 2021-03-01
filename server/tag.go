@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS tag (
 	name text,
 	user_id uuid,
 	created_at timestamp with time zone,
-	updated_at timestamp with time zone
+	updated_at timestamp with time zone,
+	PRIMARY KEY (id)
 )`
 
 type Tag struct {
@@ -134,4 +135,17 @@ func updateTag(c *gin.Context) {
 	}
 
 	c.JSON(200, tag)
+}
+
+func deleteTag(c *gin.Context) {
+	tagID := c.MustGet("entityID")
+
+	db := GetDB()
+	_, err := db.Exec("DELETE FROM tag WHERE id=$1", tagID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	c.Status(200)
 }

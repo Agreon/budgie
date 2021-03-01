@@ -15,7 +15,12 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS expense_tag (
 	expense_id uuid,
 	tag_id uuid,
-	created_at timestamp with time zone
+	created_at timestamp with time zone,
+	PRIMARY KEY (tag_id),
+	CONSTRAINT fk_tag
+      	FOREIGN KEY(id) 
+	  		REFERENCES tag(id)
+	  		ON DELETE CASCADE
 )`
 
 type ExpenseTag struct {
@@ -116,9 +121,9 @@ func updateTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (er
 	return err, 200
 }
 
-func deleteTagsOfExpense(c *gin.Context, expenseID string) (error, int) {
+func deleteTagsOfExpense(c *gin.Context, entityID string) (error, int) {
 	db := GetDB()
-	_, err := db.Exec("DELETE FROM expense_tag WHERE expense_id=$1", expenseID)
+	_, err := db.Exec("DELETE FROM expense_tag WHERE expense_id=$1", entityID)
 	if err != nil {
 		return err, 500
 	}
