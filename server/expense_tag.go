@@ -16,11 +16,14 @@ CREATE TABLE IF NOT EXISTS expense_tag (
 	expense_id uuid,
 	tag_id uuid,
 	created_at timestamp with time zone,
-	PRIMARY KEY (tag_id),
 	CONSTRAINT fk_tag
-      	FOREIGN KEY(id) 
+      	FOREIGN KEY(tag_id) 
 	  		REFERENCES tag(id)
-	  		ON DELETE CASCADE
+	  		ON DELETE CASCADE,
+	CONSTRAINT fk_expense
+		FOREIGN KEY(expense_id) 
+			REFERENCES expense(id)
+			ON DELETE CASCADE
 )`
 
 type ExpenseTag struct {

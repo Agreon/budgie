@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +19,8 @@ CREATE TABLE IF NOT EXISTS expense (
 	user_id uuid,
 	date timestamp with time zone,
 	created_at timestamp with time zone,
-	updated_at timestamp with time zone
+	updated_at timestamp with time zone,
+	PRIMARY KEY (id)
 )`
 
 type ExpenseCategory string
@@ -118,11 +118,9 @@ func listExpenses(c *gin.Context) {
 		return
 	}
 
-	log.Println("Number of expenses: ", len(expenses))
 	var errCode int
 	var tempExpWithTags ExpenseWithTags
 	for _, expense := range expenses {
-		log.Println("Number of expenses with tags: ", len(expenseWithTags))
 		tempExpWithTags.Expense = expense
 		tempExpWithTags.Tags, err, errCode = getTagsOfExpense(c, expense.ID)
 		if err != nil {
@@ -210,12 +208,6 @@ func deleteExpense(c *gin.Context) {
 	_, err = db.Exec("DELETE FROM expense WHERE id=$1", expense.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
-		return
-	}
-
-	err, errCode = deleteTagsOfExpense(c, expense.ID)
-	if err != nil {
-		saveErrorInfo(c, err, errCode)
 		return
 	}
 

@@ -139,9 +139,25 @@ func updateTag(c *gin.Context) {
 
 func deleteTag(c *gin.Context) {
 	tagID := c.MustGet("entityID")
-
 	db := GetDB()
-	_, err := db.Exec("DELETE FROM tag WHERE id=$1", tagID)
+	tag := Tag{}
+	err := db.Get(&tag, "SELECT * FROM tag WHERE id=$1", tagID)
+
+	/* check if tag exists */
+	if err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+
+	userID := c.MustGet("userID")
+
+	/* check if tag belongs to requesting user */
+	if tag.UserID != userID {
+		saveErrorInfo(c, errors.New("Tag does not belong to this user!"), 403)
+		return
+	}
+
+	_, err = db.Exec("DELETE FROM tag WHERE id=$1", tagID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
