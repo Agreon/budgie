@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -61,9 +62,9 @@ type ExpenseInput struct {
 	TagIDs   []string        `json:"tag_ids"`
 }
 
-type ExpenseOutput struct {
-	Expense Expense            `json:"expense"`
-	Tags    []ExpenseTagOutput `json:"tags"`
+type ExpenseWithTags struct {
+	Expense
+	Tags []ExpenseTagOutput `json:"tags"`
 }
 
 func insertExpense(c *gin.Context) {
@@ -106,6 +107,7 @@ func insertExpense(c *gin.Context) {
 func listExpenses(c *gin.Context) {
 	db := GetDB()
 	expenses := []Expense{}
+	var expenseWithTags []ExpenseWithTags
 
 	userID := c.MustGet("userID")
 
@@ -116,26 +118,44 @@ func listExpenses(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, expenses)
+	log.Println("Number of expenses: ", len(expenses))
+	var errCode int
+	var tempExpWithTags ExpenseWithTags
+	for _, expense := range expenses {
+		log.Println("Number of expenses with tags: ", len(expenseWithTags))
+		tempExpWithTags.Expense = expense
+		tempExpWithTags.Tags, err, errCode = getTagsOfExpense(c, expense.ID)
+		if err != nil {
+			saveErrorInfo(c, err, errCode)
+			return
+		}
+		expenseWithTags = append(expenseWithTags, tempExpWithTags)
+	}
+
+	c.JSON(200, expenseWithTags)
 }
 
 func listSingleExpense(c *gin.Context) {
-	expenseOutput := ExpenseOutput{}
+	expenseOutput := Expense{}
+	expenseWithTags := ExpenseWithTags{}
+
 	var err error
 	var errCode int
-	expenseOutput.Expense, err, errCode = getSingleExpenseFromDB(c)
+	expenseOutput, err, errCode = getSingleExpenseFromDB(c)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
 	}
 
-	expenseOutput.Tags, err, errCode = getTagsOfExpense(c, expenseOutput.Expense.ID)
+	expenseWithTags.Expense = expenseOutput
+
+	expenseWithTags.Tags, err, errCode = getTagsOfExpense(c, expenseWithTags.ID)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
 	}
 
-	c.JSON(200, expenseOutput)
+	c.JSON(200, expenseWithTags)
 }
 
 func updateExpense(c *gin.Context) {
