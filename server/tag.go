@@ -145,7 +145,7 @@ func deleteTag(c *gin.Context) {
 
 	/* check if tag exists */
 	if err != nil {
-		saveErrorInfo(c, err, 400)
+		saveErrorInfo(c, err, 404)
 		return
 	}
 

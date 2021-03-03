@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -69,8 +70,16 @@ type ExpenseWithTags struct {
 
 func insertExpense(c *gin.Context) {
 	var newExpense ExpenseInput
-	if err := c.BindJSON(&newExpense); err != nil {
+	var err error
+	if err = c.BindJSON(&newExpense); err != nil {
 		saveErrorInfo(c, err, 400)
+		return
+	}
+
+	var errCode int
+	err, errCode = checkIfTagsExist(c, &newExpense.TagIDs)
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
 		return
 	}
 
@@ -93,7 +102,6 @@ func insertExpense(c *gin.Context) {
 	if rows.Next() {
 		rows.Scan(&expenseID)
 	}
-	var errCode int
 	err, errCode = insertTagsOfExpense(c, &newExpense.TagIDs, expenseID)
 	/* if tags could not be inserted */
 	if err != nil {
@@ -106,12 +114,11 @@ func insertExpense(c *gin.Context) {
 
 func listExpenses(c *gin.Context) {
 	db := GetDB()
-	expenses := []Expense{}
 	var expenseWithTags []ExpenseWithTags
 
 	userID := c.MustGet("userID")
 
-	err := db.Select(&expenses, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
+	err := db.Select(&expenseWithTags, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
@@ -119,33 +126,29 @@ func listExpenses(c *gin.Context) {
 	}
 
 	var errCode int
-	var tempExpWithTags ExpenseWithTags
-	for _, expense := range expenses {
-		tempExpWithTags.Expense = expense
-		tempExpWithTags.Tags, err, errCode = getTagsOfExpense(c, expense.ID)
+	for i, expense := range expenseWithTags {
+		log.Println("Expense ID: ", expense.ID)
+		expenseWithTags[i].Tags, err, errCode = getTagsOfExpense(c, expense.ID)
+		log.Println("Tags: ", expense.Tags)
 		if err != nil {
 			saveErrorInfo(c, err, errCode)
 			return
 		}
-		expenseWithTags = append(expenseWithTags, tempExpWithTags)
 	}
 
 	c.JSON(200, expenseWithTags)
 }
 
 func listSingleExpense(c *gin.Context) {
-	expenseOutput := Expense{}
 	expenseWithTags := ExpenseWithTags{}
 
 	var err error
 	var errCode int
-	expenseOutput, err, errCode = getSingleExpenseFromDB(c)
+	expenseWithTags.Expense, err, errCode = getSingleExpenseFromDB(c)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
 	}
-
-	expenseWithTags.Expense = expenseOutput
 
 	expenseWithTags.Tags, err, errCode = getTagsOfExpense(c, expenseWithTags.ID)
 	if err != nil {
@@ -223,7 +226,7 @@ func getSingleExpenseFromDB(c *gin.Context) (Expense, error, int) {
 
 	/* check if expense exists */
 	if err != nil {
-		return expense, err, 400
+		return expense, err, 404
 	}
 
 	userID := c.MustGet("userID")

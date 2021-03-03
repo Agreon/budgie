@@ -37,11 +37,8 @@ type ExpenseTagOutput struct {
 	TagName string `db:"name" json:"name"`
 }
 
-func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (error, int) {
-	err, errCode := checkIfTagsExist(c, tagIDs)
-	if err != nil {
-		return err, errCode
-	}
+func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (err error, errCode int) {
+	/* checking for input validity is done somewhere else */
 
 	db := GetDB()
 	for _, tagID := range *tagIDs {
