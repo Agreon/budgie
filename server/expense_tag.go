@@ -24,7 +24,24 @@ CREATE TABLE IF NOT EXISTS expense_tag (
 		FOREIGN KEY(expense_id) 
 			REFERENCES expense(id)
 			ON DELETE CASCADE
-)`
+);
+
+ALTER TABLE expense_tag DROP CONSTRAINT IF EXISTS fk_tag;
+
+ALTER TABLE expense_tag
+    ADD CONSTRAINT fk_tag
+		FOREIGN KEY(tag_id)
+			REFERENCES tag(id)
+			ON DELETE CASCADE;
+			
+
+ALTER TABLE expense_tag DROP CONSTRAINT IF EXISTS fk_expense;
+ALTER TABLE expense_tag
+    ADD CONSTRAINT fk_expense
+		FOREIGN KEY(expense_id)
+			REFERENCES expense(id)
+			ON DELETE CASCADE;
+`
 
 type ExpenseTag struct {
 	ExpenseID string    `db:"expense_id" json:"expense_id"`

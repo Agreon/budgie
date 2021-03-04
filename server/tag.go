@@ -17,8 +17,15 @@ CREATE TABLE IF NOT EXISTS tag (
 	user_id uuid,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone,
-	PRIMARY KEY (id)
-)`
+	CONSTRAINT pk_tag_id
+		PRIMARY KEY (id)
+);
+
+ALTER TABLE tag DROP CONSTRAINT IF EXISTS pk_tag_id;
+ALTER TABLE tag
+    ADD CONSTRAINT pk_tag_id
+	PRIMARY KEY (id);
+`
 
 type Tag struct {
 	ID        string    `db:"id" json:"id"`

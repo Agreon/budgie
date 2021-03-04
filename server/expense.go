@@ -21,8 +21,14 @@ CREATE TABLE IF NOT EXISTS expense (
 	date timestamp with time zone,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone,
-	PRIMARY KEY (id)
-)`
+	CONSTRAINT pk_expense_id
+		PRIMARY KEY (id)
+);
+
+ALTER TABLE expense DROP CONSTRAINT IF EXISTS pk_expense_id;
+ALTER TABLE expense
+    ADD CONSTRAINT pk_expense_id
+	PRIMARY KEY (id);`
 
 type ExpenseCategory string
 
