@@ -20,18 +20,21 @@ import { Tag } from '../util/types';
 const TagItem: FC<{
   item: Tag;
 }> = ({ item }) => (
-  <View style={tailwind('mt-2')}>
-    <View style={tailwind('p-2 flex-row justify-between')}>
+  <View style={tailwind('mt-2 justify-center')}>
+    <View style={tailwind('p-2 flex-row pt-0 pb-0 justify-between items-center')}>
       <View style={tailwind('ml-1')}>
         <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.name}</Text>
       </View>
-      <View style={tailwind('flex-row mr-1')}>
-        <Text category="h6" style={tailwind('text-red-400 font-bold text-right mr-4')}>
-          Edit
-        </Text>
-        <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
-          Delete
-        </Text>
+      <View style={tailwind('flex-row')}>
+        <Button
+          appearance="ghost"
+          accessoryLeft={props => <Icon {...props} name="edit-2-outline" />}
+        />
+        <Button
+          appearance="ghost"
+          status="danger"
+          accessoryLeft={props => <Icon {...props} name="trash-2-outline" />}
+        />
       </View>
     </View>
     <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />

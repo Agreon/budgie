@@ -21,10 +21,6 @@ import { useToast } from '../../ToastProvider';
 import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 
-const DeleteIcon = (props: IconProps) => (
-  <Icon {...props} name="trash-2-outline" />
-);
-
 export const EditExpense: FC<{
     route: RouteProp<RootStackParamList, 'EditExpense'>
     navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
@@ -87,7 +83,9 @@ export const EditExpense: FC<{
         accessoryLeft={() => <BackAction navigation={navigation} />}
         accessoryRight={() => (
           <TopNavigationAction
-            icon={DeleteIcon}
+            icon={(props: IconProps) => (
+              <Icon {...props} name="trash-2-outline" />
+            )}
             onPress={() => {
               Keyboard.dismiss();
               setDeleteDialogVisible(true);
