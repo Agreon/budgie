@@ -16,10 +16,16 @@ import { Header } from '../components/Header';
 import { useApi } from '../hooks/use-request';
 import { useToast } from '../ToastProvider';
 import { Tag } from '../util/types';
+import { Dialog } from '../components/Dialog';
+import { CreateTagDialog } from '../components/CreateTagDialog';
 
+/**
+ * TODO: Increase icon size?
+ */
 const TagItem: FC<{
-  item: Tag;
-}> = ({ item }) => (
+  item: Tag
+  onDelete: () => void
+}> = ({ item, onDelete }) => (
   <View style={tailwind('mt-2 justify-center')}>
     <View style={tailwind('p-2 flex-row pt-0 pb-0 justify-between items-center')}>
       <View style={tailwind('ml-1')}>
@@ -34,6 +40,7 @@ const TagItem: FC<{
           appearance="ghost"
           status="danger"
           accessoryLeft={props => <Icon {...props} name="trash-2-outline" />}
+          onPress={onDelete}
         />
       </View>
     </View>
@@ -46,8 +53,11 @@ export const Tags: FC = () => {
   const isFocused = useIsFocused();
   const { showToast } = useToast();
 
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+  const [createTagDialogVisible, setCreateTagDialogVisible] = useState(false);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -63,6 +73,17 @@ export const Tags: FC = () => {
     setLoading(false);
   }, [api, setTags, showToast, setLoading]);
 
+  const onDelete = useCallback(async () => {
+    // TODO: Some kind of loading state would be nice.
+    setDeleteDialogVisible(false);
+    try {
+      await api.delete(`tag/${selectedTag?.id}`);
+    } catch (err) {
+      showToast({ status: 'danger', message: err.message || 'Unknown error' });
+    }
+    setSelectedTag(null);
+  }, [selectedTag, api, showToast]);
+
   useEffect(() => {
     (async () => {
       if (!isFocused) return;
@@ -70,6 +91,16 @@ export const Tags: FC = () => {
       await fetchData();
     })();
   }, [isFocused]);
+
+  const renderTagItem = useCallback(({ item }: { item: Tag }) => (
+    <TagItem
+      item={item}
+      onDelete={() => {
+        setSelectedTag(item);
+        setDeleteDialogVisible(true);
+      }}
+    />
+  ), [setSelectedTag, setDeleteDialogVisible]);
 
   return (
     <SafeAreaView
@@ -82,7 +113,7 @@ export const Tags: FC = () => {
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={fetchData} />
         }
-        renderItem={TagItem}
+        renderItem={renderTagItem}
         data={tags}
         keyExtractor={item => item.id}
       />
@@ -92,6 +123,21 @@ export const Tags: FC = () => {
         accessoryLeft={props => (
           <Icon {...props} name="plus-outline" />
         )}
+        onPress={() => setCreateTagDialogVisible(true)}
+      />
+      <Dialog
+        visible={deleteDialogVisible}
+        content="Are you sure you want to delete this tag?"
+        onClose={() => setDeleteDialogVisible(false)}
+        onSubmit={onDelete}
+      />
+      <CreateTagDialog
+        visible={createTagDialogVisible}
+        onClose={() => setCreateTagDialogVisible(false)}
+        onSubmit={() => {
+          fetchData();
+          setCreateTagDialogVisible(false);
+        }}
       />
     </SafeAreaView>
   );
