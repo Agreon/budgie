@@ -59,6 +59,8 @@ func main() {
 		useAuthentication.GET("/tag", errorHandler(), listTags)
 
 		useAuthentication.PUT("/tag/:id", validateUUID(), errorHandler(), updateTag)
+
+		useAuthentication.DELETE("/tag/:id", validateUUID(), errorHandler(), deleteTag)
 	}
 
 	r.POST("/user", errorHandler(), addUser)
