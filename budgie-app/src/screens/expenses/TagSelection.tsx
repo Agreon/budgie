@@ -4,7 +4,6 @@ import tailwind from 'tailwind-rn';
 import {
   Button,
   Icon,
-  IconProps,
   Input,
   Layout,
   Modal,
@@ -14,7 +13,6 @@ import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { useApi } from '../../hooks/use-request';
 import { useToast } from '../../ToastProvider';
 import { Tag } from '../../util/types';
-
 
 const CreateTagDialog: FC<{
   visible: boolean
@@ -42,9 +40,7 @@ const CreateTagDialog: FC<{
   return (
     <Modal
       visible={visible}
-      backdropStyle={{
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      }}
+      backdropStyle={tailwind('bg-black bg-opacity-50')}
       onBackdropPress={onClose}
       style={tailwind('w-full p-10')}
     >
@@ -116,7 +112,7 @@ export const TagSelection: FC<{
     <View>
       <View style={tailwind('flex-row justify-between items-center mb-1')}>
         <Text category="c1">Tags</Text>
-        <Button appearance="ghost" accessoryLeft={props => (  <Icon {...props} name="plus-outline" />)} onPress={() => setCreateTagDialogVisible(true)} />
+        <Button appearance="ghost" accessoryLeft={props => (<Icon {...props} name="plus-outline" />)} onPress={() => setCreateTagDialogVisible(true)} />
       </View>
       {available.length ? (
         <View style={tailwind('flex-row p-2 border border-gray-300 rounded-sm')}>
