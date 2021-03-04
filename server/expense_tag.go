@@ -32,8 +32,7 @@ ALTER TABLE expense_tag
     ADD CONSTRAINT fk_expense
 		FOREIGN KEY(expense_id)
 			REFERENCES expense(id)
-			ON DELETE CASCADE;
-`
+			ON DELETE CASCADE;`
 
 type ExpenseTag struct {
 	ExpenseID string    `db:"expense_id" json:"expense_id"`
