@@ -19,9 +19,6 @@ import { Tag } from '../util/types';
 import { Dialog } from '../components/Dialog';
 import { CreateTagDialog } from '../components/CreateTagDialog';
 
-/**
- * TODO: Increase icon size?
- */
 const TagItem: FC<{
   item: Tag
   onDelete: () => void
@@ -34,12 +31,24 @@ const TagItem: FC<{
       <View style={tailwind('flex-row')}>
         <Button
           appearance="ghost"
-          accessoryLeft={props => <Icon {...props} name="edit-2-outline" />}
+          accessoryLeft={props => (
+            <Icon
+              {...props}
+              name="edit-2-outline"
+              style={[props?.style, { width: 25, height: 25 }]}
+            />
+          )}
         />
         <Button
           appearance="ghost"
           status="danger"
-          accessoryLeft={props => <Icon {...props} name="trash-2-outline" />}
+          accessoryLeft={props => (
+            <Icon
+              {...props}
+              name="trash-2-outline"
+              style={[props?.style, { width: 25, height: 25 }]}
+            />
+          )}
           onPress={onDelete}
         />
       </View>
