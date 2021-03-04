@@ -20,9 +20,7 @@ CREATE TABLE IF NOT EXISTS expense (
 	user_id uuid,
 	date timestamp with time zone,
 	created_at timestamp with time zone,
-	updated_at timestamp with time zone,
-	CONSTRAINT pk_expense_id
-		PRIMARY KEY (id)
+	updated_at timestamp with time zone
 );
 
 ALTER TABLE expense DROP CONSTRAINT IF EXISTS pk_expense_id;

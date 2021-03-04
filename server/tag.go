@@ -16,14 +16,12 @@ CREATE TABLE IF NOT EXISTS tag (
 	name text,
 	user_id uuid,
 	created_at timestamp with time zone,
-	updated_at timestamp with time zone,
-	CONSTRAINT pk_tag_id
-		PRIMARY KEY (id)
+	updated_at timestamp with time zone
 );
 
 ALTER TABLE tag DROP CONSTRAINT IF EXISTS pk_tag_id;
 ALTER TABLE tag
-    ADD CONSTRAINT pk_tag_id
+	ADD CONSTRAINT pk_tag_id
 	PRIMARY KEY (id);
 `
 
