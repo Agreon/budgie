@@ -5,11 +5,10 @@ import {
   SafeAreaView, FlatList, RefreshControl, View, TouchableWithoutFeedback,
 } from 'react-native';
 
-import dayjs from 'dayjs';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Divider, Icon, Text,
+  Button, Icon, Text,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
@@ -19,6 +18,8 @@ import { useApi } from '../../hooks/use-request';
 import { LOADING_INDICATOR_OFFSET } from '../../util/globals';
 import { IncomesStackParamList } from '.';
 import { Income } from '../../util/types';
+import { ItemDivider } from '../../components/ItemDivider';
+import { ItemDate } from '../../components/ItemDate';
 
 // TODO: Extract stuff / Center Name like with Tags
 const IncomeItem: FC<{
@@ -32,7 +33,7 @@ const IncomeItem: FC<{
             <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.name}</Text>
           </View>
           <View style={tailwind('flex-col justify-between mr-1')}>
-            <Text appearance="hint" style={tailwind('text-right')}>{dayjs(item.date).format('DD.MM.')}</Text>
+            <ItemDate date={item.date} />
             <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
               {item.costs}
               {' '}
@@ -40,7 +41,6 @@ const IncomeItem: FC<{
             </Text>
           </View>
         </View>
-        <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />
       </View>
     </TouchableWithoutFeedback>
   );
@@ -86,6 +86,7 @@ export const IncomeList: FC<{
           style={tailwind('w-full')}
           stickyHeaderIndices={[0]}
           ListHeaderComponent={() => <Header title="Incomes" />}
+          ItemSeparatorComponent={ItemDivider}
           refreshControl={(
             <RefreshControl
               refreshing={loading}
