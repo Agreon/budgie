@@ -37,11 +37,7 @@ export const EditExpense: FC<{
       try {
         const { data } = await api.get(`expense/${id}`);
         const { data: tags } = await api.get('tag');
-        console.log(data);
-        setExpense({
-          ...data.expense,
-          tags: data.tags,
-        });
+        setExpense(data);
         setAvailableTags(tags);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
