@@ -5,15 +5,15 @@ import {
   IconProps,
   TopNavigationAction,
 } from '@ui-kitten/components';
-import { ExpensesStackParamList } from '../screens/expenses';
+import { ParamListBase } from '@react-navigation/native';
 
 const BackIcon = (props: IconProps) => (
   <Icon {...props} name="arrow-back" />
 );
 
-export const BackAction = ({ navigation }: {
+export const BackAction = <T extends ParamListBase>({ navigation }: {
   // TODO: Need a Generic type for that
-  navigation: StackNavigationProp<ExpensesStackParamList, keyof ExpensesStackParamList>
+  navigation: StackNavigationProp<T, keyof T>
 }) => (
   <TopNavigationAction icon={BackIcon} onPress={() => navigation.goBack()} />
-);
+  );

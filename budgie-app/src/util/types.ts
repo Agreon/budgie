@@ -6,7 +6,14 @@ export interface Expense {
     name?: string;
     date: Date;
     tags?: Tag[];
-  }
+}
+
+export interface Income {
+  id: string;
+  costs: string;
+  name: string;
+  date: Date;
+}
 
 export interface Tag {
     id: string;
