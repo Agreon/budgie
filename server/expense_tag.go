@@ -16,7 +16,24 @@ CREATE TABLE IF NOT EXISTS expense_tag (
 	expense_id uuid,
 	tag_id uuid,
 	created_at timestamp with time zone
-)`
+);
+
+ALTER TABLE expense_tag DROP CONSTRAINT IF EXISTS fk_tag;
+
+ALTER TABLE expense_tag
+    ADD CONSTRAINT fk_tag
+		FOREIGN KEY(tag_id)
+			REFERENCES tag(id)
+			ON DELETE CASCADE;
+			
+
+ALTER TABLE expense_tag DROP CONSTRAINT IF EXISTS fk_expense;
+ALTER TABLE expense_tag
+    ADD CONSTRAINT fk_expense
+		FOREIGN KEY(expense_id)
+			REFERENCES expense(id)
+			ON DELETE CASCADE;
+`
 
 type ExpenseTag struct {
 	ExpenseID string    `db:"expense_id" json:"expense_id"`
@@ -29,11 +46,8 @@ type ExpenseTagOutput struct {
 	TagName string `db:"name" json:"name"`
 }
 
-func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (error, int) {
-	err, errCode := checkIfTagsExist(c, tagIDs)
-	if err != nil {
-		return err, errCode
-	}
+func insertTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (err error, errCode int) {
+	/* checking for input validity is done somewhere else */
 
 	db := GetDB()
 	for _, tagID := range *tagIDs {
@@ -116,9 +130,9 @@ func updateTagsOfExpense(c *gin.Context, tagIDs *[]string, expenseID string) (er
 	return err, 200
 }
 
-func deleteTagsOfExpense(c *gin.Context, expenseID string) (error, int) {
+func deleteTagsOfExpense(c *gin.Context, entityID string) (error, int) {
 	db := GetDB()
-	_, err := db.Exec("DELETE FROM expense_tag WHERE expense_id=$1", expenseID)
+	_, err := db.Exec("DELETE FROM expense_tag WHERE expense_id=$1", entityID)
 	if err != nil {
 		return err, 500
 	}
