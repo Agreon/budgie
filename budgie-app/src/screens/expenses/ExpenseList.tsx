@@ -5,11 +5,10 @@ import {
   SafeAreaView, FlatList, RefreshControl, View, TouchableWithoutFeedback,
 } from 'react-native';
 
-import dayjs from 'dayjs';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Divider, Icon, Text,
+  Button, Icon, Text,
 } from '@ui-kitten/components';
 import { useIsFocused } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
@@ -19,28 +18,27 @@ import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
 import { LOADING_INDICATOR_OFFSET } from '../../util/globals';
+import { ItemDivider } from '../../components/ItemDivider';
+import { ItemDate } from '../../components/ItemDate';
 
 const ExpenseItem: FC<{
   item: Expense;
   onPress: (id: string) => void
 }> = ({ item, onPress }) => (
   <TouchableWithoutFeedback delayPressIn={0} onPress={() => onPress(item.id)}>
-    <View style={tailwind('mt-2')}>
-      <View style={tailwind('p-2 flex-row justify-between')}>
-        <View style={tailwind('flex-col ml-1')}>
-          <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
-          <Text appearance="hint">{item.name}</Text>
-        </View>
-        <View style={tailwind('flex-col justify-between mr-1')}>
-          <Text appearance="hint" style={tailwind('text-right')}>{dayjs(item.date).format('DD.MM.')}</Text>
-          <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
-            {item.costs}
-            {' '}
-            €
-          </Text>
-        </View>
+    <View style={tailwind('p-2 flex-row justify-between')}>
+      <View style={tailwind('flex-col ml-1')}>
+        <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
+        <Text appearance="hint">{item.name}</Text>
       </View>
-      <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />
+      <View style={tailwind('flex-col justify-between mr-1')}>
+        <ItemDate date={item.date} />
+        <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
+          {item.costs}
+          {' '}
+          €
+        </Text>
+      </View>
     </View>
   </TouchableWithoutFeedback>
 );
@@ -86,6 +84,7 @@ export const ExpenseList: FC<{
         style={tailwind('w-full')}
         stickyHeaderIndices={[0]}
         ListHeaderComponent={() => <Header title="Expenses" />}
+        ItemSeparatorComponent={ItemDivider}
         refreshControl={(
           <RefreshControl
             refreshing={loading}
