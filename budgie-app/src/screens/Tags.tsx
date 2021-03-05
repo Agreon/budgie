@@ -8,7 +8,6 @@ import {
 import tailwind from 'tailwind-rn';
 import {
   Button,
-  Divider,
   Icon,
   Text,
 } from '@ui-kitten/components';
@@ -19,6 +18,7 @@ import { Tag } from '../util/types';
 import { Dialog } from '../components/Dialog';
 import { TagDialog } from '../components/TagDialog';
 import { LOADING_INDICATOR_OFFSET } from '../util/globals';
+import { ItemDivider } from '../components/ItemDivider';
 
 const TagItem: FC<{
   item: Tag
@@ -56,7 +56,6 @@ const TagItem: FC<{
         />
       </View>
     </View>
-    <Divider style={tailwind('bg-gray-300 ml-6 mr-6 mt-2 mb-1')} />
   </View>
 );
 
@@ -126,6 +125,7 @@ export const Tags: FC = () => {
         style={tailwind('h-full w-full')}
         stickyHeaderIndices={[0]}
         ListHeaderComponent={() => <Header title="Tags" />}
+        ItemSeparatorComponent={ItemDivider}
         refreshControl={(
           <RefreshControl
             refreshing={loading}
