@@ -12,7 +12,6 @@ import {
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../../App';
 import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
 import { ExpenseForm } from './ExpenseForm';
@@ -20,10 +19,11 @@ import { Expense, Tag } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
+import { ExpensesStackParamList } from '.';
 
 export const EditExpense: FC<{
-    route: RouteProp<RootStackParamList, 'EditExpense'>
-    navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
+    route: RouteProp<ExpensesStackParamList, 'EditExpense'>
+    navigation: StackNavigationProp<ExpensesStackParamList, 'EditExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
   const api = useApi();
   const { showToast } = useToast();

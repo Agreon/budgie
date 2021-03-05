@@ -6,6 +6,7 @@ import {
   Icon,
   Text,
 } from '@ui-kitten/components';
+import { ScrollView } from 'react-native-gesture-handler';
 import { Tag } from '../../util/types';
 import { TagDialog } from '../../components/TagDialog';
 
@@ -14,11 +15,11 @@ const TagItem: FC<{
   selected: boolean,
   onPress: () => void
 }> = ({ name, selected, onPress }) => {
-  const selectedStyle = selected ? ' bg-blue-500' : '';
+  const selectedStyle = selected ? 'bg-blue-500' : '';
 
   return (
-    <TouchableWithoutFeedback delayPressIn={0} onPressIn={() => onPress()}>
-      <View style={tailwind(`border rounded border-gray-300 pb-2 pt-2 pl-3 pr-3 mr-2${selectedStyle}`)}>
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={tailwind(`border rounded border-gray-300 pb-2 pt-2 pl-3 pr-3 mr-2 ${selectedStyle}`)}>
         <Text style={selected ? tailwind('text-white') : {}}>{name}</Text>
       </View>
     </TouchableWithoutFeedback>
@@ -46,7 +47,12 @@ export const TagSelection: FC<{
         <Button appearance="ghost" accessoryLeft={props => (<Icon {...props} name="plus-outline" />)} onPress={() => setCreateTagDialogVisible(true)} />
       </View>
       {available.length ? (
-        <View style={tailwind('flex-row p-2 border border-gray-300 rounded-sm')}>
+        <ScrollView
+          horizontal
+          // This is necessary for the last tag to have a visible margin to the border.
+          contentContainerStyle={tailwind('pr-2')}
+          style={tailwind('flex-row p-2 pr-4 border border-gray-300 rounded-sm')}
+        >
           {available.map(tag => (
             <TagItem
               key={tag.id}
@@ -59,10 +65,10 @@ export const TagSelection: FC<{
               )}
             />
           ))}
-        </View>
+        </ScrollView>
       ) : (
         <Text>
-          No Tags available yet. Create one ;)
+          No Tags available yet. Create one by clicking +
         </Text>
       )}
       <TagDialog
