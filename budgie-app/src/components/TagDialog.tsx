@@ -1,4 +1,6 @@
-import React, { FC, useCallback, useState } from 'react';
+import React, {
+  FC, useCallback, useEffect, useState,
+} from 'react';
 import { View } from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
@@ -13,28 +15,40 @@ import { useApi } from '../hooks/use-request';
 import { useToast } from '../ToastProvider';
 import { Tag } from '../util/types';
 
-export const CreateTagDialog: FC<{
+export const TagDialog: FC<{
     visible: boolean
+    existingTag?: Tag
     onSubmit: (tag: Tag) => void
     onClose: () => void
   }> = ({
-    visible, onSubmit, onClose,
+    visible, existingTag, onSubmit, onClose,
   }) => {
     const api = useApi();
     const { showToast } = useToast();
 
-    const [name, setName] = useState('');
+    const [name, setName] = useState(existingTag?.name || '');
     const [loading, setLoading] = useState(false);
 
     const onCreate = useCallback(async () => {
       try {
-        const { data } = await api.post('/tag', { name });
-        onSubmit(data);
+        let response;
+        if (existingTag) {
+          response = await api.put(`/tag/${existingTag.id}`, { name });
+        } else {
+          response = await api.post('/tag', { name });
+        }
+        onSubmit(response.data);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
       setLoading(false);
-    }, [api, onSubmit, name, showToast]);
+    }, [api, onSubmit, name, showToast, existingTag]);
+
+    useEffect(() => {
+      if (existingTag && existingTag.name !== '' && name === '') {
+        setName(existingTag.name);
+      }
+    }, [existingTag]);
 
     return (
       <Modal
@@ -45,7 +59,7 @@ export const CreateTagDialog: FC<{
       >
         <Layout style={tailwind('flex-1 p-5 pb-3')}>
           <View style={tailwind('mb-2')}>
-            <Text category="s1">Create Tag</Text>
+            <Text category="s1">{existingTag ? 'Edit Tag' : 'Create Tag'}</Text>
           </View>
           <Input
             style={tailwind('mt-1')}
@@ -69,7 +83,7 @@ export const CreateTagDialog: FC<{
               disabled={loading}
               accessoryLeft={loading ? LoadingIndicator : undefined}
             >
-              Create
+              {existingTag ? 'Save' : 'Create' }
             </Button>
           </View>
         </Layout>

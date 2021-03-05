@@ -7,7 +7,7 @@ import {
   Text,
 } from '@ui-kitten/components';
 import { Tag } from '../../util/types';
-import { CreateTagDialog } from '../../components/CreateTagDialog';
+import { TagDialog } from '../../components/TagDialog';
 
 const TagItem: FC<{
   name: string,
@@ -65,7 +65,7 @@ export const TagSelection: FC<{
           No Tags available yet. Create one ;)
         </Text>
       )}
-      <CreateTagDialog
+      <TagDialog
         visible={createTagDialogVisible}
         onClose={() => setCreateTagDialogVisible(false)}
         onSubmit={tag => {

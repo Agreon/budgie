@@ -17,12 +17,13 @@ import { useApi } from '../hooks/use-request';
 import { useToast } from '../ToastProvider';
 import { Tag } from '../util/types';
 import { Dialog } from '../components/Dialog';
-import { CreateTagDialog } from '../components/CreateTagDialog';
+import { TagDialog } from '../components/TagDialog';
 
 const TagItem: FC<{
   item: Tag
   onDelete: () => void
-}> = ({ item, onDelete }) => (
+  onEdit: () => void
+}> = ({ item, onDelete, onEdit }) => (
   <View style={tailwind('mt-2 justify-center')}>
     <View style={tailwind('p-2 flex-row pt-0 pb-0 justify-between items-center')}>
       <View style={tailwind('ml-1')}>
@@ -38,6 +39,7 @@ const TagItem: FC<{
               style={[props?.style, { width: 25, height: 25 }]}
             />
           )}
+          onPress={onEdit}
         />
         <Button
           appearance="ghost"
@@ -108,6 +110,10 @@ export const Tags: FC = () => {
         setSelectedTag(item);
         setDeleteDialogVisible(true);
       }}
+      onEdit={() => {
+        setSelectedTag(item);
+        setCreateTagDialogVisible(true);
+      }}
     />
   ), [setSelectedTag, setDeleteDialogVisible]);
 
@@ -140,12 +146,14 @@ export const Tags: FC = () => {
         onClose={() => setDeleteDialogVisible(false)}
         onSubmit={onDelete}
       />
-      <CreateTagDialog
+      <TagDialog
         visible={createTagDialogVisible}
+        existingTag={selectedTag || undefined}
         onClose={() => setCreateTagDialogVisible(false)}
         onSubmit={() => {
-          fetchData();
+          setSelectedTag(null);
           setCreateTagDialogVisible(false);
+          fetchData();
         }}
       />
     </SafeAreaView>
