@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { createStackNavigator } from '@react-navigation/stack';
-import { Expenses } from './ExpenseList';
+import { ExpenseList } from './ExpenseList';
 import { CreateExpense } from './CreateExpense';
 import { EditExpense } from './EditExpense';
 
@@ -13,13 +13,13 @@ export type ExpensesStackParamList = {
     'EditExpense': { id: string }
 };
 
-export const ExpensesStack = () => (
+export const Expenses = () => (
   <Navigator
     headerMode="none"
   >
     <Screen
       name="Expenses"
-      component={Expenses}
+      component={ExpenseList}
     />
     <Screen
       name="CreateExpense"

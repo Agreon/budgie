@@ -15,7 +15,7 @@ import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/b
 import { Login } from './src/screens/Login';
 import { ToastProvider } from './src/ToastProvider';
 import { Tags } from './src/screens/Tags';
-import { ExpensesStack } from './src/screens/expenses';
+import { Expenses } from './src/screens/expenses';
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
@@ -54,7 +54,7 @@ export default function App() {
             >
               <Screen
                 name="Expenses"
-                component={ExpensesStack}
+                component={Expenses}
               />
               <Screen
                 name="Tags"

@@ -55,7 +55,7 @@ export const TagDialog: FC<{
         visible={visible}
         backdropStyle={tailwind('bg-black bg-opacity-50')}
         onBackdropPress={onClose}
-        style={tailwind('w-full p-10')}
+        style={tailwind('w-full pb-40 pl-10 pr-10')}
       >
         <Layout style={tailwind('flex-1 p-5 pb-3')}>
           <View style={tailwind('mb-2')}>

@@ -18,6 +18,7 @@ import { Expense } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
+import { LOADING_INDICATOR_OFFSET } from '../../util/globals';
 
 const ExpenseItem: FC<{
   item: Expense;
@@ -44,7 +45,7 @@ const ExpenseItem: FC<{
   </TouchableWithoutFeedback>
 );
 
-export const Expenses: FC<{
+export const ExpenseList: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
   const api = useApi();
@@ -85,9 +86,13 @@ export const Expenses: FC<{
         style={tailwind('w-full')}
         stickyHeaderIndices={[0]}
         ListHeaderComponent={() => <Header title="Expenses" />}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={fetchData} />
-        }
+        refreshControl={(
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={fetchData}
+            progressViewOffset={LOADING_INDICATOR_OFFSET}
+          />
+        )}
         renderItem={({ item }) => (
           <ExpenseItem
             item={item}

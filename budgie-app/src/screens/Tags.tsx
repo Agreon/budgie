@@ -18,6 +18,7 @@ import { useToast } from '../ToastProvider';
 import { Tag } from '../util/types';
 import { Dialog } from '../components/Dialog';
 import { TagDialog } from '../components/TagDialog';
+import { LOADING_INDICATOR_OFFSET } from '../util/globals';
 
 const TagItem: FC<{
   item: Tag
@@ -125,9 +126,13 @@ export const Tags: FC = () => {
         style={tailwind('h-full w-full')}
         stickyHeaderIndices={[0]}
         ListHeaderComponent={() => <Header title="Tags" />}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={fetchData} />
-        }
+        refreshControl={(
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={fetchData}
+            progressViewOffset={LOADING_INDICATOR_OFFSET}
+          />
+        )}
         renderItem={renderTagItem}
         data={tags}
         keyExtractor={item => item.id}

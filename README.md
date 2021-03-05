@@ -15,13 +15,13 @@ List             |  Create
 ### Current Features
 
 - Enter and save expenses
+- User defined Tags for Expenses for improved statistics
 
 ### Planned Features (somewhat in order)
 
-- User defined Tags for Expenses for improved statistics
-- Fancy dashboards and statistics overview
 - Incomes
 - Reoccurring expenses and incomes
+- Fancy dashboards and statistics overview
 - Offline support
 - External User Register
 - Splitwise import
