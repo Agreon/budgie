@@ -122,10 +122,13 @@ func listExpenses(c *gin.Context) {
 
 	userID := c.MustGet("userID")
 	page := c.Query("page")
-	var pageInt int
-	pageInt, _ = strconv.Atoi(page)
-	page = strconv.Itoa(pageInt * 20)
-	err := db.Select(&expenseWithTags, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20 OFFSET $2", userID, page)
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+	page = strconv.Itoa(pageInt * pageSize)
+	err = db.Select(&expenseWithTags, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)

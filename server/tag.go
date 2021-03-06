@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -89,7 +90,15 @@ func listTags(c *gin.Context) {
 
 	userID := c.MustGet("userID")
 
-	err := db.Select(&tags, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC", userID)
+	page := c.Query("page")
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+	page = strconv.Itoa(pageInt * pageSize)
+
+	err = db.Select(&tags, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return

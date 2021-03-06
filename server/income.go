@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +45,14 @@ func listIncomes(c *gin.Context) {
 
 	userID := c.MustGet("userID")
 
-	err := db.Select(&income, "SELECT * FROM income WHERE user_id=$1 AND active=$2 ORDER BY created_at DESC", userID, true)
+	page := c.Query("page")
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+	page = strconv.Itoa(pageInt * pageSize)
+	err = db.Select(&income, "SELECT * FROM income WHERE user_id=$1 AND active=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, true, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
