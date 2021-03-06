@@ -16,12 +16,14 @@ import { Login } from './src/screens/Login';
 import { ToastProvider } from './src/ToastProvider';
 import { Tags } from './src/screens/Tags';
 import { Expenses } from './src/screens/expenses';
+import { Incomes } from './src/screens/incomes';
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
 export type RootStackParamList = {
   'Login': undefined,
   'Expenses': undefined,
+  'Incomes': undefined,
   'Tags': undefined,
 };
 
@@ -36,6 +38,7 @@ const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => (
     onSelect={index => navigation.navigate(state.routeNames[index])}
   >
     <BottomNavigationTab title="EXPENSES" icon={props => <Icon {...props} name="trending-down-outline" />} />
+    <BottomNavigationTab title="INCOMES" icon={props => <Icon {...props} name="trending-up-outline" />} />
     <BottomNavigationTab title="TAGS" icon={props => <Icon {...props} name="pricetags-outline" />} />
   </BottomNavigation>
 );
@@ -55,6 +58,10 @@ export default function App() {
               <Screen
                 name="Expenses"
                 component={Expenses}
+              />
+              <Screen
+                name="Incomes"
+                component={Incomes}
               />
               <Screen
                 name="Tags"

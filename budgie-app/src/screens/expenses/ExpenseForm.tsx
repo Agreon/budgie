@@ -7,7 +7,6 @@ import {
   Button,
   Datepicker,
   Icon,
-  IconProps,
   IndexPath,
   Input,
   Select,
@@ -17,10 +16,6 @@ import dayjs from 'dayjs';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { Expense, Tag } from '../../util/types';
 import { TagSelection } from './TagSelection';
-
-const CalendarIcon = (props: IconProps) => (
-  <Icon {...props} name="calendar" />
-);
 
 const categories = [
   'Food',
@@ -124,7 +119,7 @@ export const ExpenseForm: FC<IProps> = ({
         date={date}
         onFocus={() => Keyboard.dismiss()}
         onSelect={(nextDate) => setDate(nextDate)}
-        accessoryRight={CalendarIcon}
+        accessoryRight={props => (<Icon {...props} name="calendar" />)}
       />
       <Input
         style={tailwind('mt-4')}
