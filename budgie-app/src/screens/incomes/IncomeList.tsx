@@ -21,13 +21,12 @@ import { Income } from '../../util/types';
 import { ItemDivider } from '../../components/ItemDivider';
 import { ItemDate } from '../../components/ItemDate';
 
-// TODO: Extract stuff / Center Name like with Tags
 const IncomeItem: FC<{
     item: Income;
     onPress: (id: string) => void
   }> = ({ item, onPress }) => (
     <TouchableWithoutFeedback delayPressIn={0} onPress={() => onPress(item.id)}>
-      <View style={tailwind('mt-2 justify-center')}>
+      <View style={tailwind('mt-2 mb-1 justify-center')}>
         <View style={tailwind('p-2 flex-row pt-0 pb-0 justify-between items-center')}>
           <View style={tailwind('ml-1')}>
             <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.name}</Text>

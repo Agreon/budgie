@@ -12,7 +12,6 @@ const BackIcon = (props: IconProps) => (
 );
 
 export const BackAction = <T extends ParamListBase>({ navigation }: {
-  // TODO: Need a Generic type for that
   navigation: StackNavigationProp<T, keyof T>
 }) => (
   <TopNavigationAction icon={BackIcon} onPress={() => navigation.goBack()} />
