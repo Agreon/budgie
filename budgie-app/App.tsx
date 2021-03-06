@@ -1,27 +1,44 @@
 import React from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import * as eva from '@eva-design/eva';
-import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
+import {
+  ApplicationProvider,
+  BottomNavigation,
+  BottomNavigationTab,
+  Icon,
+  IconRegistry,
+} from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import * as SplashScreen from 'expo-splash-screen';
-import { Expenses } from './src/screens/expenses';
-import { CreateExpense } from './src/screens/expenses/CreateExpense';
+import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Login } from './src/screens/Login';
-import { EditExpense } from './src/screens/expenses/EditExpense';
 import { ToastProvider } from './src/ToastProvider';
+import { Tags } from './src/screens/Tags';
+import { Expenses } from './src/screens/expenses';
 
-const { Navigator, Screen } = createStackNavigator();
+const { Navigator, Screen } = createBottomTabNavigator();
 
 export type RootStackParamList = {
   'Login': undefined,
   'Expenses': undefined,
-  'CreateExpense': undefined,
-  'EditExpense': { id: string }
+  'Tags': undefined,
 };
 
-SplashScreen.preventAutoHideAsync().then(() => console.log('prevented')).catch((error) => console.error(error));
+// Show SplashScreen until login state is determined.
+SplashScreen
+  .preventAutoHideAsync()
+  .catch((error) => console.error(error));
+
+const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => (
+  <BottomNavigation
+    selectedIndex={state.index}
+    onSelect={index => navigation.navigate(state.routeNames[index])}
+  >
+    <BottomNavigationTab title="EXPENSES" icon={props => <Icon {...props} name="trending-down-outline" />} />
+    <BottomNavigationTab title="TAGS" icon={props => <Icon {...props} name="pricetags-outline" />} />
+  </BottomNavigation>
+);
 
 export default function App() {
   return (
@@ -31,23 +48,21 @@ export default function App() {
         <ToastProvider>
           <NavigationContainer>
             <Navigator
-              headerMode="none"
+              initialRouteName="Expenses"
+              backBehavior="history"
+              tabBar={props => <BottomTabBar {...props} />}
             >
-              <Screen
-                name="Login"
-                component={Login}
-              />
               <Screen
                 name="Expenses"
                 component={Expenses}
               />
               <Screen
-                name="CreateExpense"
-                component={CreateExpense}
+                name="Tags"
+                component={Tags}
               />
               <Screen
-                name="EditExpense"
-                component={EditExpense}
+                name="Login"
+                component={Login}
               />
             </Navigator>
           </NavigationContainer>

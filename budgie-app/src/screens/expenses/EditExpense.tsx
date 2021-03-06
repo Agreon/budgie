@@ -12,7 +12,6 @@ import {
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../../App';
 import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
 import { ExpenseForm } from './ExpenseForm';
@@ -20,14 +19,11 @@ import { Expense, Tag } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
-
-const DeleteIcon = (props: IconProps) => (
-  <Icon {...props} name="trash-outline" />
-);
+import { ExpensesStackParamList } from '.';
 
 export const EditExpense: FC<{
-    route: RouteProp<RootStackParamList, 'EditExpense'>
-    navigation: StackNavigationProp<RootStackParamList, 'EditExpense'>
+    route: RouteProp<ExpensesStackParamList, 'EditExpense'>
+    navigation: StackNavigationProp<ExpensesStackParamList, 'EditExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
   const api = useApi();
   const { showToast } = useToast();
@@ -41,11 +37,7 @@ export const EditExpense: FC<{
       try {
         const { data } = await api.get(`expense/${id}`);
         const { data: tags } = await api.get('tag');
-        console.log(data);
-        setExpense({
-          ...data.expense,
-          tags: data.tags,
-        });
+        setExpense(data);
         setAvailableTags(tags);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -81,13 +73,16 @@ export const EditExpense: FC<{
     <ScrollView
       stickyHeaderIndices={[0]}
       style={tailwind('bg-white h-full w-full')}
+      contentContainerStyle={tailwind('h-full')}
     >
       <Header
         title="Edit Expense"
         accessoryLeft={() => <BackAction navigation={navigation} />}
         accessoryRight={() => (
           <TopNavigationAction
-            icon={DeleteIcon}
+            icon={(props: IconProps) => (
+              <Icon {...props} name="trash-2-outline" />
+            )}
             onPress={() => {
               Keyboard.dismiss();
               setDeleteDialogVisible(true);
