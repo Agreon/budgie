@@ -50,6 +50,11 @@ type RecurringInput struct {
 	EndDate   time.Time `json:"end_date" `
 }
 
+type RecurringOutput struct {
+	Recurring
+	History []Recurring `json:"history"`
+}
+
 func listRecurring(c *gin.Context) {
 	db := GetDB()
 	recurring := []Recurring{}
@@ -113,13 +118,27 @@ func insertRecurring(c *gin.Context) {
 }
 
 func listSingleRecurring(c *gin.Context) {
-	recurring, err, errCode := getSingleRecurringFromDB(c)
+	var recurringOutput RecurringOutput
+	var err error
+	var errCode int
+	recurringOutput.Recurring, err, errCode = getSingleRecurringFromDB(c)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
 	}
 
-	c.JSON(200, recurring)
+	//recurringOutput.History = []Recurring{}
+	db := GetDB()
+	err = db.Select(&recurringOutput.History, "SELECT * FROM recurring WHERE recurring_id=$1 AND NOT id=$2 ORDER BY created_at DESC", recurringOutput.RecurringID, recurringOutput.ID)
+
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+	if len(recurringOutput.History) == 0 {
+		recurringOutput.History = []Recurring{}
+	}
+	c.JSON(200, recurringOutput)
 }
 
 func getSingleRecurringFromDB(c *gin.Context) (Recurring, error, int) {
