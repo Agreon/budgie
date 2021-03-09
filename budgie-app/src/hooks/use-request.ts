@@ -35,7 +35,7 @@ export const useApi = () => {
         return navigation.navigate('Login');
       }
 
-      console.log('Err', error);
+      console.log('Err', JSON.stringify(error));
 
       throw error;
     });

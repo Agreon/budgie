@@ -5,7 +5,7 @@ import {
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tailwind from 'tailwind-rn';
 import * as SplashScreen from 'expo-splash-screen';
@@ -33,11 +33,12 @@ export const Login: FC<{
 
   const loginUser = useCallback(async () => {
     setLoading(true);
+    Keyboard.dismiss();
     try {
       const res = await api.post('login', { username, password });
 
       await setToken(res.data.token);
-      navigation.navigate('Expenses');
+      navigation.navigate('App');
     } catch (err) {
       showToast({ message: 'Login failed', status: 'danger' });
     }
@@ -54,16 +55,12 @@ export const Login: FC<{
         return;
       }
 
-      navigation.navigate('Expenses');
+      navigation.navigate('App');
     })();
   }, []);
 
-  const toggleSecureEntry = () => {
-    setSecureTextEntry(!secureTextEntry);
-  };
-
   const renderIcon = (props: IconProps) => (
-    <TouchableWithoutFeedback onPress={toggleSecureEntry}>
+    <TouchableWithoutFeedback onPress={() => setSecureTextEntry(!secureTextEntry)}>
       <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'} />
     </TouchableWithoutFeedback>
   );

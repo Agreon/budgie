@@ -5,16 +5,16 @@ import { View, SafeAreaView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Spinner } from '@ui-kitten/components';
-import { RootStackParamList } from '../../../App';
 import { Header } from '../../components/Header';
 import { BackAction } from '../../components/BackAction';
 import { ExpenseForm } from './ExpenseForm';
 import { Expense, Tag } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
+import { ExpensesStackParamList } from '.';
 
 export const CreateExpense: FC<{
-  navigation: StackNavigationProp<RootStackParamList, 'CreateExpense'>
+  navigation: StackNavigationProp<ExpensesStackParamList, 'CreateExpense'>
 }> = ({ navigation }) => {
   const api = useApi();
   const { showToast } = useToast();
