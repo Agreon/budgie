@@ -22,6 +22,7 @@ func main() {
 	db.MustExec(tagTable)
 	db.MustExec(expenseTagTable)
 	db.MustExec(incomeTable)
+	db.MustExec(recurringTable)
 
 	tx := db.MustBegin()
 	tx.Commit()
@@ -63,6 +64,8 @@ func main() {
 		useAuthentication.PUT("/tag/:id", validateUUID(), errorHandler(), updateTag)
 
 		useAuthentication.DELETE("/tag/:id", validateUUID(), errorHandler(), deleteTag)
+
+		useAuthentication.GET("/recurring", errorHandler(), listRecurring)
 	}
 
 	r.POST("/user", errorHandler(), addUser)
