@@ -1,5 +1,5 @@
 import React, {
-  FC, useCallback, useEffect, useState,
+  FC, useEffect,
 } from 'react';
 import {
   SafeAreaView, FlatList, RefreshControl, View, TouchableWithoutFeedback,
@@ -10,16 +10,15 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import {
   Button, Icon, Text,
 } from '@ui-kitten/components';
-import { useIsFocused } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
+import { InfiniteData, useQueryClient } from 'react-query';
 import { Header } from '../../components/Header';
 import { Expense } from '../../util/types';
-import { useToast } from '../../ToastProvider';
-import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
 import { LOADING_INDICATOR_OFFSET } from '../../util/globals';
 import { ItemDivider } from '../../components/ItemDivider';
 import { ItemDate } from '../../components/ItemDate';
+import { Query, usePaginatedQuery } from '../../hooks/use-paginated-query';
 
 const ExpenseItem: FC<{
   item: Expense;
@@ -68,38 +67,25 @@ const ExpenseItem: FC<{
   </TouchableWithoutFeedback>
 );
 
+// TODO: Refresh-control is not directly loading
 export const ExpenseList: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
-  const api = useApi();
-  const isFocused = useIsFocused();
-  const { showToast } = useToast();
+  const {
+    data: expenses, isLoading, refetch, isFetching, fetchNextPage, hasNextPage,
+  } = usePaginatedQuery<Expense>(Query.Expense);
 
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const queryClient = useQueryClient();
 
-  const [loading, setLoading] = useState(false);
-  // TODO: Extract to use-request or something similar.
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get('expense');
-
-      setExpenses(data);
-    } catch (err) {
-      showToast({ status: 'danger', message: err.message || 'Unknown error' });
-    }
-
-    setLoading(false);
-  }, [api, setExpenses, showToast, setLoading]);
+  console.log(expenses?.length);
 
   useEffect(() => {
     (async () => {
-      if (!isFocused) return;
-
       await SplashScreen.hideAsync();
-      await fetchData();
     })();
-  }, [isFocused]);
+  }, []);
+
+  console.log(isLoading, isFetching);
 
   return (
     <SafeAreaView
@@ -112,8 +98,22 @@ export const ExpenseList: FC<{
         ItemSeparatorComponent={ItemDivider}
         refreshControl={(
           <RefreshControl
-            refreshing={loading}
-            onRefresh={fetchData}
+            refreshing={isFetching}
+            onRefresh={async () => {
+              // TODO: Move into hook
+              // Remove all pages > 1 to trigger a refetch that only gets one page
+              queryClient.setQueryData<InfiniteData<Expense> | undefined>(Query.Expense, old => {
+                if (old && old.pages.length) {
+                  return {
+                    ...old,
+                    pages: [old.pages[0]],
+                  };
+                }
+
+                return old;
+              });
+              await refetch();
+            }}
             progressViewOffset={LOADING_INDICATOR_OFFSET}
           />
         )}
@@ -125,6 +125,17 @@ export const ExpenseList: FC<{
         )}
         data={expenses}
         keyExtractor={item => item.id}
+        onEndReachedThreshold={0.2}
+        onEndReached={({ distanceFromEnd }) => {
+          // Would trigger a refetch on navigation change.
+          if (distanceFromEnd < 0) return;
+
+          console.log('The end is near!');
+          if (hasNextPage) {
+            console.log('Fetching');
+            fetchNextPage();
+          }
+        }}
       />
       <Button
         style={tailwind('absolute right-6 bottom-5')}

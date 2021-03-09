@@ -36,7 +36,7 @@ export const EditExpense: FC<{
     (async () => {
       try {
         const { data } = await api.get(`expense/${id}`);
-        const { data: tags } = await api.get('tag');
+        const { data: tags } = await api.get('tag?page=0');
         setExpense(data);
         setAvailableTags(tags);
       } catch (err) {

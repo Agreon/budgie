@@ -13,6 +13,7 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import * as SplashScreen from 'expo-splash-screen';
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { Login } from './src/screens/Login';
 import { ToastProvider } from './src/ToastProvider';
 import { Tags } from './src/screens/Tags';
@@ -75,25 +76,29 @@ export type RootStackParamList = {
   'App': undefined,
 };
 
+const queryClient = new QueryClient();
+
 export default function App() {
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />
       <ApplicationProvider {...eva} theme={eva.light}>
-        <ToastProvider>
-          <NavigationContainer>
-            <Main.Navigator initialRouteName="Login" headerMode="none">
-              <Main.Screen
-                name="Login"
-                component={Login}
-              />
-              <Main.Screen
-                name="App"
-                component={AppNavigator}
-              />
-            </Main.Navigator>
-          </NavigationContainer>
-        </ToastProvider>
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <NavigationContainer>
+              <Main.Navigator initialRouteName="Login" headerMode="none">
+                <Main.Screen
+                  name="Login"
+                  component={Login}
+                />
+                <Main.Screen
+                  name="App"
+                  component={AppNavigator}
+                />
+              </Main.Navigator>
+            </NavigationContainer>
+          </ToastProvider>
+        </QueryClientProvider>
       </ApplicationProvider>
     </>
   );
