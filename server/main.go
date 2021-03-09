@@ -68,6 +68,8 @@ func main() {
 		useAuthentication.GET("/recurring", errorHandler(), listRecurring)
 
 		useAuthentication.POST("/recurring", errorHandler(), insertRecurring)
+
+		useAuthentication.GET("/recurring/:id", validateUUID(), errorHandler(), listSingleRecurring)
 	}
 
 	r.POST("/user", errorHandler(), addUser)

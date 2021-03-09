@@ -111,3 +111,35 @@ func insertRecurring(c *gin.Context) {
 	/* return input */
 	c.JSON(200, newRecurring)
 }
+
+func listSingleRecurring(c *gin.Context) {
+	recurring, err, errCode := getSingleRecurringFromDB(c)
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
+		return
+	}
+
+	c.JSON(200, recurring)
+}
+
+func getSingleRecurringFromDB(c *gin.Context) (Recurring, error, int) {
+	recurringID := c.MustGet("entityID")
+	recurring := Recurring{}
+
+	db := GetDB()
+	err := db.Get(&recurring, "SELECT * FROM recurring WHERE id=$1", recurringID)
+
+	/* check if expense exists */
+	if err != nil {
+		return recurring, err, 400
+	}
+
+	userID := c.MustGet("userID")
+
+	/* check if recurring belongs to requesting user */
+	if recurring.UserID != userID {
+		return recurring, errors.New("Recurring does not belong to this user!"), 403
+	}
+
+	return recurring, nil, 200
+}

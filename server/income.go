@@ -35,8 +35,8 @@ type Income struct {
 
 type IncomeInput struct {
 	Name  string    `json:"name" binding:"required"`
-	Costs string    ` json:"costs" binding:"required"`
-	Date  time.Time ` json:"date" binding:"required"`
+	Costs string    `json:"costs" binding:"required"`
+	Date  time.Time `json:"date" binding:"required"`
 }
 
 func listIncomes(c *gin.Context) {
@@ -149,14 +149,14 @@ func getSingleIncomeFromDB(c *gin.Context) (Income, error, int) {
 	db := GetDB()
 	err := db.Get(&income, "SELECT * FROM income WHERE id=$1", incomeID)
 
-	/* check if expense exists */
+	/* check if income exists */
 	if err != nil {
 		return income, err, 400
 	}
 
 	userID := c.MustGet("userID")
 
-	/* check if expense belongs to requesting user */
+	/* check if income belongs to requesting user */
 	if income.UserID != userID {
 		return income, errors.New("Income does not belong to this user!"), 403
 	}
