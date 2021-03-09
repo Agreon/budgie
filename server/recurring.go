@@ -41,6 +41,15 @@ type Recurring struct {
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
+type RecurringInput struct {
+	Name      string    `json:"name" binding:"required"`
+	Costs     string    `json:"costs" binding:"required"`
+	Category  string    `json:"category"`
+	Type      string    `json:"type" binding:"required"`
+	StartDate time.Time `json:"start_date" binding:"required"`
+	EndDate   time.Time `json:"end_date" `
+}
+
 func listRecurring(c *gin.Context) {
 	db := GetDB()
 	recurring := []Recurring{}
@@ -71,4 +80,34 @@ func listRecurring(c *gin.Context) {
 	}
 
 	c.JSON(200, recurring)
+}
+
+func insertRecurring(c *gin.Context) {
+	var newRecurring RecurringInput
+	var err error
+	if err = c.BindJSON(&newRecurring); err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+	var isExpense bool
+	if newRecurring.Type == "expense" {
+		isExpense = true
+	} else if newRecurring.Type == "income" {
+		isExpense = false
+	} else {
+		saveErrorInfo(c, errors.New("Invalid type"), 400)
+		return
+	}
+
+	userID := c.MustGet("userID")
+
+	db := GetDB()
+	_, err = db.Exec("INSERT INTO recurring VALUES (uuid_generate_v4(), uuid_generate_v4(), $1, $2, $3, $4, $5, $6, $7, $8, now(), now())", newRecurring.Name, newRecurring.Costs, userID, newRecurring.Category, true, isExpense, newRecurring.StartDate, newRecurring.EndDate)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	/* return input */
+	c.JSON(200, newRecurring)
 }
