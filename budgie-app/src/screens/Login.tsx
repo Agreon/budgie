@@ -38,7 +38,7 @@ export const Login: FC<{
       const res = await api.post('login', { username, password });
 
       await setToken(res.data.token);
-      navigation.navigate('Expenses');
+      navigation.navigate('App');
     } catch (err) {
       showToast({ message: 'Login failed', status: 'danger' });
     }
@@ -55,7 +55,7 @@ export const Login: FC<{
         return;
       }
 
-      navigation.navigate('Expenses');
+      navigation.navigate('App');
     })();
   }, []);
 

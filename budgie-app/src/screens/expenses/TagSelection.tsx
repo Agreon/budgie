@@ -23,7 +23,6 @@ const TagItem: FC<{
         <Text style={selected ? tailwind('text-white') : {}}>{name}</Text>
       </View>
     </TouchableWithoutFeedback>
-
   );
 };
 
