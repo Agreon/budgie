@@ -27,11 +27,36 @@ const ExpenseItem: FC<{
 }> = ({ item, onPress }) => (
   <TouchableWithoutFeedback delayPressIn={0} onPress={() => onPress(item.id)}>
     <View style={tailwind('p-2 flex-row justify-between')}>
-      <View style={tailwind('flex-col ml-1')}>
+      <View style={{
+        ...tailwind('flex-col ml-1 pr-2'),
+        flex: 2,
+      }}
+      >
         <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
-        <Text appearance="hint">{item.name}</Text>
+        <View style={tailwind('flex-row items-center')}>
+          <Text
+            appearance="hint"
+            numberOfLines={1}
+            style={item.name ? tailwind('mr-2') : undefined}
+          >
+            {item.name}
+
+          </Text>
+          {item.tags![0] != null
+            && (
+              <Text
+                style={{
+                  ...tailwind('border rounded border-gray-300 p-1'),
+                  marginTop: 2,
+                }}
+                category="c1"
+              >
+                {item.tags![0].name}
+              </Text>
+            )}
+        </View>
       </View>
-      <View style={tailwind('flex-col justify-between mr-1')}>
+      <View style={tailwind('flex-col justify-between mr-1 flex-1')}>
         <ItemDate date={item.date} />
         <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
           {item.costs}

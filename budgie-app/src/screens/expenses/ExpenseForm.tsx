@@ -97,7 +97,7 @@ export const ExpenseForm: FC<IProps> = ({
         onChangeText={(text) => setCosts(text)}
         label="Cost"
         autoFocus={!expense}
-        keyboardType="decimal-pad"
+        keyboardType="number-pad"
       />
       <Select
         style={tailwind('mt-4')}

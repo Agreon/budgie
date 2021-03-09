@@ -12,6 +12,7 @@ import {
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import * as SplashScreen from 'expo-splash-screen';
 import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Login } from './src/screens/Login';
 import { ToastProvider } from './src/ToastProvider';
 import { Tags } from './src/screens/Tags';
@@ -19,13 +20,6 @@ import { Expenses } from './src/screens/expenses';
 import { Incomes } from './src/screens/incomes';
 
 const { Navigator, Screen } = createBottomTabNavigator();
-
-export type RootStackParamList = {
-  'Login': undefined,
-  'Expenses': undefined,
-  'Incomes': undefined,
-  'Tags': undefined,
-};
 
 // Show SplashScreen until login state is determined.
 SplashScreen
@@ -43,6 +37,44 @@ const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => (
   </BottomNavigation>
 );
 
+export type MainParamList = {
+  'Expenses': undefined,
+  'Incomes': undefined,
+  'Tags': undefined,
+};
+
+export const AppNavigator = () => (
+  <Navigator
+    initialRouteName="Expenses"
+    backBehavior="history"
+    tabBar={props => <BottomTabBar {...props} />}
+  >
+    <Screen
+      name="Expenses"
+      component={Expenses}
+    />
+    <Screen
+      name="Incomes"
+      component={Incomes}
+    />
+    <Screen
+      name="Tags"
+      component={Tags}
+    />
+    <Screen
+      name="Login"
+      component={Login}
+    />
+  </Navigator>
+);
+
+const Main = createStackNavigator();
+
+export type RootStackParamList = {
+  'Login': undefined,
+  'App': undefined,
+};
+
 export default function App() {
   return (
     <>
@@ -50,28 +82,16 @@ export default function App() {
       <ApplicationProvider {...eva} theme={eva.light}>
         <ToastProvider>
           <NavigationContainer>
-            <Navigator
-              initialRouteName="Expenses"
-              backBehavior="history"
-              tabBar={props => <BottomTabBar {...props} />}
-            >
-              <Screen
-                name="Expenses"
-                component={Expenses}
-              />
-              <Screen
-                name="Incomes"
-                component={Incomes}
-              />
-              <Screen
-                name="Tags"
-                component={Tags}
-              />
-              <Screen
+            <Main.Navigator initialRouteName="Login" headerMode="none">
+              <Main.Screen
                 name="Login"
                 component={Login}
               />
-            </Navigator>
+              <Main.Screen
+                name="App"
+                component={AppNavigator}
+              />
+            </Main.Navigator>
           </NavigationContainer>
         </ToastProvider>
       </ApplicationProvider>
