@@ -1,9 +1,8 @@
-import { useIsFocused } from '@react-navigation/native';
 import React, {
-  FC, useCallback, useEffect, useState,
+  FC, useCallback, useState,
 } from 'react';
 import {
-  RefreshControl, SafeAreaView, View, FlatList,
+  SafeAreaView, View,
 } from 'react-native';
 import tailwind from 'tailwind-rn';
 import {
@@ -11,14 +10,14 @@ import {
   Icon,
   Text,
 } from '@ui-kitten/components';
-import { Header } from '../components/Header';
+import { useQueryClient } from 'react-query';
 import { useApi } from '../hooks/use-request';
 import { useToast } from '../ToastProvider';
 import { Tag } from '../util/types';
 import { Dialog } from '../components/Dialog';
 import { TagDialog } from '../components/TagDialog';
-import { LOADING_INDICATOR_OFFSET } from '../util/globals';
-import { ItemDivider } from '../components/ItemDivider';
+import { List } from '../components/List';
+import { Query } from '../hooks/use-paginated-query';
 
 const TagItem: FC<{
   item: Tag
@@ -61,47 +60,24 @@ const TagItem: FC<{
 
 export const Tags: FC = () => {
   const api = useApi();
-  const isFocused = useIsFocused();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const [createTagDialogVisible, setCreateTagDialogVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get('tag');
-
-      setTags(data);
-    } catch (err) {
-      showToast({ status: 'danger', message: err.message || 'Unknown error' });
-    }
-
-    setLoading(false);
-  }, [api, setTags, showToast, setLoading]);
 
   const onDelete = useCallback(async () => {
     // TODO: Some kind of loading state would be nice.
     setDeleteDialogVisible(false);
     try {
       await api.delete(`tag/${selectedTag?.id}`);
+      queryClient.refetchQueries(Query.Tag);
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
     setSelectedTag(null);
   }, [selectedTag, api, showToast]);
-
-  useEffect(() => {
-    (async () => {
-      if (!isFocused) return;
-
-      await fetchData();
-    })();
-  }, [isFocused]);
 
   const renderTagItem = useCallback(({ item }: { item: Tag }) => (
     <TagItem
@@ -121,21 +97,10 @@ export const Tags: FC = () => {
     <SafeAreaView
       style={tailwind('h-full w-full bg-white')}
     >
-      <FlatList<Tag>
-        style={tailwind('h-full w-full')}
-        stickyHeaderIndices={[0]}
-        ListHeaderComponent={() => <Header title="Tags" />}
-        ItemSeparatorComponent={ItemDivider}
-        refreshControl={(
-          <RefreshControl
-            refreshing={loading}
-            onRefresh={fetchData}
-            progressViewOffset={LOADING_INDICATOR_OFFSET}
-          />
-        )}
+      <List<Tag>
+        title="Tags"
+        query={Query.Tag}
         renderItem={renderTagItem}
-        data={tags}
-        keyExtractor={item => item.id}
       />
       <Button
         style={tailwind('absolute right-6 bottom-5')}
@@ -158,7 +123,7 @@ export const Tags: FC = () => {
         onSubmit={() => {
           setSelectedTag(null);
           setCreateTagDialogVisible(false);
-          fetchData();
+          queryClient.refetchQueries(Query.Tag);
         }}
       />
     </SafeAreaView>

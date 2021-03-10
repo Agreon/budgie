@@ -2,7 +2,7 @@ import React, {
   FC, useEffect,
 } from 'react';
 import {
-  SafeAreaView, FlatList, RefreshControl, View, TouchableWithoutFeedback,
+  SafeAreaView, View, TouchableWithoutFeedback,
 } from 'react-native';
 
 import tailwind from 'tailwind-rn';
@@ -11,14 +11,11 @@ import {
   Button, Icon, Text,
 } from '@ui-kitten/components';
 import * as SplashScreen from 'expo-splash-screen';
-import { InfiniteData, useQueryClient } from 'react-query';
-import { Header } from '../../components/Header';
 import { Expense } from '../../util/types';
 import { ExpensesStackParamList } from '.';
-import { LOADING_INDICATOR_OFFSET } from '../../util/globals';
-import { ItemDivider } from '../../components/ItemDivider';
 import { ItemDate } from '../../components/ItemDate';
-import { Query, usePaginatedQuery } from '../../hooks/use-paginated-query';
+import { Query } from '../../hooks/use-paginated-query';
+import { List } from '../../components/List';
 
 const ExpenseItem: FC<{
   item: Expense;
@@ -67,75 +64,28 @@ const ExpenseItem: FC<{
   </TouchableWithoutFeedback>
 );
 
-// TODO: Refresh-control is not directly loading
 export const ExpenseList: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
-  const {
-    data: expenses, isLoading, refetch, isFetching, fetchNextPage, hasNextPage,
-  } = usePaginatedQuery<Expense>(Query.Expense);
-
-  const queryClient = useQueryClient();
-
-  console.log(expenses?.length);
-
   useEffect(() => {
     (async () => {
       await SplashScreen.hideAsync();
     })();
   }, []);
 
-  console.log(isLoading, isFetching);
-
   return (
     <SafeAreaView
       style={tailwind('h-full w-full bg-white')}
     >
-      <FlatList<Expense>
-        style={tailwind('w-full')}
-        stickyHeaderIndices={[0]}
-        ListHeaderComponent={() => <Header title="Expenses" />}
-        ItemSeparatorComponent={ItemDivider}
-        refreshControl={(
-          <RefreshControl
-            refreshing={isFetching}
-            onRefresh={async () => {
-              // TODO: Move into hook
-              // Remove all pages > 1 to trigger a refetch that only gets one page
-              queryClient.setQueryData<InfiniteData<Expense> | undefined>(Query.Expense, old => {
-                if (old && old.pages.length) {
-                  return {
-                    ...old,
-                    pages: [old.pages[0]],
-                  };
-                }
-
-                return old;
-              });
-              await refetch();
-            }}
-            progressViewOffset={LOADING_INDICATOR_OFFSET}
-          />
-        )}
+      <List<Expense>
+        title="Expenses"
+        query={Query.Expense}
         renderItem={({ item }) => (
           <ExpenseItem
             item={item}
             onPress={id => { navigation.navigate('EditExpense', { id }); }}
           />
         )}
-        data={expenses}
-        keyExtractor={item => item.id}
-        onEndReachedThreshold={0.2}
-        onEndReached={({ distanceFromEnd }) => {
-          // Would trigger a refetch on navigation change.
-          if (distanceFromEnd < 0) return;
-
-          console.log('The end is near!');
-          if (hasNextPage) {
-            console.log('Fetching');
-            fetchNextPage();
-          }
-        }}
       />
       <Button
         style={tailwind('absolute right-6 bottom-5')}
