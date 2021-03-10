@@ -72,6 +72,11 @@ type ExpenseWithTags struct {
 	Tags []ExpenseTagOutput `json:"tags"`
 }
 
+type ExpenseListOutput struct {
+	Data    []ExpenseWithTags `json:"data"`
+	Entries int               `json:"number_of_entries"`
+}
+
 func insertExpense(c *gin.Context) {
 	var newExpense ExpenseInput
 	var err error
@@ -118,7 +123,7 @@ func insertExpense(c *gin.Context) {
 
 func listExpenses(c *gin.Context) {
 	db := GetDB()
-	var expenseWithTags []ExpenseWithTags
+	var dataOutput ExpenseListOutput
 
 	userID := c.MustGet("userID")
 	page := c.Query("page")
@@ -128,23 +133,32 @@ func listExpenses(c *gin.Context) {
 		return
 	}
 	page = strconv.Itoa(pageInt * pageSize)
-	err = db.Select(&expenseWithTags, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	err = db.Select(&dataOutput.Data, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
+	err = db.Get(&dataOutput.Entries, "SELECT count(*) FROM expense WHERE user_id=$1", userID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
 	var errCode int
-	for i, expense := range expenseWithTags {
-		expenseWithTags[i].Tags, err, errCode = getTagsOfExpense(c, expense.ID)
+	for i, expense := range dataOutput.Data {
+		dataOutput.Data[i].Tags, err, errCode = getTagsOfExpense(c, expense.ID)
 		if err != nil {
 			saveErrorInfo(c, err, errCode)
 			return
 		}
 	}
+	if len(dataOutput.Data) == 0 {
+		dataOutput.Data = []ExpenseWithTags{}
+	}
 
-	c.JSON(200, expenseWithTags)
+	c.JSON(200, dataOutput)
 }
 
 func listSingleExpense(c *gin.Context) {

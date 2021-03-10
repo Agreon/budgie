@@ -39,9 +39,14 @@ type IncomeInput struct {
 	Date  time.Time `json:"date" binding:"required"`
 }
 
+type IncomeListOutput struct {
+	Data    []Income `json:"data"`
+	Entries int      `json:"number_of_entries"`
+}
+
 func listIncomes(c *gin.Context) {
 	db := GetDB()
-	income := []Income{}
+	income := IncomeListOutput{}
 
 	userID := c.MustGet("userID")
 
@@ -52,10 +57,20 @@ func listIncomes(c *gin.Context) {
 		return
 	}
 	page = strconv.Itoa(pageInt * pageSize)
-	err = db.Select(&income, "SELECT * FROM income WHERE user_id=$1 AND active=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, true, pageSize, page)
+	err = db.Select(&income.Data, "SELECT * FROM income WHERE user_id=$1 AND active=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, true, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
+	}
+
+	err = db.Get(&income.Entries, "SELECT count(*) FROM income WHERE user_id=$1", userID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	if len(income.Data) == 0 {
+		income.Data = []Income{}
 	}
 
 	c.JSON(200, income)

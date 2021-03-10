@@ -54,10 +54,14 @@ type RecurringOutput struct {
 	Recurring
 	History []Recurring `json:"history"`
 }
+type RecurringListOutput struct {
+	Data    []Recurring `json:"data"`
+	Entries int         `json:"number_of_entries"`
+}
 
 func listRecurring(c *gin.Context) {
 	db := GetDB()
-	recurring := []Recurring{}
+	recurring := RecurringListOutput{}
 
 	userID := c.MustGet("userID")
 
@@ -78,10 +82,20 @@ func listRecurring(c *gin.Context) {
 		return
 	}
 	page = strconv.Itoa(pageInt * pageSize)
-	err = db.Select(&recurring, "SELECT * FROM recurring WHERE user_id=$1 AND active=$2 AND is_expense=$3 ORDER BY created_at DESC LIMIT $4 OFFSET $5", userID, true, isExpense, pageSize, page)
+	err = db.Select(&recurring.Data, "SELECT * FROM recurring WHERE user_id=$1 AND active=$2 AND is_expense=$3 ORDER BY created_at DESC LIMIT $4 OFFSET $5", userID, true, isExpense, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
+	}
+
+	err = db.Get(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND active=$2 AND is_expense=$3", userID, true, isExpense)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	if len(recurring.Data) == 0 {
+		recurring.Data = []Recurring{}
 	}
 
 	c.JSON(200, recurring)
@@ -127,9 +141,8 @@ func listSingleRecurring(c *gin.Context) {
 		return
 	}
 
-	//recurringOutput.History = []Recurring{}
 	db := GetDB()
-	err = db.Select(&recurringOutput.History, "SELECT * FROM recurring WHERE recurring_id=$1 AND NOT id=$2 ORDER BY created_at DESC", recurringOutput.RecurringID, recurringOutput.ID)
+	err = db.Select(&recurringOutput.History, "SELECT * FROM recurring WHERE recurring_id=$1 AND NOT id=$2 ORDER BY start_date DESC", recurringOutput.RecurringID, recurringOutput.ID)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
