@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -84,14 +83,8 @@ func listRecurring(c *gin.Context) {
 		saveErrorInfo(c, errors.New("Invalid type in query"), 400)
 		return
 	}
-	page := c.Query("page")
-	pageInt, err := strconv.Atoi(page)
-	if err != nil {
-		saveErrorInfo(c, err, 400)
-		return
-	}
-	page = strconv.Itoa(pageInt * pageSize)
-	err = db.Select(&recurring.Data, "SELECT * FROM recurring WHERE user_id=$1 AND active=$2 AND is_expense=$3 ORDER BY created_at DESC LIMIT $4 OFFSET $5", userID, true, isExpense, pageSize, page)
+	page := c.MustGet("page")
+	err := db.Select(&recurring.Data, "SELECT * FROM recurring WHERE user_id=$1 AND active=$2 AND is_expense=$3 ORDER BY created_at DESC LIMIT $4 OFFSET $5", userID, true, isExpense, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return

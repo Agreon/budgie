@@ -39,7 +39,7 @@ func main() {
 	{
 		useAuthentication.POST("/expense", errorHandler(), insertExpense)
 
-		useAuthentication.GET("/expense", errorHandler(), listExpenses)
+		useAuthentication.GET("/expense", validatePageInput(), errorHandler(), listExpenses)
 
 		useAuthentication.GET("/expense/:id", validateUUID(), errorHandler(), listSingleExpense)
 
@@ -49,7 +49,7 @@ func main() {
 
 		useAuthentication.POST("/income", errorHandler(), insertIncome)
 
-		useAuthentication.GET("/income", errorHandler(), listIncomes)
+		useAuthentication.GET("/income", validatePageInput(), errorHandler(), listIncomes)
 
 		useAuthentication.GET("/income/:id", validateUUID(), errorHandler(), listSingleIncome)
 
@@ -59,13 +59,13 @@ func main() {
 
 		useAuthentication.POST("/tag", errorHandler(), insertTag)
 
-		useAuthentication.GET("/tag", errorHandler(), listTags)
+		useAuthentication.GET("/tag", validatePageInput(), errorHandler(), listTags)
 
 		useAuthentication.PUT("/tag/:id", validateUUID(), errorHandler(), updateTag)
 
 		useAuthentication.DELETE("/tag/:id", validateUUID(), errorHandler(), deleteTag)
 
-		useAuthentication.GET("/recurring", errorHandler(), listRecurring)
+		useAuthentication.GET("/recurring", validatePageInput(), errorHandler(), listRecurring)
 
 		useAuthentication.POST("/recurring", errorHandler(), insertRecurring)
 

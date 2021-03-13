@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,6 +21,22 @@ func validateUUID() gin.HandlerFunc {
 			return
 		}
 		c.Set("entityID", uuID)
+
+		c.Next()
+	}
+}
+
+func validatePageInput() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		page := c.Query("page")
+		pageInt, err := strconv.Atoi(page)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(400)
+			return
+		}
+		page = strconv.Itoa(pageInt * pageSize)
+		c.Set("page", page)
 
 		c.Next()
 	}
