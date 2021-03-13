@@ -50,10 +50,19 @@ type RecurringInput struct {
 	EndDate   time.Time `json:"end_date" `
 }
 
+type UpdateRecurringInput struct {
+	Name      string    `json:"name" binding:"required"`
+	Costs     string    `json:"costs" binding:"required"`
+	Category  string    `json:"category"`
+	StartDate time.Time `json:"start_date" binding:"required"`
+	EndDate   time.Time `json:"end_date" `
+}
+
 type RecurringOutput struct {
 	Recurring
 	History []Recurring `json:"history"`
 }
+
 type RecurringListOutput struct {
 	Data    []Recurring `json:"data"`
 	Entries int         `json:"number_of_entries"`
@@ -161,7 +170,7 @@ func getSingleRecurringFromDB(c *gin.Context) (Recurring, error, int) {
 	db := GetDB()
 	err := db.Get(&recurring, "SELECT * FROM recurring WHERE id=$1", recurringID)
 
-	/* check if expense exists */
+	/* check if recurring exists */
 	if err != nil {
 		return recurring, err, 400
 	}
@@ -174,4 +183,37 @@ func getSingleRecurringFromDB(c *gin.Context) (Recurring, error, int) {
 	}
 
 	return recurring, nil, 200
+}
+
+func updateRecurring(c *gin.Context) {
+	/* get updated data from body */
+	var updateRecurring UpdateRecurringInput
+	var err error
+	if err = c.BindJSON(&updateRecurring); err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+
+	var recurring Recurring
+	var errCode int
+	recurring, err, errCode = getSingleRecurringFromDB(c)
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
+		return
+	}
+
+	db := GetDB()
+	_, err = db.Exec("UPDATE recurring SET name=$1, costs=$2, category=$3, start_date=$4, end_date=$5, updated_at=now() WHERE id=$6", updateRecurring.Name, updateRecurring.Costs, updateRecurring.Category, updateRecurring.StartDate, updateRecurring.EndDate, recurring.ID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	err = db.Get(&recurring, "SELECT * FROM recurring WHERE id=$1", recurring.ID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	c.JSON(200, recurring)
 }
