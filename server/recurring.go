@@ -12,12 +12,11 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS recurring (
 	id uuid UNIQUE,
-	recurring_id uuid,
+	parent_id uuid,
 	name text,
 	costs numeric,
 	user_id uuid,
 	category text,
-	active boolean,
 	is_expense boolean,
 	start_date timestamp with time zone,
 	end_date timestamp with time zone,
@@ -26,18 +25,17 @@ CREATE TABLE IF NOT EXISTS recurring (
 )`
 
 type Recurring struct {
-	ID          string    `db:"id" json:"id"`
-	RecurringID string    `db:"recurring_id" json:"recurring_id"`
-	Name        string    `db:"name" json:"name"`
-	Costs       string    `db:"costs" json:"costs"`
-	UserID      string    `db:"user_id" json:"user_id"`
-	Category    string    `db:"category" json:"category"`
-	Active      bool      `db:"active" json:"active"`
-	IsExpense   bool      `db:"is_expense" json:"is_expense"`
-	StartDate   time.Time `db:"start_date" json:"start_date"`
-	EndDate     time.Time `db:"end_date" json:"end_date"`
-	CreatedAt   time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
+	ID        string    `db:"id" json:"id"`
+	ParentID  string    `db:"parent_id" json:"parent_id"`
+	Name      string    `db:"name" json:"name"`
+	Costs     string    `db:"costs" json:"costs"`
+	UserID    string    `db:"user_id" json:"user_id"`
+	Category  string    `db:"category" json:"category"`
+	IsExpense bool      `db:"is_expense" json:"is_expense"`
+	StartDate time.Time `db:"start_date" json:"start_date"`
+	EndDate   time.Time `db:"end_date" json:"end_date"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type RecurringInput struct {
@@ -57,7 +55,7 @@ type UpdateRecurringInput struct {
 	EndDate   time.Time `json:"end_date" `
 }
 
-type RecurringOutput struct {
+type RecurringOutputWithHistory struct {
 	Recurring
 	History []Recurring `json:"history"`
 }
@@ -84,13 +82,13 @@ func listRecurring(c *gin.Context) {
 		return
 	}
 	page := c.MustGet("page")
-	err := db.Select(&recurring.Data, "SELECT * FROM recurring WHERE user_id=$1 AND active=$2 AND is_expense=$3 ORDER BY created_at DESC LIMIT $4 OFFSET $5", userID, true, isExpense, pageSize, page)
+	err := db.Select(&recurring.Data, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, isExpense, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
-	err = db.Get(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND active=$2 AND is_expense=$3", userID, true, isExpense)
+	err = db.Get(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2", userID, isExpense)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -123,7 +121,7 @@ func insertRecurring(c *gin.Context) {
 	userID := c.MustGet("userID")
 
 	db := GetDB()
-	_, err = db.Exec("INSERT INTO recurring VALUES (uuid_generate_v4(), uuid_generate_v4(), $1, $2, $3, $4, $5, $6, $7, $8, now(), now())", newRecurring.Name, newRecurring.Costs, userID, newRecurring.Category, true, isExpense, newRecurring.StartDate, newRecurring.EndDate)
+	_, err = db.Exec("INSERT INTO recurring VALUES (uuid_generate_v4(), null, $1, $2, $3, $4, $5, $6, $7, now(), now())", newRecurring.Name, newRecurring.Costs, userID, newRecurring.Category, isExpense, newRecurring.StartDate, newRecurring.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -134,7 +132,7 @@ func insertRecurring(c *gin.Context) {
 }
 
 func listSingleRecurring(c *gin.Context) {
-	var recurringOutput RecurringOutput
+	var recurringOutput RecurringOutputWithHistory
 	var err error
 	var errCode int
 	recurringOutput.Recurring, err, errCode = getSingleRecurringFromDB(c)
@@ -144,7 +142,7 @@ func listSingleRecurring(c *gin.Context) {
 	}
 
 	db := GetDB()
-	err = db.Select(&recurringOutput.History, "SELECT * FROM recurring WHERE recurring_id=$1 AND NOT id=$2 ORDER BY start_date DESC", recurringOutput.RecurringID, recurringOutput.ID)
+	err = db.Select(&recurringOutput.History, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE parent_id=$1 ORDER BY start_date DESC", recurringOutput.ID)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
@@ -161,7 +159,7 @@ func getSingleRecurringFromDB(c *gin.Context) (Recurring, error, int) {
 	recurring := Recurring{}
 
 	db := GetDB()
-	err := db.Get(&recurring, "SELECT * FROM recurring WHERE id=$1", recurringID)
+	err := db.Get(&recurring, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE id=$1", recurringID)
 
 	/* check if recurring exists */
 	if err != nil {
@@ -202,7 +200,72 @@ func updateRecurring(c *gin.Context) {
 		return
 	}
 
-	err = db.Get(&recurring, "SELECT * FROM recurring WHERE id=$1", recurring.ID)
+	err = db.Get(&recurring, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE id=$1", recurring.ID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	c.JSON(200, recurring)
+}
+
+func addRecurringHistoryItem(c *gin.Context) {
+	/* get updated data from body */
+	var updateRecurring UpdateRecurringInput
+	var err error
+	if err = c.BindJSON(&updateRecurring); err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+
+	/* check if id is valid (exists/belongs to this user) */
+	recurringID := c.MustGet("entityID")
+	recurring := Recurring{}
+
+	db := GetDB()
+	err = db.Get(&recurring, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE id=$1 AND parent_id IS NULL", recurringID)
+
+	/* check if recurring exists or is not a child item */
+	if err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+
+	userID := c.MustGet("userID")
+
+	/* check if recurring belongs to requesting user */
+	if recurring.UserID != userID {
+		saveErrorInfo(c, errors.New("Recurring does not belong to this user!"), 403)
+		return
+	}
+
+	rows, err := db.NamedQuery("INSERT INTO recurring VALUES (uuid_generate_v4(), null, :name, :costs, :user_id, :category, :is_expense, :start_date, :end_date, now(), now()) RETURNING id",
+		map[string]interface{}{
+			"name":       updateRecurring.Name,
+			"costs":      updateRecurring.Costs,
+			"user_id":    recurring.UserID,
+			"category":   updateRecurring.Category,
+			"is_expense": recurring.IsExpense,
+			"start_date": updateRecurring.StartDate,
+			"end_date":   updateRecurring.EndDate})
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+	/* read back generated recurring ID */
+	var newParentID string
+	if rows.Next() {
+		rows.Scan(&newParentID)
+	}
+
+	/* update parent ID*/
+	_, err = db.Exec("UPDATE recurring SET parent_id=$1, updated_at=now() WHERE id=$2 OR parent_id=$2", newParentID, recurring.ID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	err = db.Get(&recurring, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE id=$1", newParentID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
