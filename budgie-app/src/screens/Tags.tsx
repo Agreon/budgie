@@ -72,7 +72,7 @@ export const Tags: FC = () => {
     setDeleteDialogVisible(false);
     try {
       await api.delete(`tag/${selectedTag?.id}`);
-      queryClient.resetQueries({ queryKey: Query.Tag, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Tags, exact: true });
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
@@ -98,8 +98,8 @@ export const Tags: FC = () => {
       style={tailwind('h-full w-full bg-white')}
     >
       <List<Tag>
-        title="Tags"
-        query={Query.Tag}
+        query={Query.Tags}
+        url="tag"
         renderItem={renderTagItem}
       />
       <Button
@@ -123,7 +123,7 @@ export const Tags: FC = () => {
         onSubmit={() => {
           setSelectedTag(null);
           setCreateTagDialogVisible(false);
-          queryClient.resetQueries({ queryKey: Query.Tag, exact: true });
+          queryClient.resetQueries({ queryKey: Query.Tags, exact: true });
         }}
       />
     </SafeAreaView>

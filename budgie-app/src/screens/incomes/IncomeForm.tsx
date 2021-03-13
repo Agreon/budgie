@@ -46,7 +46,7 @@ export const IncomeForm: FC<IProps> = ({
       <Input
         style={tailwind('mt-1')}
         value={costs}
-        onChangeText={(text) => setCosts(text)}
+        onChangeText={setCosts}
         label="Amount"
         autoFocus={!income}
         keyboardType="decimal-pad"
@@ -55,14 +55,14 @@ export const IncomeForm: FC<IProps> = ({
         style={tailwind('mt-4')}
         label="Date"
         date={date}
-        onFocus={() => Keyboard.dismiss()}
-        onSelect={(nextDate) => setDate(nextDate)}
+        onFocus={Keyboard.dismiss}
+        onSelect={setDate}
         accessoryRight={props => (<Icon {...props} name="calendar" />)}
       />
       <Input
         style={tailwind('mt-4')}
         value={name}
-        onChangeText={(text) => setName(text)}
+        onChangeText={setName}
         label="Name"
         onSubmitEditing={onSave}
       />

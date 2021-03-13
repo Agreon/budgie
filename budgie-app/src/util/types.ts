@@ -16,6 +16,16 @@ export interface Income {
 }
 
 export interface Tag {
-    id: string;
-    name: string;
-  }
+  id: string;
+  name: string;
+}
+
+export interface Reoccurring {
+  id: string;
+  costs: string;
+  category?: string;
+  name: string;
+  start_date: Date;
+  end_date?: Date;
+  is_expense: boolean;
+}

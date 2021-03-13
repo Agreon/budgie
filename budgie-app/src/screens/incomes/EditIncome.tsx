@@ -49,7 +49,7 @@ export const EditIncome: FC<{
     try {
       console.log(incomeData);
       await api.put(`income/${id}`, incomeData);
-      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -61,7 +61,7 @@ export const EditIncome: FC<{
     setDeleteDialogVisible(false);
     try {
       await api.delete(`income/${id}`);
-      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
