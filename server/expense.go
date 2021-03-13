@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"log"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -121,8 +121,14 @@ func listExpenses(c *gin.Context) {
 	var expenseWithTags []ExpenseWithTags
 
 	userID := c.MustGet("userID")
-
-	err := db.Select(&expenseWithTags, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC", userID)
+	page := c.Query("page")
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
+	page = strconv.Itoa(pageInt * pageSize)
+	err = db.Select(&expenseWithTags, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
@@ -131,9 +137,7 @@ func listExpenses(c *gin.Context) {
 
 	var errCode int
 	for i, expense := range expenseWithTags {
-		log.Println("Expense ID: ", expense.ID)
 		expenseWithTags[i].Tags, err, errCode = getTagsOfExpense(c, expense.ID)
-		log.Println("Tags: ", expense.Tags)
 		if err != nil {
 			saveErrorInfo(c, err, errCode)
 			return

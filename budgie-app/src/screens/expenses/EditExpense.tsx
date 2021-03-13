@@ -12,6 +12,7 @@ import {
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import { useQueryClient } from 'react-query';
 import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
 import { ExpenseForm } from './ExpenseForm';
@@ -20,6 +21,7 @@ import { useToast } from '../../ToastProvider';
 import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
+import { Query } from '../../hooks/use-paginated-query';
 
 export const EditExpense: FC<{
     route: RouteProp<ExpensesStackParamList, 'EditExpense'>
@@ -27,6 +29,7 @@ export const EditExpense: FC<{
 }> = ({ navigation, route: { params: { id } } }) => {
   const api = useApi();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
   const [expense, setExpense] = useState<Expense | null>(null);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
@@ -36,7 +39,7 @@ export const EditExpense: FC<{
     (async () => {
       try {
         const { data } = await api.get(`expense/${id}`);
-        const { data: tags } = await api.get('tag');
+        const { data: tags } = await api.get('tag?page=0');
         setExpense(data);
         setAvailableTags(tags);
       } catch (err) {
@@ -52,7 +55,8 @@ export const EditExpense: FC<{
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
-      navigation.navigate('Expenses');
+      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
@@ -63,7 +67,8 @@ export const EditExpense: FC<{
     setDeleteDialogVisible(false);
     try {
       await api.delete(`expense/${id}`);
-      navigation.navigate('Expenses');
+      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }

@@ -5,6 +5,7 @@ import { View, SafeAreaView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Spinner } from '@ui-kitten/components';
+import { useQueryClient } from 'react-query';
 import { Header } from '../../components/Header';
 import { BackAction } from '../../components/BackAction';
 import { ExpenseForm } from './ExpenseForm';
@@ -12,19 +13,21 @@ import { Expense, Tag } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
+import { Query } from '../../hooks/use-paginated-query';
 
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'CreateExpense'>
 }> = ({ navigation }) => {
   const api = useApi();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
   const [availableTags, setAvailableTags] = useState<Tag[] | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const { data: tags } = await api.get('tag');
+        const { data: tags } = await api.get('tag?page=0');
         setAvailableTags(tags);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -38,6 +41,7 @@ export const CreateExpense: FC<{
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
+      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });

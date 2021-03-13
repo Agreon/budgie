@@ -6,6 +6,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var pageSize int = 20
+
 func main() {
 	loadDataFromEnv()
 
