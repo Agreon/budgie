@@ -15,47 +15,41 @@ import { RouteProp } from '@react-navigation/native';
 import { useQueryClient } from 'react-query';
 import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
-import { ExpenseForm } from './ExpenseForm';
-import { Expense, Tag } from '../../util/types';
+import { Income } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
-import { ExpensesStackParamList } from '.';
+import { IncomesStackParamList } from '.';
+import { IncomeForm } from './IncomeForm';
 import { Query } from '../../hooks/use-paginated-query';
 
-export const EditExpense: FC<{
-    route: RouteProp<ExpensesStackParamList, 'EditExpense'>
-    navigation: StackNavigationProp<ExpensesStackParamList, 'EditExpense'>
+export const EditIncome: FC<{
+    route: RouteProp<IncomesStackParamList, 'EditIncome'>
+    navigation: StackNavigationProp<IncomesStackParamList, 'EditIncome'>
 }> = ({ navigation, route: { params: { id } } }) => {
   const api = useApi();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
-  const [expense, setExpense] = useState<Expense | null>(null);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [income, setIncome] = useState<Income | null>(null);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`expense/${id}`);
-        const { data: tags } = await api.get('tag?page=0');
-        setExpense(data);
-        setAvailableTags(tags);
+        const { data } = await api.get(`income/${id}`);
+        setIncome(data);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
     })();
   }, [id]);
 
-  const onSave = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
+  const onSave = useCallback(async (incomeData: Omit<Income, 'id'>) => {
     try {
-      console.log(expenseData);
-      await api.put(`expense/${id}`, {
-        ...expenseData,
-        tag_ids: expenseData.tags?.map(t => t.id) || [],
-      });
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      console.log(incomeData);
+      await api.put(`income/${id}`, incomeData);
+      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -66,8 +60,8 @@ export const EditExpense: FC<{
     // TODO: Some kind of loading state would be nice.
     setDeleteDialogVisible(false);
     try {
-      await api.delete(`expense/${id}`);
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      await api.delete(`income/${id}`);
+      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -81,7 +75,7 @@ export const EditExpense: FC<{
       contentContainerStyle={tailwind('h-full')}
     >
       <Header
-        title="Edit Expense"
+        title="Edit Income"
         accessoryLeft={() => <BackAction navigation={navigation} />}
         accessoryRight={() => (
           <TopNavigationAction
@@ -96,21 +90,19 @@ export const EditExpense: FC<{
         )}
       />
       {
-        !expense ? (
+        !income ? (
           <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>
             <Spinner size="giant" />
           </View>
         ) : (
           <View style={tailwind('flex pl-5 pr-5')}>
-            <ExpenseForm
-              expense={expense}
-              availableTags={availableTags}
+            <IncomeForm
+              income={income}
               onSubmit={onSave}
-              setAvailableTags={setAvailableTags}
             />
             <Dialog
               visible={deleteDialogVisible}
-              content="Are you sure you want to delete this expense?"
+              content="Are you sure you want to delete this income?"
               onClose={() => setDeleteDialogVisible(false)}
               onSubmit={onDelete}
             />
