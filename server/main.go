@@ -72,6 +72,8 @@ func main() {
 		useAuthentication.GET("/recurring/:id", validateUUID(), errorHandler(), listSingleRecurring)
 
 		useAuthentication.PUT("/recurring/:id", validateUUID(), errorHandler(), updateRecurring)
+
+		useAuthentication.POST("/recurringxyz/:id", validateUUID(), errorHandler(), addRecurringHistoryItem)
 	}
 
 	r.POST("/user", errorHandler(), addUser)
