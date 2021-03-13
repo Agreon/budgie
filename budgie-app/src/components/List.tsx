@@ -50,14 +50,12 @@ export function List<T extends {id: string}>({ query, title, renderItem }: ListP
       renderItem={renderItem}
       data={expenses}
       keyExtractor={item => item.id}
-      onEndReachedThreshold={0.3}
+      onEndReachedThreshold={0.4}
       onEndReached={({ distanceFromEnd }) => {
-      // Would trigger a refetch on navigation change.
+        // Would trigger a refetch on navigation change.
         if (distanceFromEnd < 0) return;
 
-        console.log('The end is near!');
         if (hasNextPage) {
-          console.log('Fetching');
           fetchNextPage();
         }
       }}

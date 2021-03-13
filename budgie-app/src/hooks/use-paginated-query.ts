@@ -31,7 +31,6 @@ export function usePaginatedQuery<T>(query: Query) {
       ),
       refetchOnWindowFocus: false,
       retry: false,
-      // TODO: Also do navigation-redirect here?
       onError: error => showToast({ status: 'danger', message: error.message || 'Unknown error' }),
     },
   );

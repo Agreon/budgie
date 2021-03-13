@@ -72,7 +72,7 @@ export const Tags: FC = () => {
     setDeleteDialogVisible(false);
     try {
       await api.delete(`tag/${selectedTag?.id}`);
-      queryClient.refetchQueries(Query.Tag);
+      queryClient.resetQueries({ queryKey: Query.Tag, exact: true });
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
@@ -123,7 +123,7 @@ export const Tags: FC = () => {
         onSubmit={() => {
           setSelectedTag(null);
           setCreateTagDialogVisible(false);
-          queryClient.refetchQueries(Query.Tag);
+          queryClient.resetQueries({ queryKey: Query.Tag, exact: true });
         }}
       />
     </SafeAreaView>

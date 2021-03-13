@@ -12,6 +12,7 @@ import {
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import { useQueryClient } from 'react-query';
 import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
 import { Income } from '../../util/types';
@@ -20,6 +21,7 @@ import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 import { IncomesStackParamList } from '.';
 import { IncomeForm } from './IncomeForm';
+import { Query } from '../../hooks/use-paginated-query';
 
 export const EditIncome: FC<{
     route: RouteProp<IncomesStackParamList, 'EditIncome'>
@@ -27,6 +29,7 @@ export const EditIncome: FC<{
 }> = ({ navigation, route: { params: { id } } }) => {
   const api = useApi();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
   const [income, setIncome] = useState<Income | null>(null);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -46,7 +49,8 @@ export const EditIncome: FC<{
     try {
       console.log(incomeData);
       await api.put(`income/${id}`, incomeData);
-      navigation.navigate('Incomes');
+      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
+      navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
@@ -57,7 +61,8 @@ export const EditIncome: FC<{
     setDeleteDialogVisible(false);
     try {
       await api.delete(`income/${id}`);
-      navigation.navigate('Incomes');
+      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
+      navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
