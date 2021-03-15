@@ -41,7 +41,7 @@
     "@expo/webpack-config": "^0.12.57",
     "@types/react": "~16.9.35",
     "@types/react-dom": "~16.9.8",
-    "@types/react-native": "~0.63.2",
+    "@types/react-native": "~0.63.51",
     "@typescript-eslint/eslint-plugin": "^4.14.1",
     "@typescript-eslint/parser": "^4.14.1",
     "eslint": "^7.16.0",
