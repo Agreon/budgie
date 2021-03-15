@@ -273,3 +273,20 @@ func addRecurringHistoryItem(c *gin.Context) {
 
 	c.JSON(200, recurring)
 }
+
+func deleteRecurring(c *gin.Context) {
+	recurring, err, errCode := getSingleRecurringFromDB(c)
+	if err != nil {
+		saveErrorInfo(c, err, errCode)
+		return
+	}
+
+	db := GetDB()
+	_, err = db.Exec("DELETE FROM recurring WHERE id=$1 OR parent_id=$1", recurring.ID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	c.Status(200)
+}

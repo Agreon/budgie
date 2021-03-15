@@ -74,6 +74,8 @@ func main() {
 		useAuthentication.PUT("/recurring/:id", validateUUID(), errorHandler(), updateRecurring)
 
 		useAuthentication.POST("/recurringxyz/:id", validateUUID(), errorHandler(), addRecurringHistoryItem)
+
+		useAuthentication.DELETE("/recurring/:id", validateUUID(), errorHandler(), deleteRecurring)
 	}
 
 	r.POST("/user", errorHandler(), addUser)
