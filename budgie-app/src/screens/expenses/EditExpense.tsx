@@ -55,7 +55,7 @@ export const EditExpense: FC<{
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -67,7 +67,7 @@ export const EditExpense: FC<{
     setDeleteDialogVisible(false);
     try {
       await api.delete(`expense/${id}`);
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });

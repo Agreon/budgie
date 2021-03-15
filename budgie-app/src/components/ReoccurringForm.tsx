@@ -13,33 +13,40 @@ import {
   SelectItem,
 } from '@ui-kitten/components';
 import dayjs from 'dayjs';
-import { LoadingIndicator } from '../../components/LoadingIndicator';
-import { Expense, Tag } from '../../util/types';
-import { TagSelection } from './TagSelection';
-import { CATEGORIES } from '../../util/globals';
-import { getIndexOfCategory } from '../../util/util';
+import { LoadingIndicator } from './LoadingIndicator';
+import { Reoccurring } from '../util/types';
+import { CATEGORIES } from '../util/globals';
+import { getIndexOfCategory } from '../util/util';
 
 interface IProps {
-  expense?: Expense;
-  availableTags: Tag[];
-  setAvailableTags: (tags: Tag[]) => void;
-  onSubmit: (expense: Omit<Expense, 'id'>) => Promise<void>;
+  reoccurring?: Reoccurring;
+  onSubmit: (expense: Omit<Reoccurring, 'id' | 'is_expense'>) => Promise<void>;
 }
 
-export const ExpenseForm: FC<IProps> = ({
-  expense,
-  availableTags,
-  setAvailableTags,
+/**
+ * TODO:
+ * - Reoccurring incomes
+ * - history
+ *  - add
+ *  - delete
+ *  - edit
+ * - delete
+ */
+export const ReoccurringForm: FC<IProps> = ({
+  reoccurring,
   onSubmit,
 }) => {
-  const [costs, setCosts] = useState(expense?.costs || '');
+  const [costs, setCosts] = useState(reoccurring?.costs || '');
   const [selectedCategory, setSelectedCategory] = useState(
-    new IndexPath(expense ? getIndexOfCategory(expense.category) : 0),
+    new IndexPath(reoccurring?.category ? getIndexOfCategory(reoccurring.category) : 0),
   );
-  const [name, setName] = useState<string | undefined>(expense?.name);
-  const [date, setDate] = useState<Date>(expense?.date ? dayjs(expense.date).toDate() : new Date());
-
-  const [selectedTags, setSelectedTags] = useState<Tag[]>(expense?.tags || []);
+  const [name, setName] = useState<string>(reoccurring?.name || '');
+  const [startDate, setStartDate] = useState<Date>(
+    reoccurring?.start_date ? dayjs(reoccurring.start_date).toDate() : new Date(),
+  );
+  const [endDate, setEndDate] = useState<Date | null>(
+    reoccurring?.end_date ? dayjs(reoccurring.end_date).toDate() : null,
+  );
 
   const [loading, setLoading] = useState(false);
 
@@ -47,30 +54,32 @@ export const ExpenseForm: FC<IProps> = ({
     setLoading(true);
     try {
       await onSubmit({
+        name,
         category: CATEGORIES[selectedCategory.row],
         costs: costs.replace(/,/g, '.'),
-        name,
-        date,
-        tags: selectedTags,
+        start_date: startDate,
+        end_date: endDate || undefined,
       });
     } finally {
       setLoading(false);
     }
-  }, [loading, expense, selectedCategory, costs, name, date, selectedTags]);
-
-  const onTagCreated = useCallback((tag: Tag) => {
-    setAvailableTags([...availableTags].concat(tag));
-    setSelectedTags([...selectedTags].concat(tag));
-  }, [availableTags, setAvailableTags, selectedTags, setSelectedTags]);
+  }, [loading, reoccurring, selectedCategory, costs, name, startDate, endDate]);
 
   return (
     <View>
+      <Input
+        style={tailwind('mt-4')}
+        value={name}
+        onChangeText={setName}
+        label="Name"
+        onSubmitEditing={onSave}
+      />
       <Input
         style={tailwind('mt-1')}
         value={costs}
         onChangeText={setCosts}
         label="Cost"
-        autoFocus={!expense}
+        autoFocus={!reoccurring}
         keyboardType="number-pad"
       />
       <Select
@@ -89,24 +98,19 @@ export const ExpenseForm: FC<IProps> = ({
       </Select>
       <Datepicker
         style={tailwind('mt-4')}
-        label="Date"
-        date={date}
+        label="Start date"
+        date={startDate}
         onFocus={Keyboard.dismiss}
-        onSelect={setDate}
+        onSelect={setStartDate}
         accessoryRight={props => (<Icon {...props} name="calendar" />)}
       />
-      <Input
+      <Datepicker
         style={tailwind('mt-4')}
-        value={name}
-        onChangeText={setName}
-        label="Name (optional)"
-        onSubmitEditing={onSave}
-      />
-      <TagSelection
-        available={availableTags}
-        selected={selectedTags}
-        onSelectionChanged={setSelectedTags}
-        onTagCreated={onTagCreated}
+        label="End date (optional)"
+        date={endDate}
+        onFocus={Keyboard.dismiss}
+        onSelect={setEndDate}
+        accessoryRight={props => (<Icon {...props} name="calendar" />)}
       />
       <Button
         style={tailwind('mt-8')}

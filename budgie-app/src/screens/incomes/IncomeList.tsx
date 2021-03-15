@@ -46,8 +46,8 @@ export const IncomeList: FC<{
       style={tailwind('h-full w-full bg-white')}
     >
       <List<Income>
-        title="Incomes"
-        query={Query.Income}
+        query={Query.Incomes}
+        url="income"
         renderItem={({ item }) => (
           <IncomeItem
             item={item}
