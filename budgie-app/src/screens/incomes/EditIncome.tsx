@@ -72,7 +72,6 @@ export const EditIncome: FC<{
     <ScrollView
       stickyHeaderIndices={[0]}
       style={tailwind('bg-white h-full w-full')}
-      contentContainerStyle={tailwind('h-full')}
     >
       <Header
         title="Edit Income"

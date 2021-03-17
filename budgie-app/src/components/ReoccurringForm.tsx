@@ -24,13 +24,10 @@ interface IProps {
 }
 
 /**
- * TODO:
- * - Reoccurring incomes
- * - history
- *  - add
- *  - delete
- *  - edit
- * - delete
+ * TODO: Focus (https://stackoverflow.com/a/59754484)
+ *  - returnKeyType='next'
+ *
+ * - Possibility to set endDate to null
  */
 export const ReoccurringForm: FC<IProps> = ({
   reoccurring,
@@ -66,20 +63,19 @@ export const ReoccurringForm: FC<IProps> = ({
   }, [loading, reoccurring, selectedCategory, costs, name, startDate, endDate]);
 
   return (
-    <View>
+    <View style={tailwind('mb-3')}>
       <Input
         style={tailwind('mt-4')}
         value={name}
         onChangeText={setName}
         label="Name"
-        onSubmitEditing={onSave}
+        autoFocus={!reoccurring}
       />
       <Input
         style={tailwind('mt-1')}
         value={costs}
         onChangeText={setCosts}
         label="Cost"
-        autoFocus={!reoccurring}
         keyboardType="number-pad"
       />
       <Select

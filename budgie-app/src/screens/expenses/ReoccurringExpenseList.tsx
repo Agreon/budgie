@@ -16,7 +16,6 @@ import { ItemDate } from '../../components/ItemDate';
 import { Query } from '../../hooks/use-paginated-query';
 import { List } from '../../components/List';
 
-// TODO: Style
 const ReoccurringExpenseItem: FC<{
   item: Reoccurring;
   onPress: (id: string) => void
@@ -40,10 +39,22 @@ const ReoccurringExpenseItem: FC<{
         </View>
       </View>
       <View style={tailwind('flex-col justify-between mr-1 flex-1')}>
-        <View style={tailwind('flex-row')}>
-          <ItemDate date={item.start_date} />
-          -
-          <ItemDate date={item.end_date || new Date()} />
+        <View style={tailwind('flex-row justify-end')}>
+          {
+            item.end_date ? (
+              <>
+                <Text appearance="hint">from </Text>
+                <ItemDate date={item.start_date} />
+                <Text appearance="hint">to </Text>
+                <ItemDate date={item.end_date} />
+              </>
+            ) : (
+              <>
+                <Text appearance="hint">since </Text>
+                <ItemDate date={item.start_date} />
+              </>
+            )
+          }
         </View>
         <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
           {item.costs}
@@ -68,8 +79,17 @@ const ReoccurringExpenseItem: FC<{
  *
  */
 
+/**
+ * TODO:
+ * - Reoccurring incomes
+ * - history
+ *  - add
+ *  - delete
+ *  - edit
+ * - delete
+  */
 export const ReoccurringExpenseList: FC<{
-  navigation: StackNavigationProp<ExpensesStackParamList, 'ReoccurringExpenses'>
+  navigation: StackNavigationProp<ExpensesStackParamList, 'Expenses'>
 }> = ({ navigation }) => (
   <SafeAreaView
     style={tailwind('h-full w-full bg-white')}

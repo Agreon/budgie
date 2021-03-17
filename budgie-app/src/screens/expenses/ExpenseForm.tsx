@@ -64,7 +64,7 @@ export const ExpenseForm: FC<IProps> = ({
   }, [availableTags, setAvailableTags, selectedTags, setSelectedTags]);
 
   return (
-    <View>
+    <View style={tailwind('mb-3')}>
       <Input
         style={tailwind('mt-1')}
         value={costs}
