@@ -25,6 +25,11 @@ CREATE TABLE IF NOT EXISTS recurring (
 )`
 
 type Recurring struct {
+	RecurringWOutEndDate
+	RecurringEndDate
+}
+
+type RecurringWOutEndDate struct {
 	ID        string    `db:"id" json:"id"`
 	ParentID  string    `db:"parent_id" json:"parent_id"`
 	Name      string    `db:"name" json:"name"`
@@ -33,9 +38,12 @@ type Recurring struct {
 	Category  string    `db:"category" json:"category"`
 	IsExpense bool      `db:"is_expense" json:"is_expense"`
 	StartDate time.Time `db:"start_date" json:"start_date"`
-	EndDate   time.Time `db:"end_date" json:"end_date"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type RecurringEndDate struct {
+	EndDate time.Time `db:"end_date" json:"end_date"`
 }
 
 type RecurringInput struct {
@@ -60,14 +68,21 @@ type RecurringOutputWithHistory struct {
 	History []Recurring `json:"history"`
 }
 
+//type RecurringListOutput struct {
+//	Data    []Recurring `json:"data"`
+//	Entries int         `json:"number_of_entries"`
+//}
+
 type RecurringListOutput struct {
-	Data    []Recurring `json:"data"`
-	Entries int         `json:"number_of_entries"`
+	Data    []interface{} `json:"data"`
+	Entries int           `json:"number_of_entries"`
 }
 
 func listRecurring(c *gin.Context) {
 	db := GetDB()
 	recurring := RecurringListOutput{}
+	recurring.Data = []interface{}{}
+	recurringData := []Recurring{}
 
 	userID := c.MustGet("userID")
 
@@ -82,7 +97,7 @@ func listRecurring(c *gin.Context) {
 		return
 	}
 	page := c.MustGet("page")
-	err := db.Select(&recurring.Data, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, isExpense, pageSize, page)
+	err := db.Select(&recurringData, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, isExpense, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -94,9 +109,18 @@ func listRecurring(c *gin.Context) {
 		return
 	}
 
-	if len(recurring.Data) == 0 {
-		recurring.Data = []Recurring{}
+	/* work around for dealing with optional enddate */
+	for i, data := range recurringData {
+		if data.EndDate.IsZero() {
+			recurring.Data = append(recurring.Data, recurringData[i].RecurringWOutEndDate)
+		} else {
+			recurring.Data = append(recurring.Data, recurringData[i])
+		}
 	}
+
+	//if len(recurringData) == 0 {
+	//	recurring.Data = make([]interface{}, 0)
+	//}
 
 	c.JSON(200, recurring)
 }
