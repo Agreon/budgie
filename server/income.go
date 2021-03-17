@@ -19,14 +19,15 @@ CREATE TABLE IF NOT EXISTS income (
 	date timestamp with time zone,
 	created_at timestamp with time zone,
 	updated_at timestamp with time zone
-)`
+);
+
+ALTER TABLE income DROP COLUMN IF EXISTS active`
 
 type Income struct {
 	ID        string    `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
 	Costs     string    `db:"costs" json:"costs"`
 	UserID    string    `db:"user_id" json:"user_id"`
-	Active    bool      `db:"active" json:"active"`
 	Date      time.Time `db:"date" json:"date"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
@@ -50,7 +51,7 @@ func listIncomes(c *gin.Context) {
 	userID := c.MustGet("userID")
 
 	page := c.MustGet("page")
-	err := db.Select(&income.Data, "SELECT * FROM income WHERE user_id=$1 AND active=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, true, pageSize, page)
+	err := db.Select(&income.Data, "SELECT * FROM income WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -80,7 +81,7 @@ func insertIncome(c *gin.Context) {
 	userID := c.MustGet("userID")
 
 	db := GetDB()
-	_, err = db.Exec("INSERT INTO income VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, now(), now())", newIncome.Name, newIncome.Costs, userID, true, newIncome.Date)
+	_, err = db.Exec("INSERT INTO income VALUES (uuid_generate_v4(), $1, $2, $3, $4, now(), now())", newIncome.Name, newIncome.Costs, userID, newIncome.Date)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
