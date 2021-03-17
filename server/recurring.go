@@ -47,12 +47,16 @@ type RecurringEndDate struct {
 }
 
 type RecurringInput struct {
+	RecurringInputWOutEndDate
+	RecurringEndDate
+}
+
+type RecurringInputWOutEndDate struct {
 	Name      string    `json:"name" binding:"required"`
 	Costs     string    `json:"costs" binding:"required"`
 	Category  string    `json:"category"`
 	Type      string    `json:"type" binding:"required"`
 	StartDate time.Time `json:"start_date" binding:"required"`
-	EndDate   time.Time `json:"end_date" `
 }
 
 type UpdateRecurringInput struct {
@@ -63,15 +67,10 @@ type UpdateRecurringInput struct {
 	EndDate   time.Time `json:"end_date" `
 }
 
-type RecurringOutputWithHistory struct {
-	Recurring
-	History []Recurring `json:"history"`
+type RecurringOutputHistory struct {
+	Recurring interface{} `json:"recurring"`
+	History   []Recurring `json:"history"`
 }
-
-//type RecurringListOutput struct {
-//	Data    []Recurring `json:"data"`
-//	Entries int         `json:"number_of_entries"`
-//}
 
 type RecurringListOutput struct {
 	Data    []interface{} `json:"data"`
@@ -118,10 +117,6 @@ func listRecurring(c *gin.Context) {
 		}
 	}
 
-	//if len(recurringData) == 0 {
-	//	recurring.Data = make([]interface{}, 0)
-	//}
-
 	c.JSON(200, recurring)
 }
 
@@ -151,22 +146,27 @@ func insertRecurring(c *gin.Context) {
 		return
 	}
 
-	/* return input */
-	c.JSON(200, newRecurring)
+	/* work around for dealing with optional enddate */
+	if newRecurring.EndDate.IsZero() {
+		c.JSON(200, newRecurring.RecurringInputWOutEndDate)
+	} else {
+		c.JSON(200, newRecurring)
+	}
 }
 
 func listSingleRecurring(c *gin.Context) {
-	var recurringOutput RecurringOutputWithHistory
+	var recurringOutput RecurringOutputHistory
 	var err error
 	var errCode int
-	recurringOutput.Recurring, err, errCode = getSingleRecurringFromDB(c)
+	var recurring Recurring
+	recurring, err, errCode = getSingleRecurringFromDB(c)
 	if err != nil {
 		saveErrorInfo(c, err, errCode)
 		return
 	}
 
 	db := GetDB()
-	err = db.Select(&recurringOutput.History, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE parent_id=$1 ORDER BY start_date DESC", recurringOutput.ID)
+	err = db.Select(&recurringOutput.History, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE parent_id=$1 ORDER BY start_date DESC", recurring.ID)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
@@ -174,6 +174,13 @@ func listSingleRecurring(c *gin.Context) {
 	}
 	if len(recurringOutput.History) == 0 {
 		recurringOutput.History = []Recurring{}
+	}
+
+	/* work around for dealing with optional enddate */
+	if recurring.EndDate.IsZero() {
+		recurringOutput.Recurring = recurring.RecurringWOutEndDate
+	} else {
+		recurringOutput.Recurring = recurring
 	}
 	c.JSON(200, recurringOutput)
 }
@@ -230,7 +237,12 @@ func updateRecurring(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, recurring)
+	/* work around for dealing with optional enddate */
+	if recurring.EndDate.IsZero() {
+		c.JSON(200, recurring.RecurringWOutEndDate)
+	} else {
+		c.JSON(200, recurring)
+	}
 }
 
 func addRecurringHistoryItem(c *gin.Context) {
@@ -282,20 +294,25 @@ func addRecurringHistoryItem(c *gin.Context) {
 		rows.Scan(&newParentID)
 	}
 
-	/* update parent ID*/
+	/* update parent ID */
 	_, err = db.Exec("UPDATE recurring SET parent_id=$1, updated_at=now() WHERE id=$2 OR parent_id=$2", newParentID, recurring.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-
+	/* TODO: check if history item have an end date! */
 	err = db.Get(&recurring, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE id=$1", newParentID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
-	c.JSON(200, recurring)
+	/* work around for dealing with optional enddate */
+	if recurring.EndDate.IsZero() {
+		c.JSON(200, recurring.RecurringWOutEndDate)
+	} else {
+		c.JSON(200, recurring)
+	}
 }
 
 func deleteRecurring(c *gin.Context) {
