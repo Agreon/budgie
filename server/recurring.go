@@ -21,7 +21,11 @@ CREATE TABLE IF NOT EXISTS recurring (
 	start_date timestamp with time zone,
 	end_date timestamp with time zone,
 	created_at timestamp with time zone,
-	updated_at timestamp with time zone
+	updated_at timestamp with time zone,
+	PRIMARY KEY(id),
+	FOREIGN KEY(parent_id)
+		REFERENCES recurring(id)
+			ON DELETE CASCADE
 )`
 
 type Recurring struct {
@@ -323,7 +327,7 @@ func deleteRecurring(c *gin.Context) {
 	}
 
 	db := GetDB()
-	_, err = db.Exec("DELETE FROM recurring WHERE id=$1 OR parent_id=$1", recurring.ID)
+	_, err = db.Exec("DELETE FROM recurring WHERE id=$1", recurring.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
