@@ -279,6 +279,15 @@ func addRecurringHistoryItem(c *gin.Context) {
 		return
 	}
 
+	/* add end date to old main item if necessary */
+	if recurring.EndDate.IsZero() {
+		_, err = db.Exec("UPDATE recurring SET end_date=$1 WHERE id=$2", updateRecurring.StartDate, recurring.ID)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+	}
+
 	rows, err := db.NamedQuery("INSERT INTO recurring VALUES (uuid_generate_v4(), null, :name, :costs, :user_id, :category, :is_expense, :start_date, :end_date, now(), now()) RETURNING id",
 		map[string]interface{}{
 			"name":       updateRecurring.Name,
@@ -304,7 +313,7 @@ func addRecurringHistoryItem(c *gin.Context) {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-	/* TODO: check if history item have an end date! */
+
 	err = db.Get(&recurring, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE id=$1", newParentID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
