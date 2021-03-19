@@ -42,7 +42,7 @@ export const IncomeForm: FC<IProps> = ({
   }, [loading, income, costs, name, date]);
 
   return (
-    <View>
+    <View style={tailwind('mb-3')}>
       <Input
         style={tailwind('mt-1')}
         value={costs}

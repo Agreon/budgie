@@ -8,6 +8,7 @@ import { EditExpense } from './EditExpense';
 import { Header } from '../../components/Header';
 import { ReoccurringExpenseList } from './ReoccurringExpenseList';
 import { CreateReoccurringExpense } from './CreateReoccurringExpense';
+import { EditReoccurringExpense } from './EditReouccurringExpense';
 
 export type ExpensesStackParamList = {
   'Expenses': { screen: string },
@@ -19,10 +20,6 @@ export type ExpensesStackParamList = {
 
 const TabBar = createMaterialTopTabNavigator();
 
-/**
- * TODO:
- * - OnBack in Forms: Expenses is always shown
- */
 const ExpenseLists = () => (
   <>
     <Header title="Expenses" />
@@ -68,7 +65,7 @@ export const Expenses = () => (
     />
     <Screen
       name="EditReoccurringExpense"
-      component={EditExpense}
+      component={EditReoccurringExpense}
     />
   </Navigator>
 );

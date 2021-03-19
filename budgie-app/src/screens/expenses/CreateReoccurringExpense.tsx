@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback,
 } from 'react';
-import { View, SafeAreaView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useQueryClient } from 'react-query';
@@ -25,7 +25,6 @@ export const CreateReoccurringExpense: FC<{
     try {
       await api.post('recurring', {
         ...expenseData,
-        // TODO: Change that later
         type: 'expense',
       });
       queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses, exact: true });
@@ -36,7 +35,10 @@ export const CreateReoccurringExpense: FC<{
   }, [api, navigation, showToast]);
 
   return (
-    <SafeAreaView style={tailwind('bg-white h-full w-full')}>
+    <ScrollView
+      stickyHeaderIndices={[0]}
+      style={tailwind('bg-white h-full w-full')}
+    >
       <Header
         title="Create Reoccurring Expense"
         accessoryLeft={() => <BackAction navigation={navigation} />}
@@ -46,6 +48,6 @@ export const CreateReoccurringExpense: FC<{
           onSubmit={createReoccurringExpense}
         />
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 };

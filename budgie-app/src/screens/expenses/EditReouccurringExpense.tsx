@@ -15,48 +15,45 @@ import { RouteProp } from '@react-navigation/native';
 import { useQueryClient } from 'react-query';
 import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
-import { ExpenseForm } from './ExpenseForm';
-import { Expense, Tag } from '../../util/types';
+import { Reoccurring } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
 import { Query } from '../../hooks/use-paginated-query';
+import { ReoccurringForm } from '../../components/ReoccurringForm';
 
-export const EditExpense: FC<{
-    route: RouteProp<ExpensesStackParamList, 'EditExpense'>
-    navigation: StackNavigationProp<ExpensesStackParamList, 'EditExpense'>
+// TODO: Just use this for income as well
+export const EditReoccurringExpense: FC<{
+    route: RouteProp<ExpensesStackParamList, 'EditReoccurringExpense'>
+    navigation: StackNavigationProp<ExpensesStackParamList, 'EditReoccurringExpense'>
 }> = ({ navigation, route: { params: { id } } }) => {
   const api = useApi();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
-  const [expense, setExpense] = useState<Expense | null>(null);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [reoccurring, setReoccurring] = useState<Reoccurring | null>(null);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`expense/${id}`);
-        const { data: tags } = await api.get('tag?page=0');
-        setExpense(data);
-        setAvailableTags(tags);
+        const { data: { recurring } } = await api.get(`recurring/${id}`);
+        setReoccurring(recurring);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
     })();
   }, [id]);
 
-  const onSave = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
+  const onSave = useCallback(async (expenseData: Omit<Reoccurring, 'id' | 'is_expense'>) => {
     try {
-      console.log(expenseData);
-      await api.put(`expense/${id}`, {
+      await api.put(`recurring/${id}`, {
         ...expenseData,
-        tag_ids: expenseData.tags?.map(t => t.id) || [],
+        type: 'expense',
       });
-      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
-      navigation.goBack();
+      queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses, exact: true });
+      navigation.navigate('Expenses', { screen: 'Reoccurring' });
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
@@ -66,9 +63,9 @@ export const EditExpense: FC<{
     // TODO: Some kind of loading state would be nice.
     setDeleteDialogVisible(false);
     try {
-      await api.delete(`expense/${id}`);
-      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
-      navigation.goBack();
+      await api.delete(`recurring/${id}`);
+      queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses, exact: true });
+      navigation.navigate('Expenses', { screen: 'Reoccurring' });
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
@@ -80,7 +77,7 @@ export const EditExpense: FC<{
       style={tailwind('bg-white h-full w-full')}
     >
       <Header
-        title="Edit Expense"
+        title="Edit Reoccurring Expense"
         accessoryLeft={() => <BackAction navigation={navigation} />}
         accessoryRight={() => (
           <TopNavigationAction
@@ -95,21 +92,19 @@ export const EditExpense: FC<{
         )}
       />
       {
-        !expense ? (
+        !reoccurring ? (
           <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>
             <Spinner size="giant" />
           </View>
         ) : (
           <View style={tailwind('flex pl-5 pr-5')}>
-            <ExpenseForm
-              expense={expense}
-              availableTags={availableTags}
+            <ReoccurringForm
+              reoccurring={reoccurring}
               onSubmit={onSave}
-              setAvailableTags={setAvailableTags}
             />
             <Dialog
               visible={deleteDialogVisible}
-              content="Are you sure you want to delete this expense?"
+              content="Are you sure you want to delete this reoccurring expense?"
               onClose={() => setDeleteDialogVisible(false)}
               onSubmit={onDelete}
             />

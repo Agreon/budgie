@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback,
 } from 'react';
-import { View, SafeAreaView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useQueryClient } from 'react-query';
@@ -32,7 +32,10 @@ export const CreateIncome: FC<{
     }, [api, navigation, showToast]);
 
     return (
-      <SafeAreaView style={tailwind('bg-white h-full w-full')}>
+      <ScrollView
+        stickyHeaderIndices={[0]}
+        style={tailwind('bg-white h-full w-full')}
+      >
         <Header
           title="Create Income"
           accessoryLeft={() => <BackAction navigation={navigation} />}
@@ -42,6 +45,6 @@ export const CreateIncome: FC<{
             onSubmit={createIncome}
           />
         </View>
-      </SafeAreaView>
+      </ScrollView>
     );
   };

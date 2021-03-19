@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { View, SafeAreaView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Spinner } from '@ui-kitten/components';
@@ -49,7 +49,10 @@ export const CreateExpense: FC<{
   }, [api, navigation, showToast]);
 
   return (
-    <SafeAreaView style={tailwind('bg-white h-full w-full')}>
+    <ScrollView
+      stickyHeaderIndices={[0]}
+      style={tailwind('bg-white h-full w-full')}
+    >
       <Header
         title="Create Expense"
         accessoryLeft={() => <BackAction navigation={navigation} />}
@@ -69,6 +72,6 @@ export const CreateExpense: FC<{
           </View>
         )
       }
-    </SafeAreaView>
+    </ScrollView>
   );
 };
