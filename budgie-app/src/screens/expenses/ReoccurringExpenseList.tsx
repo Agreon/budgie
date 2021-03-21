@@ -8,7 +8,7 @@ import {
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Icon, Text,
+  Text,
 } from '@ui-kitten/components';
 import { Reoccurring } from '../../util/types';
 import { ExpensesStackParamList } from '.';
@@ -16,6 +16,7 @@ import { ItemDate } from '../../components/ItemDate';
 import { Query } from '../../hooks/use-paginated-query';
 import { List } from '../../components/List';
 
+// TODO: Extract more components
 const ReoccurringExpenseItem: FC<{
   item: Reoccurring;
   onPress: (id: string) => void
@@ -81,12 +82,10 @@ const ReoccurringExpenseItem: FC<{
 
 /**
  * TODO:
- * - Reoccurring incomes
  * - history
  *  - add
  *  - delete
  *  - edit
- * - delete
   */
 export const ReoccurringExpenseList: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'Expenses'>
@@ -100,17 +99,9 @@ export const ReoccurringExpenseList: FC<{
       renderItem={({ item }) => (
         <ReoccurringExpenseItem
           item={item}
-          onPress={id => { navigation.navigate('EditReoccurringExpense', { id }); }}
+          onPress={id => navigation.navigate('EditReoccurringExpense', { id })}
         />
       )}
-    />
-    <Button
-      style={tailwind('absolute right-6 bottom-5')}
-      status="info"
-      accessoryLeft={props => (
-        <Icon {...props} name="plus-outline" />
-      )}
-      onPress={() => navigation.navigate('CreateReoccurringExpense')}
     />
   </SafeAreaView>
 );

@@ -28,6 +28,8 @@ interface IProps {
  *  - returnKeyType='next'
  *
  * - Possibility to set endDate to null
+ *
+ * - no categories on incomes
  */
 export const ReoccurringForm: FC<IProps> = ({
   reoccurring,
@@ -78,20 +80,22 @@ export const ReoccurringForm: FC<IProps> = ({
         label="Cost"
         keyboardType="number-pad"
       />
-      <Select
-        style={tailwind('mt-4')}
-        label="Type"
-        selectedIndex={selectedCategory}
-        value={CATEGORIES[selectedCategory.row]}
-        onSelect={index => setSelectedCategory(index as IndexPath)}
-        onFocus={Keyboard.dismiss}
-      >
-        {
-          CATEGORIES.map(type => (
-            <SelectItem key={type} title={type} />
-          ))
-        }
-      </Select>
+      {reoccurring?.is_expense && (
+        <Select
+          style={tailwind('mt-4')}
+          label="Type"
+          selectedIndex={selectedCategory}
+          value={CATEGORIES[selectedCategory.row]}
+          onSelect={index => setSelectedCategory(index as IndexPath)}
+          onFocus={Keyboard.dismiss}
+        >
+          {
+            CATEGORIES.map(type => (
+              <SelectItem key={type} title={type} />
+            ))
+          }
+        </Select>
+      )}
       <Datepicker
         style={tailwind('mt-4')}
         label="Start date"

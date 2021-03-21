@@ -50,7 +50,6 @@ export const EditExpense: FC<{
 
   const onSave = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
-      console.log(expenseData);
       await api.put(`expense/${id}`, {
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
