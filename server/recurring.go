@@ -21,7 +21,11 @@ CREATE TABLE IF NOT EXISTS recurring (
 	start_date timestamp with time zone,
 	end_date timestamp with time zone,
 	created_at timestamp with time zone,
-	updated_at timestamp with time zone
+	updated_at timestamp with time zone,
+	PRIMARY KEY(id),
+	FOREIGN KEY(parent_id)
+		REFERENCES recurring(id)
+			ON DELETE CASCADE
 )`
 
 type Recurring struct {
@@ -275,6 +279,18 @@ func addRecurringHistoryItem(c *gin.Context) {
 		return
 	}
 
+	/* add end date to old main item if necessary */
+	if recurring.EndDate.IsZero() {
+		_, err = db.Exec("UPDATE recurring SET end_date=$1 WHERE id=$2", updateRecurring.StartDate, recurring.ID)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+	} else if updateRecurring.StartDate.Before(recurring.EndDate) {
+		saveErrorInfo(c, errors.New("New start date is before old end date"), 400)
+		return
+	}
+
 	rows, err := db.NamedQuery("INSERT INTO recurring VALUES (uuid_generate_v4(), null, :name, :costs, :user_id, :category, :is_expense, :start_date, :end_date, now(), now()) RETURNING id",
 		map[string]interface{}{
 			"name":       updateRecurring.Name,
@@ -294,13 +310,13 @@ func addRecurringHistoryItem(c *gin.Context) {
 		rows.Scan(&newParentID)
 	}
 
-	/* update parent ID */
+	/* update parent ID in previous and current item */
 	_, err = db.Exec("UPDATE recurring SET parent_id=$1, updated_at=now() WHERE id=$2 OR parent_id=$2", newParentID, recurring.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-	/* TODO: check if history item have an end date! */
+
 	err = db.Get(&recurring, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE id=$1", newParentID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
@@ -323,7 +339,7 @@ func deleteRecurring(c *gin.Context) {
 	}
 
 	db := GetDB()
-	_, err = db.Exec("DELETE FROM recurring WHERE id=$1 OR parent_id=$1", recurring.ID)
+	_, err = db.Exec("DELETE FROM recurring WHERE id=$1", recurring.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
