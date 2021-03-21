@@ -286,6 +286,9 @@ func addRecurringHistoryItem(c *gin.Context) {
 			saveErrorInfo(c, err, 500)
 			return
 		}
+	} else if updateRecurring.StartDate.Before(recurring.EndDate) {
+		saveErrorInfo(c, errors.New("New start date is before old end date"), 400)
+		return
 	}
 
 	rows, err := db.NamedQuery("INSERT INTO recurring VALUES (uuid_generate_v4(), null, :name, :costs, :user_id, :category, :is_expense, :start_date, :end_date, now(), now()) RETURNING id",
@@ -307,7 +310,7 @@ func addRecurringHistoryItem(c *gin.Context) {
 		rows.Scan(&newParentID)
 	}
 
-	/* update parent ID */
+	/* update parent ID in previous and current item */
 	_, err = db.Exec("UPDATE recurring SET parent_id=$1, updated_at=now() WHERE id=$2 OR parent_id=$2", newParentID, recurring.ID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
