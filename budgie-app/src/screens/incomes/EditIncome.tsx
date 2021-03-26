@@ -47,7 +47,6 @@ export const EditIncome: FC<{
 
   const onSave = useCallback(async (incomeData: Omit<Income, 'id'>) => {
     try {
-      console.log(incomeData);
       await api.put(`income/${id}`, incomeData);
       queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
       navigation.goBack();

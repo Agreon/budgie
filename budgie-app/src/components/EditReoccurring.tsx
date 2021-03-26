@@ -1,5 +1,5 @@
 import React, {
-  FC, useCallback, useEffect, useState,
+  useCallback, useEffect, useState,
 } from 'react';
 import {
   Keyboard, ScrollView, View,
@@ -10,24 +10,29 @@ import {
   IconProps,
   Spinner, TopNavigationAction,
 } from '@ui-kitten/components';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
-import { useQueryClient } from 'react-query';
-import { BackAction } from '../../components/BackAction';
-import { Header } from '../../components/Header';
-import { Reoccurring } from '../../util/types';
-import { useToast } from '../../ToastProvider';
-import { Dialog } from '../../components/Dialog';
-import { useApi } from '../../hooks/use-request';
-import { ExpensesStackParamList } from '.';
-import { Query } from '../../hooks/use-paginated-query';
-import { ReoccurringForm } from '../../components/ReoccurringForm';
+import {
+  NavigationProp,
+  ParamListBase, RouteProp, useNavigation, useRoute,
+} from '@react-navigation/native';
+import { QueryClient, useQueryClient } from 'react-query';
+import { BackAction } from './BackAction';
+import { Header } from './Header';
+import { Reoccurring } from '../util/types';
+import { useToast } from '../ToastProvider';
+import { Dialog } from './Dialog';
+import { useApi } from '../hooks/use-request';
+import { ReoccurringForm } from './ReoccurringForm';
 
-// TODO: Just use this for income as well
-export const EditReoccurringExpense: FC<{
-    route: RouteProp<ExpensesStackParamList, 'EditReoccurringExpense'>
-    navigation: StackNavigationProp<ExpensesStackParamList, 'EditReoccurringExpense'>
-}> = ({ navigation, route: { params: { id } } }) => {
+export const EditReoccurring = <
+  N extends ParamListBase,
+>({ type, onActionDone }: {
+  type: 'expense' | 'income'
+  onActionDone: (queryClient: QueryClient, navigation: NavigationProp<N>) => void
+}) => {
+  const navigation = useNavigation<NavigationProp<N>>();
+  // These types are just for ts to don't annoy
+  const { params: { id } } = useRoute<RouteProp<{key: { id: string }}, 'key'>>();
+
   const api = useApi();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -44,32 +49,30 @@ export const EditReoccurringExpense: FC<{
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
       }
     })();
-  }, [id]);
+  }, [id, setReoccurring, showToast]);
 
-  const onSave = useCallback(async (expenseData: Omit<Reoccurring, 'id' | 'is_expense'>) => {
+  const onSave = useCallback(async (reoccurringData: Omit<Reoccurring, 'id' | 'is_expense'>) => {
     try {
       await api.put(`recurring/${id}`, {
-        ...expenseData,
-        type: 'expense',
+        ...reoccurringData,
+        type,
       });
-      queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses, exact: true });
-      navigation.navigate('Expenses', { screen: 'Reoccurring' });
+      onActionDone(queryClient, navigation);
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
-  }, [id, api, navigation, showToast]);
+  }, [id, api, navigation, type, showToast, onActionDone]);
 
   const onDelete = useCallback(async () => {
     // TODO: Some kind of loading state would be nice.
     setDeleteDialogVisible(false);
     try {
       await api.delete(`recurring/${id}`);
-      queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses, exact: true });
-      navigation.navigate('Expenses', { screen: 'Reoccurring' });
+      onActionDone(queryClient, navigation);
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
-  }, [id, api, navigation, showToast]);
+  }, [id, api, navigation, showToast, onActionDone, setDeleteDialogVisible]);
 
   return (
     <ScrollView
@@ -77,7 +80,8 @@ export const EditReoccurringExpense: FC<{
       style={tailwind('bg-white h-full w-full')}
     >
       <Header
-        title="Edit Reoccurring Expense"
+        // TODO: Uppercase
+        title={`Edit Reoccurring ${type}`}
         accessoryLeft={() => <BackAction navigation={navigation} />}
         accessoryRight={() => (
           <TopNavigationAction
@@ -104,7 +108,7 @@ export const EditReoccurringExpense: FC<{
             />
             <Dialog
               visible={deleteDialogVisible}
-              content="Are you sure you want to delete this reoccurring expense?"
+              content={`Are you sure you want to delete this reoccurring ${type}?`}
               onClose={() => setDeleteDialogVisible(false)}
               onSubmit={onDelete}
             />

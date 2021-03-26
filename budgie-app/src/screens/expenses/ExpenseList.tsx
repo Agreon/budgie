@@ -8,7 +8,7 @@ import {
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
-  Button, Icon, Text,
+  Text,
 } from '@ui-kitten/components';
 import * as SplashScreen from 'expo-splash-screen';
 import { Expense } from '../../util/types';
@@ -83,17 +83,9 @@ export const ExpenseList: FC<{
         renderItem={({ item }) => (
           <ExpenseItem
             item={item}
-            onPress={id => { navigation.navigate('EditExpense', { id }); }}
+            onPress={id => navigation.navigate('EditExpense', { id })}
           />
         )}
-      />
-      <Button
-        style={tailwind('absolute right-6 bottom-5')}
-        status="info"
-        accessoryLeft={props => (
-          <Icon {...props} name="plus-outline" />
-        )}
-        onPress={() => navigation.navigate('CreateExpense')}
       />
     </SafeAreaView>
   );
