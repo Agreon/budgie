@@ -113,7 +113,7 @@ func listRecurring(c *gin.Context) {
 		return
 	}
 
-	/* work around for dealing with optional enddate */
+	/* workaround for dealing with optional enddate */
 	for i, data := range recurringData {
 		if data.EndDate.IsZero() {
 			recurring.Data = append(recurring.Data, recurringData[i].RecurringWOutEndDate)
@@ -157,7 +157,7 @@ func insertRecurring(c *gin.Context) {
 		return
 	}
 
-	/* work around for dealing with optional enddate */
+	/* workaround for dealing with optional enddate */
 	if newRecurring.EndDate.IsZero() {
 		c.JSON(200, newRecurring.RecurringInputWOutEndDate)
 	} else {

@@ -127,7 +127,7 @@ func listExpenses(c *gin.Context) {
 
 	userID := c.MustGet("userID")
 	page := c.MustGet("page")
-	err := db.Select(&dataOutput.Data, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	err := db.Select(&dataOutput.Data, "SELECT * FROM expense WHERE user_id=$1 ORDER BY date DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
