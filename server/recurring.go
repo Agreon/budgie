@@ -141,6 +141,12 @@ func insertRecurring(c *gin.Context) {
 		return
 	}
 
+	/* check if end date is after start date if end date provided */
+	if !newRecurring.EndDate.IsZero() && newRecurring.EndDate.Before(newRecurring.StartDate) {
+		saveErrorInfo(c, errors.New("End date before start date."), 400)
+		return
+	}
+
 	userID := c.MustGet("userID")
 
 	db := GetDB()
@@ -220,6 +226,12 @@ func updateRecurring(c *gin.Context) {
 		return
 	}
 
+	/* check if end date is after start date if end date provided */
+	if !updateRecurring.EndDate.IsZero() && updateRecurring.EndDate.Before(updateRecurring.StartDate) {
+		saveErrorInfo(c, errors.New("End date before start date."), 400)
+		return
+	}
+
 	var recurring Recurring
 	var errCode int
 	recurring, err, errCode = getSingleRecurringFromDB(c)
@@ -255,6 +267,12 @@ func addRecurringHistoryItem(c *gin.Context) {
 	var err error
 	if err = c.BindJSON(&updateRecurring); err != nil {
 		saveErrorInfo(c, err, 400)
+		return
+	}
+
+	/* check if end date is after start date if end date provided */
+	if !updateRecurring.EndDate.IsZero() && updateRecurring.EndDate.Before(updateRecurring.StartDate) {
+		saveErrorInfo(c, errors.New("End date before start date."), 400)
 		return
 	}
 
