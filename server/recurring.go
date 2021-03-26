@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 var recurringTable = `
@@ -127,7 +128,7 @@ func listRecurring(c *gin.Context) {
 func insertRecurring(c *gin.Context) {
 	var newRecurring RecurringInput
 	var err error
-	if err = c.BindJSON(&newRecurring); err != nil {
+	if err = c.ShouldBindBodyWith(&newRecurring, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}
@@ -221,7 +222,7 @@ func updateRecurring(c *gin.Context) {
 	/* get updated data from body */
 	var updateRecurring UpdateRecurringInput
 	var err error
-	if err = c.BindJSON(&updateRecurring); err != nil {
+	if err = c.ShouldBindBodyWith(&updateRecurring, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}
@@ -265,7 +266,7 @@ func addRecurringHistoryItem(c *gin.Context) {
 	/* get updated data from body */
 	var updateRecurring UpdateRecurringInput
 	var err error
-	if err = c.BindJSON(&updateRecurring); err != nil {
+	if err = c.ShouldBindBodyWith(&updateRecurring, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}

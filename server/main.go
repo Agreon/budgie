@@ -37,23 +37,23 @@ func main() {
 
 	useAuthentication.Use(authentication())
 	{
-		useAuthentication.POST("/expense", errorHandler(), insertExpense)
+		useAuthentication.POST("/expense", validateCosts(), errorHandler(), insertExpense)
 
 		useAuthentication.GET("/expense", validatePageInput(), errorHandler(), listExpenses)
 
 		useAuthentication.GET("/expense/:id", validateUUID(), errorHandler(), listSingleExpense)
 
-		useAuthentication.PUT("/expense/:id", validateUUID(), errorHandler(), updateExpense)
+		useAuthentication.PUT("/expense/:id", validateUUID(), validateCosts(), errorHandler(), updateExpense)
 
 		useAuthentication.DELETE("/expense/:id", validateUUID(), errorHandler(), deleteExpense)
 
-		useAuthentication.POST("/income", errorHandler(), insertIncome)
+		useAuthentication.POST("/income", validateCosts(), errorHandler(), insertIncome)
 
 		useAuthentication.GET("/income", validatePageInput(), errorHandler(), listIncomes)
 
 		useAuthentication.GET("/income/:id", validateUUID(), errorHandler(), listSingleIncome)
 
-		useAuthentication.PUT("/income/:id", validateUUID(), errorHandler(), updateIncome)
+		useAuthentication.PUT("/income/:id", validateUUID(), validateCosts(), errorHandler(), updateIncome)
 
 		useAuthentication.DELETE("/income/:id", validateUUID(), errorHandler(), deleteIncome)
 
@@ -67,13 +67,13 @@ func main() {
 
 		useAuthentication.GET("/recurring", validatePageInput(), errorHandler(), listRecurring)
 
-		useAuthentication.POST("/recurring", errorHandler(), insertRecurring)
+		useAuthentication.POST("/recurring", validateCosts(), errorHandler(), insertRecurring)
 
 		useAuthentication.GET("/recurring/:id", validateUUID(), errorHandler(), listSingleRecurring)
 
-		useAuthentication.PUT("/recurring/:id", validateUUID(), errorHandler(), updateRecurring)
+		useAuthentication.PUT("/recurring/:id", validateUUID(), validateCosts(), errorHandler(), updateRecurring)
 
-		useAuthentication.POST("/recurring-item/:id", validateUUID(), errorHandler(), addRecurringHistoryItem)
+		useAuthentication.POST("/recurring-item/:id", validateUUID(), validateCosts(), errorHandler(), addRecurringHistoryItem)
 
 		useAuthentication.DELETE("/recurring/:id", validateUUID(), errorHandler(), deleteRecurring)
 	}

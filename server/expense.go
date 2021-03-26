@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	_ "github.com/lib/pq"
 )
 
@@ -79,7 +80,7 @@ type ExpenseListOutput struct {
 func insertExpense(c *gin.Context) {
 	var newExpense ExpenseInput
 	var err error
-	if err = c.BindJSON(&newExpense); err != nil {
+	if err = c.ShouldBindBodyWith(&newExpense, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}
@@ -178,7 +179,7 @@ func updateExpense(c *gin.Context) {
 	/* get updated data from body */
 	var updateExpense ExpenseInput
 	var err error
-	if err = c.BindJSON(&updateExpense); err != nil {
+	if err = c.ShouldBindBodyWith(&updateExpense, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}

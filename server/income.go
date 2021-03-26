@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 var incomeTable = `
@@ -73,7 +74,7 @@ func listIncomes(c *gin.Context) {
 func insertIncome(c *gin.Context) {
 	var newIncome IncomeInput
 	var err error
-	if err = c.BindJSON(&newIncome); err != nil {
+	if err = c.ShouldBindBodyWith(&newIncome, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}
@@ -105,7 +106,7 @@ func updateIncome(c *gin.Context) {
 	/* get updated data from body */
 	var updateIncome IncomeInput
 	var err error
-	if err = c.BindJSON(&updateIncome); err != nil {
+	if err = c.ShouldBindBodyWith(&updateIncome, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}
