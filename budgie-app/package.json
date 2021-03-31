@@ -33,7 +33,7 @@
     "react-native-screens": "~2.15.2",
     "react-native-svg": "^12.1.0",
     "react-native-web": "~0.13.12",
-    "react-query": "^3.12.1",
+    "react-query": "^3.13.2",
     "tailwind-rn": "^3.0.1"
   },
   "devDependencies": {
