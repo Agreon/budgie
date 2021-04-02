@@ -63,6 +63,8 @@ func main() {
 		useAuthentication.PUT("/tag/:id", validateUUID(), errorHandler(), updateTag)
 
 		useAuthentication.DELETE("/tag/:id", validateUUID(), errorHandler(), deleteTag)
+
+		useAuthentication.GET("/overview", errorHandler(), getBudgetOverview)
 	}
 
 	r.POST("/user", errorHandler(), addUser)
