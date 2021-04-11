@@ -7,10 +7,10 @@ import {
 } from '@ui-kitten/components';
 import tailwind from 'tailwind-rn';
 import { useNavigation } from '@react-navigation/native';
-import { ReoccurringHistoryItem as ReoccurringHistItem } from '../util/types';
-import { ItemDivider } from './ItemDivider';
-import { useFormattedDate } from '../hooks/use-formatted-date';
-import { DeleteDialog } from './DeleteDialog';
+import { ReoccurringHistoryItem as ReoccurringHistItem } from '../../util/types';
+import { ItemDivider } from '../ItemDivider';
+import { useFormattedDate } from '../../hooks/use-formatted-date';
+import { DeleteDialog } from '../DeleteDialog';
 
 const ReoccurringHistoryItem: FC<{
   item: ReoccurringHistItem,
@@ -72,7 +72,6 @@ const ReoccurringHistoryItem: FC<{
   );
 };
 
-// TODO: Improve styling
 export const ReoccurringHistory: FC<{
   history: ReoccurringHistItem[]
   refresh: () => Promise<void>
@@ -84,7 +83,11 @@ export const ReoccurringHistory: FC<{
   return (
     <>
       <FlatList<ReoccurringHistItem>
-        ListHeaderComponent={<View style={tailwind('flex-row justify-center mb-4 mt-2')}><Text category="h5" style={tailwind('font-bold')}>History</Text></View>}
+        ListHeaderComponent={(
+          <View style={tailwind('flex-row justify-center mb-4 mt-2')}>
+            <Text category="h5" style={tailwind('font-bold')}>History</Text>
+          </View>
+        )}
         ItemSeparatorComponent={ItemDivider}
         renderItem={({ item }) => (
           <ReoccurringHistoryItem

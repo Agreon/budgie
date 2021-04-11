@@ -5,15 +5,16 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { getFocusedRouteNameFromRoute, RouteProp } from '@react-navigation/native';
 import { Button, Icon } from '@ui-kitten/components';
 import tailwind from 'tailwind-rn';
+import { useQueryClient } from 'react-query';
 import { ExpenseList } from './ExpenseList';
 import { CreateExpense } from './CreateExpense';
 import { EditExpense } from './EditExpense';
 import { Header } from '../../components/Header';
 import { ReoccurringExpenseList } from './ReoccurringExpenseList';
-import { EditReoccurring } from '../../components/EditReoccurring';
 import { Query } from '../../hooks/use-paginated-query';
-import { CreateReoccurring } from '../../components/CreateReoccurring';
-import { EditReoccurringHistoryItem } from '../../components/EditReoccurringHistoryItem';
+import { CreateReoccurring } from '../../components/reoccurring/CreateReoccurring';
+import { EditReoccurring } from '../../components/reoccurring/EditReoccurring';
+import { EditReoccurringHistoryItem } from '../../components/reoccurring/EditReoccurringHistoryItem';
 
 export type ExpensesStackParamList = {
   'Expenses': { screen: string },
@@ -68,11 +69,13 @@ const ExpenseLists = ({ navigation, route }: {
 const { Navigator, Screen } = createStackNavigator();
 
 export const Expenses = () => {
-  // TODO: maybe we just can use the client and navigation here => Typing?
-  const onActionDone = useCallback((queryClient, navigation) => {
+  const queryClient = useQueryClient();
+
+  const onActionDone = useCallback((navigation) => {
     queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses, exact: true });
+    queryClient.resetQueries({ queryKey: Query.Reoccurring });
     navigation.navigate('Expenses', { screen: 'Reoccurring' });
-  }, []);
+  }, [queryClient]);
 
   return (
     <Navigator
@@ -94,20 +97,20 @@ export const Expenses = () => {
       <Screen
         name="CreateReoccurringExpense"
       >
-        {() => (
+        {({ navigation }) => (
           <CreateReoccurring
             type="expense"
-            onActionDone={onActionDone}
+            onActionDone={() => onActionDone(navigation)}
           />
         )}
       </Screen>
       <Screen
         name="EditReoccurringExpense"
       >
-        {() => (
+        {({ navigation }) => (
           <EditReoccurring
             type="expense"
-            onActionDone={onActionDone}
+            onActionDone={() => onActionDone(navigation)}
           />
         )}
       </Screen>

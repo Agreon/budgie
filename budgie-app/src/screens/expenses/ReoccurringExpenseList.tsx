@@ -14,7 +14,7 @@ import { Reoccurring } from '../../util/types';
 import { ExpensesStackParamList } from '.';
 import { Query } from '../../hooks/use-paginated-query';
 import { List } from '../../components/List';
-import { ReoccurringDates } from '../../components/ReoccurringDates';
+import { ReoccurringDates } from '../../components/reoccurring/ReoccurringDates';
 
 /**
  * TODO: Extract more components
@@ -28,11 +28,7 @@ const ReoccurringExpenseItem: FC<{
 }> = ({ item, onPress }) => (
   <TouchableWithoutFeedback delayPressIn={0} onPress={() => onPress(item.id)}>
     <View style={tailwind('p-2 flex-row justify-between')}>
-      <View style={{
-        ...tailwind('flex-col ml-1 pr-2'),
-        flex: 2,
-      }}
-      >
+      <View style={tailwind('flex-col ml-1 pr-2 flex-1')}>
         <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
         <View style={tailwind('flex-row items-center')}>
           <Text
@@ -56,26 +52,6 @@ const ReoccurringExpenseItem: FC<{
   </TouchableWithoutFeedback>
 );
 
-/**
- *
- * Einkommen: ID:1, parentId: 3,<-
- * Einkommen Up1: ID: 2, parentId: 3
- * Einkommen Up2: ID: 3, parentId: null
- *
- * Einkommen 4 => ID, => SET parentId = newId where parentId = $1
- * => Geht nur, wenn ich sie dir mitschicken
- *=> Beim erstellen erstellen, schick ich sie nicht mit
- *
- *
- */
-
-/**
- * TODO:
- * - history
- *  - add
- *  - delete
- *  - edit
-  */
 export const ReoccurringExpenseList: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'Expenses'>
 }> = ({ navigation }) => (

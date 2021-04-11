@@ -7,8 +7,8 @@ import {
 import tailwind from 'tailwind-rn';
 import {
   Icon,
-  IconProps,
-  Spinner, TopNavigationAction,
+  Spinner,
+  TopNavigationAction,
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -38,6 +38,7 @@ export const EditExpense: FC<{
   useEffect(() => {
     (async () => {
       try {
+        // TODO: Use react-query
         const { data } = await api.get(`expense/${id}`);
         const { data: tags } = await api.get('tag?page=0');
         setExpense(data);
@@ -68,11 +69,12 @@ export const EditExpense: FC<{
     >
       <Header
         title="Edit Expense"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
-        accessoryRight={() => (
+        accessoryLeft={props => <BackAction {...props} />}
+        accessoryRight={props => (
           <TopNavigationAction
-            icon={(props: IconProps) => (
-              <Icon {...props} name="trash-2-outline" />
+            {...props}
+            icon={iconProps => (
+              <Icon {...iconProps} name="trash-2-outline" />
             )}
             onPress={() => {
               Keyboard.dismiss();

@@ -9,7 +9,8 @@ export enum Query {
     ReoccurringExpenses = 'reoccurring-expenses',
     Incomes = 'incomes',
     ReoccurringIncomes = 'reoccurring-incomes',
-    Tags = 'tags'
+    Tags = 'tags',
+    Reoccurring = 'reoccurring'
 }
 
 interface ListResult<T> {

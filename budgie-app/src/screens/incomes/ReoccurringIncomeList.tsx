@@ -14,9 +14,8 @@ import { Reoccurring } from '../../util/types';
 import { Query } from '../../hooks/use-paginated-query';
 import { List } from '../../components/List';
 import { IncomesStackParamList } from '.';
-import { ReoccurringDates } from '../../components/ReoccurringDates';
+import { ReoccurringDates } from '../../components/reoccurring/ReoccurringDates';
 
-// TODO: Styling
 const ReoccurringIncomeItem: FC<{
     item: Reoccurring;
     onPress: (id: string) => void

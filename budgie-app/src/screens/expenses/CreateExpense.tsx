@@ -55,7 +55,7 @@ export const CreateExpense: FC<{
     >
       <Header
         title="Create Expense"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
+        accessoryLeft={props => <BackAction {...props} />}
       />
       {
         availableTags === null ? (

@@ -3,26 +3,20 @@ import React, {
 } from 'react';
 import { View, ScrollView } from 'react-native';
 import tailwind from 'tailwind-rn';
-import { QueryClient, useQueryClient } from 'react-query';
-import { NavigationProp, ParamListBase, useNavigation } from '@react-navigation/native';
-import { Header } from './Header';
-import { BackAction } from './BackAction';
-import { Reoccurring } from '../util/types';
-import { useToast } from '../ToastProvider';
-import { useApi } from '../hooks/use-request';
+import { Header } from '../Header';
+import { BackAction } from '../BackAction';
+import { Reoccurring } from '../../util/types';
+import { useToast } from '../../ToastProvider';
+import { useApi } from '../../hooks/use-request';
 import { ReoccurringForm } from './ReoccurringForm';
-import { capitalize } from '../util/util';
+import { capitalize } from '../../util/util';
 
-export const CreateReoccurring = <
-  N extends ParamListBase
->({ type, onActionDone }: {
+export const CreateReoccurring = ({ type, onActionDone }: {
   type: 'expense' | 'income',
-  onActionDone: (queryClient: QueryClient, navigation: NavigationProp<N>) => void
+  onActionDone: () => void
 }) => {
-  const navigation = useNavigation<NavigationProp<N>>();
   const api = useApi();
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
 
   const createReoccurring = useCallback(async (reoccurringData: Omit<Reoccurring, 'id' | 'is_expense'>) => {
     try {
@@ -30,11 +24,11 @@ export const CreateReoccurring = <
         ...reoccurringData,
         type,
       });
-      onActionDone(queryClient, navigation);
+      onActionDone();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
     }
-  }, [api, navigation, showToast, type, onActionDone]);
+  }, [api, showToast, type, onActionDone]);
 
   // TODO: Maybe extract this ScrollView + Header stuff
   return (
@@ -44,7 +38,7 @@ export const CreateReoccurring = <
     >
       <Header
         title={`Create Reoccurring ${capitalize(type)}`}
-        accessoryLeft={() => <BackAction navigation={navigation} />}
+        accessoryLeft={props => <BackAction {...props} />}
       />
       <View style={tailwind('flex pl-5 pr-5')}>
         <ReoccurringForm

@@ -7,8 +7,8 @@ import {
 import tailwind from 'tailwind-rn';
 import {
   Icon,
-  IconProps,
-  Spinner, TopNavigationAction,
+  Spinner,
+  TopNavigationAction,
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -37,6 +37,7 @@ export const EditIncome: FC<{
   useEffect(() => {
     (async () => {
       try {
+        // TODO: Use react-query
         const { data } = await api.get(`income/${id}`);
         setIncome(data);
       } catch (err) {
@@ -62,11 +63,12 @@ export const EditIncome: FC<{
     >
       <Header
         title="Edit Income"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
-        accessoryRight={() => (
+        accessoryLeft={props => <BackAction {...props} />}
+        accessoryRight={props => (
           <TopNavigationAction
-            icon={(props: IconProps) => (
-              <Icon {...props} name="trash-2-outline" />
+            {...props}
+            icon={iconProps => (
+              <Icon {...iconProps} name="trash-2-outline" />
             )}
             onPress={() => {
               Keyboard.dismiss();

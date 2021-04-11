@@ -4,8 +4,8 @@ import {
 } from '@ui-kitten/components';
 import { View } from 'react-native';
 import tailwind from 'tailwind-rn';
-import { Reoccurring } from '../util/types';
-import { ItemDate } from './ItemDate';
+import { Reoccurring } from '../../util/types';
+import { ItemDate } from '../ItemDate';
 
 export const ReoccurringDates: FC<{item: Reoccurring}> = ({ item }) => (
   <View style={tailwind('flex-row justify-end')}>

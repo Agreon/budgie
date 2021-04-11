@@ -38,7 +38,7 @@ export const CreateIncome: FC<{
       >
         <Header
           title="Create Income"
-          accessoryLeft={() => <BackAction navigation={navigation} />}
+          accessoryLeft={props => <BackAction {...props} />}
         />
         <View style={tailwind('flex pl-5 pr-5')}>
           <IncomeForm

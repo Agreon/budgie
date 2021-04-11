@@ -9,13 +9,15 @@ import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
 import { Keyboard, ScrollView, View } from 'react-native';
+import { useQueryClient } from 'react-query';
 import tailwind from 'tailwind-rn';
-import { useApi } from '../hooks/use-request';
-import { useToast } from '../ToastProvider';
-import { ReoccurringHistoryItem } from '../util/types';
-import { BackAction } from './BackAction';
-import { Header } from './Header';
-import { LoadingIndicator } from './LoadingIndicator';
+import { Query } from '../../hooks/use-paginated-query';
+import { useApi } from '../../hooks/use-request';
+import { useToast } from '../../ToastProvider';
+import { ReoccurringHistoryItem } from '../../util/types';
+import { BackAction } from '../BackAction';
+import { Header } from '../Header';
+import { LoadingIndicator } from '../LoadingIndicator';
 
 interface EditReoccurringHistoryFormProps {
     historyItem: ReoccurringHistoryItem;
@@ -83,6 +85,8 @@ const EditReoccurringHistoryItemForm: FC<EditReoccurringHistoryFormProps> = (
 
 export const EditReoccurringHistoryItem: FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
+  const queryClient = useQueryClient();
+
   // These types are just for ts to don't annoy
   const { params: { id } } = useRoute<RouteProp<{key: { id: string }}, 'key'>>();
 
@@ -108,7 +112,7 @@ export const EditReoccurringHistoryItem: FC = () => {
         ...historyItem,
         ...update,
       });
-      // TODO: Maybe we need a reload here?
+      queryClient.resetQueries({ queryKey: Query.Reoccurring });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -122,7 +126,7 @@ export const EditReoccurringHistoryItem: FC = () => {
     >
       <Header
         title="Edit Reoccurring History"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
+        accessoryLeft={props => <BackAction {...props} />}
       />
       {
         historyItem === null ? (

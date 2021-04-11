@@ -7,14 +7,16 @@ import tailwind from 'tailwind-rn';
 import {
   getFocusedRouteNameFromRoute, RouteProp,
 } from '@react-navigation/native';
+import { useQueryClient } from 'react-query';
 import { IncomeList } from './IncomeList';
 import { CreateIncome } from './CreateIncome';
 import { EditIncome } from './EditIncome';
 import { Header } from '../../components/Header';
 import { ReoccurringIncomeList } from './ReoccurringIncomeList';
-import { CreateReoccurring } from '../../components/CreateReoccurring';
-import { EditReoccurring } from '../../components/EditReoccurring';
+import { CreateReoccurring } from '../../components/reoccurring/CreateReoccurring';
+import { EditReoccurring } from '../../components/reoccurring/EditReoccurring';
 import { Query } from '../../hooks/use-paginated-query';
+import { EditReoccurringHistoryItem } from '../../components/reoccurring/EditReoccurringHistoryItem';
 
 const { Navigator, Screen } = createStackNavigator();
 
@@ -23,7 +25,8 @@ export type IncomesStackParamList = {
     'CreateIncome': undefined,
     'EditIncome': { id: string },
     'CreateReoccurringIncome': undefined,
-    'EditReoccurringIncome': { id: string }
+    'EditReoccurringIncome': { id: string },
+    'EditReoccurringHistoryItem': { id: string }
 };
 
 const TabBar = createMaterialTopTabNavigator();
@@ -68,10 +71,13 @@ const IncomeLists = ({ navigation, route }: {
 );
 
 export const Incomes = () => {
-  const onActionDone = useCallback((queryClient, navigation) => {
+  const queryClient = useQueryClient();
+
+  const onActionDone = useCallback((navigation) => {
     queryClient.resetQueries({ queryKey: Query.ReoccurringIncomes, exact: true });
+    queryClient.resetQueries({ queryKey: Query.Reoccurring });
     navigation.navigate('Incomes', { screen: 'Reoccurring' });
-  }, []);
+  }, [queryClient]);
 
   return (
     <Navigator
@@ -92,23 +98,27 @@ export const Incomes = () => {
       <Screen
         name="CreateReoccurringIncome"
       >
-        {() => (
+        {({ navigation }) => (
           <CreateReoccurring
             type="income"
-            onActionDone={onActionDone}
+            onActionDone={() => onActionDone(navigation)}
           />
         )}
       </Screen>
       <Screen
         name="EditReoccurringIncome"
       >
-        {() => (
+        {({ navigation }) => (
           <EditReoccurring
             type="income"
-            onActionDone={onActionDone}
+            onActionDone={() => onActionDone(navigation)}
           />
         )}
       </Screen>
+      <Screen
+        name="EditReoccurringHistoryItem"
+        component={EditReoccurringHistoryItem}
+      />
     </Navigator>
   );
 };

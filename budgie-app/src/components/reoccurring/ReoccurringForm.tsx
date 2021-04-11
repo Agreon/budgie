@@ -13,10 +13,10 @@ import {
   SelectItem,
 } from '@ui-kitten/components';
 import dayjs from 'dayjs';
-import { LoadingIndicator } from './LoadingIndicator';
-import { Reoccurring } from '../util/types';
-import { CATEGORIES } from '../util/globals';
-import { getIndexOfCategory } from '../util/util';
+import { LoadingIndicator } from '../LoadingIndicator';
+import { Reoccurring } from '../../util/types';
+import { CATEGORIES } from '../../util/globals';
+import { getIndexOfCategory } from '../../util/util';
 
 interface IProps {
   reoccurring?: Reoccurring;
@@ -28,8 +28,6 @@ interface IProps {
  *  - returnKeyType='next'
  *
  * - Possibility to set endDate to null
- *
- * - no categories on incomes
  */
 export const ReoccurringForm: FC<IProps> = ({
   reoccurring,
