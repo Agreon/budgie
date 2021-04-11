@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,6 @@ func getBudgetOverview(c *gin.Context) {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-	totalExpense, _ := strconv.ParseFloat(budgetOverview.TotalExpense, 64)
 
 	err = db.Select(&budgetOverview.ExpenseByCategory, "SELECT category, COALESCE(SUM(costs),0) AS total FROM expense WHERE user_id=$1 GROUP BY category ORDER BY total", userID)
 	if err != nil {
@@ -55,10 +55,39 @@ func getBudgetOverview(c *gin.Context) {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-	totalIncome, _ := strconv.ParseFloat(budgetOverview.TotalIncome, 64)
 
-	savingsRate := 100 - totalExpense*100/totalIncome
-	budgetOverview.SavingsRate = fmt.Sprintf("%.2f %%", savingsRate)
+	budgetOverview.SavingsRate, err = calc(budgetOverview.TotalExpense, budgetOverview.TotalIncome, calcPercentage)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+	budgetOverview.SavingsRate = fmt.Sprintf("%s%%", budgetOverview.SavingsRate)
 
 	c.JSON(200, budgetOverview)
+}
+
+type calcFunction func(float64, float64) int
+
+func calc(a string, b string, function calcFunction) (c string, err error) {
+	var aNum, bNum float64
+	aNum, err = strconv.ParseFloat(a, 64)
+	if err != nil {
+		return
+	}
+	bNum, err = strconv.ParseFloat(b, 64)
+	if err != nil {
+		return
+	}
+	cInt := function(aNum, bNum)
+
+	c = strconv.Itoa(cInt)
+
+	return
+}
+
+func calcPercentage(a float64, b float64) (c int) {
+	cFloat := 100 - a*100/b
+
+	c = int(math.Round(cFloat))
+	return
 }
