@@ -11,13 +11,11 @@ import {
   Text,
 } from '@ui-kitten/components';
 import { useQueryClient } from 'react-query';
-import { useApi } from '../hooks/use-request';
-import { useToast } from '../ToastProvider';
 import { Tag } from '../util/types';
-import { Dialog } from '../components/Dialog';
 import { TagDialog } from '../components/TagDialog';
 import { List } from '../components/List';
 import { Query } from '../hooks/use-paginated-query';
+import { DeleteDialog } from '../components/DeleteDialog';
 
 const TagItem: FC<{
   item: Tag
@@ -59,25 +57,11 @@ const TagItem: FC<{
 );
 
 export const Tags: FC = () => {
-  const api = useApi();
-  const { showToast } = useToast();
   const queryClient = useQueryClient();
 
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const [createTagDialogVisible, setCreateTagDialogVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-
-  const onDelete = useCallback(async () => {
-    // TODO: Some kind of loading state would be nice.
-    setDeleteDialogVisible(false);
-    try {
-      await api.delete(`tag/${selectedTag?.id}`);
-      queryClient.resetQueries({ queryKey: Query.Tags, exact: true });
-    } catch (err) {
-      showToast({ status: 'danger', message: err.message || 'Unknown error' });
-    }
-    setSelectedTag(null);
-  }, [selectedTag, api, showToast]);
 
   const renderTagItem = useCallback(({ item }: { item: Tag }) => (
     <TagItem
@@ -110,11 +94,12 @@ export const Tags: FC = () => {
         )}
         onPress={() => setCreateTagDialogVisible(true)}
       />
-      <Dialog
+      <DeleteDialog
+        deletePath={`tag/${selectedTag?.id}`}
         visible={deleteDialogVisible}
         content="Are you sure you want to delete this tag?"
-        onClose={() => setDeleteDialogVisible(false)}
-        onSubmit={onDelete}
+        onClose={() => { setDeleteDialogVisible(false); setSelectedTag(null); }}
+        onDeleted={() => queryClient.resetQueries({ queryKey: Query.Tags, exact: true })}
       />
       <TagDialog
         visible={createTagDialogVisible}

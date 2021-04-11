@@ -112,7 +112,7 @@ export const ExpenseForm: FC<IProps> = ({
         style={tailwind('mt-8')}
         disabled={loading}
         onPress={onSave}
-        accessoryLeft={loading ? LoadingIndicator : undefined}
+        accessoryLeft={loading ? props => <LoadingIndicator {...props} /> : undefined}
       >
         Save
       </Button>

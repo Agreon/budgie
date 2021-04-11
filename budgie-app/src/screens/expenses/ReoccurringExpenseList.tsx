@@ -12,11 +12,16 @@ import {
 } from '@ui-kitten/components';
 import { Reoccurring } from '../../util/types';
 import { ExpensesStackParamList } from '.';
-import { ItemDate } from '../../components/ItemDate';
 import { Query } from '../../hooks/use-paginated-query';
 import { List } from '../../components/List';
+import { ReoccurringDates } from '../../components/ReoccurringDates';
 
-// TODO: Extract more components
+/**
+ * TODO: Extract more components
+ * - Wrapper for List-Item
+ * - Name?
+ * - Costs?
+ */
 const ReoccurringExpenseItem: FC<{
   item: Reoccurring;
   onPress: (id: string) => void
@@ -40,23 +45,7 @@ const ReoccurringExpenseItem: FC<{
         </View>
       </View>
       <View style={tailwind('flex-col justify-between mr-1 flex-1')}>
-        <View style={tailwind('flex-row justify-end')}>
-          {
-            item.end_date ? (
-              <>
-                <Text appearance="hint">from </Text>
-                <ItemDate date={item.start_date} />
-                <Text appearance="hint">to </Text>
-                <ItemDate date={item.end_date} />
-              </>
-            ) : (
-              <>
-                <Text appearance="hint">since </Text>
-                <ItemDate date={item.start_date} />
-              </>
-            )
-          }
-        </View>
+        <ReoccurringDates item={item} />
         <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
           {item.costs}
           {' '}

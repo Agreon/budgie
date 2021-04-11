@@ -18,10 +18,10 @@ import { Header } from '../../components/Header';
 import { ExpenseForm } from './ExpenseForm';
 import { Expense, Tag } from '../../util/types';
 import { useToast } from '../../ToastProvider';
-import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
 import { Query } from '../../hooks/use-paginated-query';
+import { DeleteDialog } from '../../components/DeleteDialog';
 
 export const EditExpense: FC<{
     route: RouteProp<ExpensesStackParamList, 'EditExpense'>
@@ -54,18 +54,6 @@ export const EditExpense: FC<{
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
-      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
-      navigation.goBack();
-    } catch (err) {
-      showToast({ status: 'danger', message: err.message || 'Unknown error' });
-    }
-  }, [id, api, navigation, showToast]);
-
-  const onDelete = useCallback(async () => {
-    // TODO: Some kind of loading state would be nice.
-    setDeleteDialogVisible(false);
-    try {
-      await api.delete(`expense/${id}`);
       queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
       navigation.goBack();
     } catch (err) {
@@ -106,11 +94,15 @@ export const EditExpense: FC<{
               onSubmit={onSave}
               setAvailableTags={setAvailableTags}
             />
-            <Dialog
+            <DeleteDialog
+              deletePath={`expense/${id}`}
               visible={deleteDialogVisible}
               content="Are you sure you want to delete this expense?"
               onClose={() => setDeleteDialogVisible(false)}
-              onSubmit={onDelete}
+              onDeleted={() => {
+                queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
+                navigation.goBack();
+              }}
             />
           </View>
         )

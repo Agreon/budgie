@@ -29,3 +29,7 @@ export interface Reoccurring {
   end_date?: Date;
   is_expense: boolean;
 }
+
+export interface ReoccurringHistoryItem extends Reoccurring {
+  end_date: Date;
+}

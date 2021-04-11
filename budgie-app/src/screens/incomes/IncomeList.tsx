@@ -51,7 +51,7 @@ export const IncomeList: FC<{
         renderItem={({ item }) => (
           <IncomeItem
             item={item}
-            onPress={id => { navigation.navigate('EditIncome', { id }); }}
+            onPress={id => navigation.navigate('EditIncome', { id })}
           />
         )}
       />

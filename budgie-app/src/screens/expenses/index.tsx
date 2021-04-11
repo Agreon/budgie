@@ -13,6 +13,7 @@ import { ReoccurringExpenseList } from './ReoccurringExpenseList';
 import { EditReoccurring } from '../../components/EditReoccurring';
 import { Query } from '../../hooks/use-paginated-query';
 import { CreateReoccurring } from '../../components/CreateReoccurring';
+import { EditReoccurringHistoryItem } from '../../components/EditReoccurringHistoryItem';
 
 export type ExpensesStackParamList = {
   'Expenses': { screen: string },
@@ -20,6 +21,7 @@ export type ExpensesStackParamList = {
   'EditExpense': { id: string }
   'CreateReoccurringExpense': undefined,
   'EditReoccurringExpense': { id: string }
+  'EditReoccurringHistoryItem': { id: string }
 };
 
 const TabBar = createMaterialTopTabNavigator();
@@ -109,6 +111,10 @@ export const Expenses = () => {
           />
         )}
       </Screen>
+      <Screen
+        name="EditReoccurringHistoryItem"
+        component={EditReoccurringHistoryItem}
+      />
     </Navigator>
   );
 };

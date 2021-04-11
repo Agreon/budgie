@@ -11,10 +11,10 @@ import {
   Text,
 } from '@ui-kitten/components';
 import { Reoccurring } from '../../util/types';
-import { ItemDate } from '../../components/ItemDate';
 import { Query } from '../../hooks/use-paginated-query';
 import { List } from '../../components/List';
 import { IncomesStackParamList } from '.';
+import { ReoccurringDates } from '../../components/ReoccurringDates';
 
 // TODO: Styling
 const ReoccurringIncomeItem: FC<{
@@ -27,23 +27,7 @@ const ReoccurringIncomeItem: FC<{
           <Text category="h5" status="primary" style={tailwind('font-bold')} numberOfLines={1}>{item.name}</Text>
         </View>
         <View style={tailwind('flex-col justify-between mr-1 flex-1')}>
-          <View style={tailwind('flex-row justify-end')}>
-            {
-              item.end_date ? (
-                <>
-                  <Text appearance="hint">from </Text>
-                  <ItemDate date={item.start_date} />
-                  <Text appearance="hint">to </Text>
-                  <ItemDate date={item.end_date} />
-                </>
-              ) : (
-                <>
-                  <Text appearance="hint">since </Text>
-                  <ItemDate date={item.start_date} />
-                </>
-              )
-            }
-          </View>
+          <ReoccurringDates item={item} />
           <Text category="h6" style={tailwind('text-red-400 font-bold text-right')}>
             {item.costs}
             {' '}
@@ -66,7 +50,7 @@ export const ReoccurringIncomeList: FC<{
         renderItem={({ item }) => (
           <ReoccurringIncomeItem
             item={item}
-            onPress={id => { navigation.navigate('EditReoccurringIncome', { id }); }}
+            onPress={id => navigation.navigate('EditReoccurringIncome', { id })}
           />
         )}
       />

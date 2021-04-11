@@ -9,3 +9,7 @@ export const getIndexOfCategory = (category: string) => {
 
   return index;
 };
+
+export function capitalize(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

@@ -11,6 +11,7 @@ import { Reoccurring } from '../util/types';
 import { useToast } from '../ToastProvider';
 import { useApi } from '../hooks/use-request';
 import { ReoccurringForm } from './ReoccurringForm';
+import { capitalize } from '../util/util';
 
 export const CreateReoccurring = <
   N extends ParamListBase
@@ -42,8 +43,7 @@ export const CreateReoccurring = <
       style={tailwind('bg-white h-full w-full')}
     >
       <Header
-        // TODO: Uppercase
-        title={`Create Reoccurring ${type}`}
+        title={`Create Reoccurring ${capitalize(type)}`}
         accessoryLeft={() => <BackAction navigation={navigation} />}
       />
       <View style={tailwind('flex pl-5 pr-5')}>

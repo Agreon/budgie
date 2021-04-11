@@ -17,11 +17,11 @@ import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
 import { Income } from '../../util/types';
 import { useToast } from '../../ToastProvider';
-import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 import { IncomesStackParamList } from '.';
 import { IncomeForm } from './IncomeForm';
 import { Query } from '../../hooks/use-paginated-query';
+import { DeleteDialog } from '../../components/DeleteDialog';
 
 export const EditIncome: FC<{
     route: RouteProp<IncomesStackParamList, 'EditIncome'>
@@ -48,18 +48,6 @@ export const EditIncome: FC<{
   const onSave = useCallback(async (incomeData: Omit<Income, 'id'>) => {
     try {
       await api.put(`income/${id}`, incomeData);
-      queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
-      navigation.goBack();
-    } catch (err) {
-      showToast({ status: 'danger', message: err.message || 'Unknown error' });
-    }
-  }, [id, api, navigation, showToast]);
-
-  const onDelete = useCallback(async () => {
-    // TODO: Some kind of loading state would be nice.
-    setDeleteDialogVisible(false);
-    try {
-      await api.delete(`income/${id}`);
       queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
       navigation.goBack();
     } catch (err) {
@@ -98,11 +86,15 @@ export const EditIncome: FC<{
               income={income}
               onSubmit={onSave}
             />
-            <Dialog
+            <DeleteDialog
+              deletePath={`income/${id}`}
               visible={deleteDialogVisible}
               content="Are you sure you want to delete this income?"
               onClose={() => setDeleteDialogVisible(false)}
-              onSubmit={onDelete}
+              onDeleted={() => {
+                queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
+                navigation.goBack();
+              }}
             />
           </View>
         )
