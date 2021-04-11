@@ -11,7 +11,7 @@ export interface DeleteDialogProps extends Omit<DialogProps, 'onSubmit'> {
 export const DeleteDialog: FC<DeleteDialogProps> = ({ onDeleted, deletePath, ...props }) => {
   const api = useApi();
   const { showToast } = useToast();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const onDelete = useCallback(async () => {
     setLoading(true);

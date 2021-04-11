@@ -16,11 +16,11 @@ List             |  Create
 
 - Enter and save expenses
 - User defined Tags for Expenses for improved statistics
+- Incomes
+- Reoccurring expenses and incomes
 
 ### Planned Features (somewhat in order)
 
-- Incomes
-- Reoccurring expenses and incomes
 - Fancy dashboards and statistics overview
 - Offline support
 - External User Register
