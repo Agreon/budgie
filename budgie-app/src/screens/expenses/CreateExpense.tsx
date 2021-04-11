@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { View, SafeAreaView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Spinner } from '@ui-kitten/components';
@@ -41,7 +41,7 @@ export const CreateExpense: FC<{
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -49,10 +49,13 @@ export const CreateExpense: FC<{
   }, [api, navigation, showToast]);
 
   return (
-    <SafeAreaView style={tailwind('bg-white h-full w-full')}>
+    <ScrollView
+      stickyHeaderIndices={[0]}
+      style={tailwind('bg-white h-full w-full')}
+    >
       <Header
         title="Create Expense"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
+        accessoryLeft={props => <BackAction {...props} />}
       />
       {
         availableTags === null ? (
@@ -69,6 +72,6 @@ export const CreateExpense: FC<{
           </View>
         )
       }
-    </SafeAreaView>
+    </ScrollView>
   );
 };

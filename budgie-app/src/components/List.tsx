@@ -4,28 +4,25 @@ import { InfiniteData, useQueryClient } from 'react-query';
 import tailwind from 'tailwind-rn';
 import { Query, usePaginatedQuery } from '../hooks/use-paginated-query';
 import { LOADING_INDICATOR_OFFSET } from '../util/globals';
-import { Header } from './Header';
 import { ItemDivider } from './ItemDivider';
 
 export interface ListProps<T> {
     query: Query;
-    title: string;
+    url: string;
     renderItem: ListRenderItem<T>;
 }
 
 // TODO: Refresh-control is not directly loading
-export function List<T extends {id: string}>({ query, title, renderItem }: ListProps<T>) {
+export function List<T extends {id: string}>({ query, renderItem, url }: ListProps<T>) {
   const {
     data: expenses, isLoading, refetch, isFetching, fetchNextPage, hasNextPage,
-  } = usePaginatedQuery<T>(query);
+  } = usePaginatedQuery<T>(query, url);
 
   const queryClient = useQueryClient();
 
   return (
     <FlatList<T>
       style={tailwind('w-full')}
-      stickyHeaderIndices={[0]}
-      ListHeaderComponent={() => <Header title={title} />}
       ItemSeparatorComponent={ItemDivider}
       refreshControl={(
         <RefreshControl
@@ -50,7 +47,7 @@ export function List<T extends {id: string}>({ query, title, renderItem }: ListP
       renderItem={renderItem}
       data={expenses}
       keyExtractor={item => item.id}
-      onEndReachedThreshold={0.4}
+      onEndReachedThreshold={0.2}
       onEndReached={({ distanceFromEnd }) => {
         // Would trigger a refetch on navigation change.
         if (distanceFromEnd < 0) return;

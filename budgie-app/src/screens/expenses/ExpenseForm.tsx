@@ -16,34 +16,8 @@ import dayjs from 'dayjs';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { Expense, Tag } from '../../util/types';
 import { TagSelection } from './TagSelection';
-
-const categories = [
-  'Food',
-  'Clothes',
-  'DinnerOutside',
-  'Rent',
-  'Electricity',
-  'GEZ',
-  'Insurance',
-  'Cellphone',
-  'PublicTransport',
-  'Internet',
-  'HygieneMedicine',
-  'LeisureTime',
-  'Education',
-  'Travel',
-  'Other',
-];
-
-const getIndexOfCategory = (category: string) => {
-  const index = categories.findIndex((c) => c === category);
-  if (index < 0) {
-    console.warn('Could not find index for category', category);
-    return 0;
-  }
-
-  return index;
-};
+import { CATEGORIES } from '../../util/globals';
+import { getIndexOfCategory } from '../../util/util';
 
 interface IProps {
   expense?: Expense;
@@ -59,7 +33,7 @@ export const ExpenseForm: FC<IProps> = ({
   onSubmit,
 }) => {
   const [costs, setCosts] = useState(expense?.costs || '');
-  const [selectedIndex, setSelectedIndex] = useState(
+  const [selectedCategory, setSelectedCategory] = useState(
     new IndexPath(expense ? getIndexOfCategory(expense.category) : 0),
   );
   const [name, setName] = useState<string | undefined>(expense?.name);
@@ -73,7 +47,7 @@ export const ExpenseForm: FC<IProps> = ({
     setLoading(true);
     try {
       await onSubmit({
-        category: categories[selectedIndex.row],
+        category: CATEGORIES[selectedCategory.row],
         costs: costs.replace(/,/g, '.'),
         name,
         date,
@@ -82,7 +56,7 @@ export const ExpenseForm: FC<IProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [loading, expense, selectedIndex, costs, name, date, selectedTags]);
+  }, [loading, expense, selectedCategory, costs, name, date, selectedTags]);
 
   const onTagCreated = useCallback((tag: Tag) => {
     setAvailableTags([...availableTags].concat(tag));
@@ -90,11 +64,11 @@ export const ExpenseForm: FC<IProps> = ({
   }, [availableTags, setAvailableTags, selectedTags, setSelectedTags]);
 
   return (
-    <View>
+    <View style={tailwind('mb-3')}>
       <Input
         style={tailwind('mt-1')}
         value={costs}
-        onChangeText={(text) => setCosts(text)}
+        onChangeText={setCosts}
         label="Cost"
         autoFocus={!expense}
         keyboardType="number-pad"
@@ -102,13 +76,13 @@ export const ExpenseForm: FC<IProps> = ({
       <Select
         style={tailwind('mt-4')}
         label="Type"
-        selectedIndex={selectedIndex}
-        value={categories[selectedIndex.row]}
-        onSelect={(index) => setSelectedIndex(index as IndexPath)}
-        onFocus={() => Keyboard.dismiss()}
+        selectedIndex={selectedCategory}
+        value={CATEGORIES[selectedCategory.row]}
+        onSelect={index => setSelectedCategory(index as IndexPath)}
+        onFocus={Keyboard.dismiss}
       >
         {
-          categories.map((type) => (
+          CATEGORIES.map(type => (
             <SelectItem key={type} title={type} />
           ))
         }
@@ -117,28 +91,28 @@ export const ExpenseForm: FC<IProps> = ({
         style={tailwind('mt-4')}
         label="Date"
         date={date}
-        onFocus={() => Keyboard.dismiss()}
-        onSelect={(nextDate) => setDate(nextDate)}
+        onFocus={Keyboard.dismiss}
+        onSelect={setDate}
         accessoryRight={props => (<Icon {...props} name="calendar" />)}
       />
       <Input
         style={tailwind('mt-4')}
         value={name}
-        onChangeText={(text) => setName(text)}
+        onChangeText={setName}
         label="Name (optional)"
         onSubmitEditing={onSave}
       />
       <TagSelection
         available={availableTags}
         selected={selectedTags}
-        onSelectionChanged={selected => setSelectedTags(selected)}
+        onSelectionChanged={setSelectedTags}
         onTagCreated={onTagCreated}
       />
       <Button
         style={tailwind('mt-8')}
         disabled={loading}
         onPress={onSave}
-        accessoryLeft={loading ? LoadingIndicator : undefined}
+        accessoryLeft={loading ? props => <LoadingIndicator {...props} /> : undefined}
       >
         Save
       </Button>

@@ -7,8 +7,8 @@ import {
 import tailwind from 'tailwind-rn';
 import {
   Icon,
-  IconProps,
-  Spinner, TopNavigationAction,
+  Spinner,
+  TopNavigationAction,
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -17,11 +17,11 @@ import { BackAction } from '../../components/BackAction';
 import { Header } from '../../components/Header';
 import { Income } from '../../util/types';
 import { useToast } from '../../ToastProvider';
-import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 import { IncomesStackParamList } from '.';
 import { IncomeForm } from './IncomeForm';
 import { Query } from '../../hooks/use-paginated-query';
+import { DeleteDialog } from '../../components/DeleteDialog';
 
 export const EditIncome: FC<{
     route: RouteProp<IncomesStackParamList, 'EditIncome'>
@@ -37,6 +37,7 @@ export const EditIncome: FC<{
   useEffect(() => {
     (async () => {
       try {
+        // TODO: Use react-query
         const { data } = await api.get(`income/${id}`);
         setIncome(data);
       } catch (err) {
@@ -47,21 +48,8 @@ export const EditIncome: FC<{
 
   const onSave = useCallback(async (incomeData: Omit<Income, 'id'>) => {
     try {
-      console.log(incomeData);
       await api.put(`income/${id}`, incomeData);
-      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
-      navigation.goBack();
-    } catch (err) {
-      showToast({ status: 'danger', message: err.message || 'Unknown error' });
-    }
-  }, [id, api, navigation, showToast]);
-
-  const onDelete = useCallback(async () => {
-    // TODO: Some kind of loading state would be nice.
-    setDeleteDialogVisible(false);
-    try {
-      await api.delete(`income/${id}`);
-      queryClient.resetQueries({ queryKey: Query.Income, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -72,15 +60,15 @@ export const EditIncome: FC<{
     <ScrollView
       stickyHeaderIndices={[0]}
       style={tailwind('bg-white h-full w-full')}
-      contentContainerStyle={tailwind('h-full')}
     >
       <Header
         title="Edit Income"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
-        accessoryRight={() => (
+        accessoryLeft={props => <BackAction {...props} />}
+        accessoryRight={props => (
           <TopNavigationAction
-            icon={(props: IconProps) => (
-              <Icon {...props} name="trash-2-outline" />
+            {...props}
+            icon={iconProps => (
+              <Icon {...iconProps} name="trash-2-outline" />
             )}
             onPress={() => {
               Keyboard.dismiss();
@@ -100,11 +88,15 @@ export const EditIncome: FC<{
               income={income}
               onSubmit={onSave}
             />
-            <Dialog
+            <DeleteDialog
+              deletePath={`income/${id}`}
               visible={deleteDialogVisible}
               content="Are you sure you want to delete this income?"
               onClose={() => setDeleteDialogVisible(false)}
-              onSubmit={onDelete}
+              onDeleted={() => {
+                queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
+                navigation.goBack();
+              }}
             />
           </View>
         )

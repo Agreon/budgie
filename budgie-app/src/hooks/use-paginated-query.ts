@@ -5,27 +5,37 @@ import { useApi } from './use-request';
 
 // eslint-disable-next-line no-shadow
 export enum Query {
-    Expense = 'expense',
-    Income = 'income',
-    Tag = 'tag'
-  }
+    Expenses = 'expenses',
+    ReoccurringExpenses = 'reoccurring-expenses',
+    Incomes = 'incomes',
+    ReoccurringIncomes = 'reoccurring-incomes',
+    Tags = 'tags',
+    Reoccurring = 'reoccurring'
+}
 
-export function usePaginatedQuery<T>(query: Query) {
+interface ListResult<T> {
+  data: T[];
+  number_of_entries: number;
+}
+
+// TODO: Error handling does not seem to work => No redirect
+export function usePaginatedQuery<T>(query: Query, url: string) {
   const api = useApi();
   const { showToast } = useToast();
 
-  const { data: queryData, ...queryResult } = useInfiniteQuery<T[], Error>(
+  const { data: queryData, ...queryResult } = useInfiniteQuery<ListResult<T>, Error>(
     [query],
     async ({ pageParam }) => {
       const page = pageParam === undefined ? 0 : pageParam - 1;
-      const { data } = await api.get(`${query}?page=${page}`);
+      const fullUrl = url.includes('?') ? `${url}&page=${page}` : `${url}?page=${page}`;
 
-      // TODO: Backend should always deliver an array
-      return data || [];
+      const { data } = await api.get<ListResult<T>>(fullUrl);
+
+      return data;
     },
     {
       getNextPageParam: (_lastPage, pages) => (
-        pages[pages.length - 1].length !== 0
+        pages.flatMap(({ data }) => data).length < pages[0].number_of_entries
           ? pages.length + 1
           : undefined
       ),
@@ -36,7 +46,7 @@ export function usePaginatedQuery<T>(query: Query) {
   );
 
   const allData = useMemo(
-    () => queryData?.pages.flatMap(data => data),
+    () => queryData?.pages.flatMap(({ data }) => data),
     [queryData],
   );
 

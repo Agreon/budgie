@@ -81,7 +81,7 @@ export const TagDialog: FC<{
               size="small"
               onPress={onCreate}
               disabled={loading}
-              accessoryLeft={loading ? LoadingIndicator : undefined}
+              accessoryLeft={loading ? props => <LoadingIndicator {...props} /> : undefined}
             >
               {existingTag ? 'Save' : 'Create' }
             </Button>

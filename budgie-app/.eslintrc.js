@@ -29,6 +29,7 @@ module.exports = {
     'arrow-parens': 'off',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'error',
+    camelcase: 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
     'import/extensions': [
       'error',

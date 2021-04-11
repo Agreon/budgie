@@ -7,8 +7,8 @@ import {
 import tailwind from 'tailwind-rn';
 import {
   Icon,
-  IconProps,
-  Spinner, TopNavigationAction,
+  Spinner,
+  TopNavigationAction,
 } from '@ui-kitten/components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -18,10 +18,10 @@ import { Header } from '../../components/Header';
 import { ExpenseForm } from './ExpenseForm';
 import { Expense, Tag } from '../../util/types';
 import { useToast } from '../../ToastProvider';
-import { Dialog } from '../../components/Dialog';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
 import { Query } from '../../hooks/use-paginated-query';
+import { DeleteDialog } from '../../components/DeleteDialog';
 
 export const EditExpense: FC<{
     route: RouteProp<ExpensesStackParamList, 'EditExpense'>
@@ -38,6 +38,7 @@ export const EditExpense: FC<{
   useEffect(() => {
     (async () => {
       try {
+        // TODO: Use react-query
         const { data } = await api.get(`expense/${id}`);
         const { data: tags } = await api.get('tag?page=0');
         setExpense(data);
@@ -50,24 +51,11 @@ export const EditExpense: FC<{
 
   const onSave = useCallback(async (expenseData: Omit<Expense, 'id'>) => {
     try {
-      console.log(expenseData);
       await api.put(`expense/${id}`, {
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
-      navigation.goBack();
-    } catch (err) {
-      showToast({ status: 'danger', message: err.message || 'Unknown error' });
-    }
-  }, [id, api, navigation, showToast]);
-
-  const onDelete = useCallback(async () => {
-    // TODO: Some kind of loading state would be nice.
-    setDeleteDialogVisible(false);
-    try {
-      await api.delete(`expense/${id}`);
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -78,15 +66,15 @@ export const EditExpense: FC<{
     <ScrollView
       stickyHeaderIndices={[0]}
       style={tailwind('bg-white h-full w-full')}
-      contentContainerStyle={tailwind('h-full')}
     >
       <Header
         title="Edit Expense"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
-        accessoryRight={() => (
+        accessoryLeft={props => <BackAction {...props} />}
+        accessoryRight={props => (
           <TopNavigationAction
-            icon={(props: IconProps) => (
-              <Icon {...props} name="trash-2-outline" />
+            {...props}
+            icon={iconProps => (
+              <Icon {...iconProps} name="trash-2-outline" />
             )}
             onPress={() => {
               Keyboard.dismiss();
@@ -108,11 +96,15 @@ export const EditExpense: FC<{
               onSubmit={onSave}
               setAvailableTags={setAvailableTags}
             />
-            <Dialog
+            <DeleteDialog
+              deletePath={`expense/${id}`}
               visible={deleteDialogVisible}
               content="Are you sure you want to delete this expense?"
               onClose={() => setDeleteDialogVisible(false)}
-              onSubmit={onDelete}
+              onDeleted={() => {
+                queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
+                navigation.goBack();
+              }}
             />
           </View>
         )

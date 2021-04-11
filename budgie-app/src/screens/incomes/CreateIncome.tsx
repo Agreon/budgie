@@ -1,7 +1,7 @@
 import React, {
   FC, useCallback,
 } from 'react';
-import { View, SafeAreaView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useQueryClient } from 'react-query';
@@ -24,7 +24,7 @@ export const CreateIncome: FC<{
     const createIncome = useCallback(async (incomeData: Omit<Income, 'id'>) => {
       try {
         await api.post('income', incomeData);
-        queryClient.resetQueries({ queryKey: Query.Income, exact: true });
+        queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
         navigation.goBack();
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -32,16 +32,19 @@ export const CreateIncome: FC<{
     }, [api, navigation, showToast]);
 
     return (
-      <SafeAreaView style={tailwind('bg-white h-full w-full')}>
+      <ScrollView
+        stickyHeaderIndices={[0]}
+        style={tailwind('bg-white h-full w-full')}
+      >
         <Header
           title="Create Income"
-          accessoryLeft={() => <BackAction navigation={navigation} />}
+          accessoryLeft={props => <BackAction {...props} />}
         />
         <View style={tailwind('flex pl-5 pr-5')}>
           <IncomeForm
             onSubmit={createIncome}
           />
         </View>
-      </SafeAreaView>
+      </ScrollView>
     );
   };

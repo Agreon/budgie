@@ -88,7 +88,7 @@ export const Login: FC<{
           style={tailwind('mt-8')}
           disabled={loading}
           onPress={loginUser}
-          accessoryLeft={loading ? LoadingIndicator : undefined}
+          accessoryLeft={loading ? props => <LoadingIndicator {...props} /> : undefined}
         >
           Submit
         </Button>
