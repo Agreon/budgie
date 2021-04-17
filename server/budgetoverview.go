@@ -13,16 +13,16 @@ type ExpenseByCategory struct {
 }
 
 type ExpenseByTag struct {
-	Tag        string `db:"tag" json:"category"`
+	Tag        string `db:"tag" json:"tag"`
 	TotalCosts string `db:"total" json:"total_costs"`
 }
 
 type BudgetOverview struct {
 	TotalExpense string `db:"expense_total" json:"total_expense"`
 	//ExpenseByCategory []ExpenseByCategory `json:"expense_by_category"`
-	//ExpenseByTag      []ExpenseByTag      `json:"expense_by_tag"`
-	SavingsRate string `db:"savings_rate" json:"savings_rate"`
-	TotalIncome string `db:"income_total" json:"total_income"`
+	ExpenseByTag []ExpenseByTag `json:"expense_by_tag"`
+	SavingsRate  string         `db:"savings_rate" json:"savings_rate"`
+	TotalIncome  string         `db:"income_total" json:"total_income"`
 }
 
 func getBudgetOverview(c *gin.Context) {
@@ -44,11 +44,15 @@ func getBudgetOverview(c *gin.Context) {
 	//}
 
 	// TODO join tag - expense_tag - expense
-	//err = db.Select(&budgetOverview.ExpenseByTag, "SELECT tag, COALESCE(SUM(costs),0) AS total FROM expense WHERE user_id=$1 GROUP BY tag ORDER BY total", userID)
-	//if err != nil {
-	//	saveErrorInfo(c, err, 500)
-	//	return
-	//}
+	//err := db.Select(&tags, "SELECT id, name FROM tag LEFT JOIN expense_tag ON expense_tag.tag_id = tag.id WHERE expense_tag.expense_id=$1", expenseID)
+
+	//err = db.Select(&budgetOverview.ExpenseByTag, "SELECT id, COALESCE(SUM(costs),0) AS total FROM expense WHERE user_id=$1 GROUP BY id ORDER BY total", userID)
+	//err = db.Select(&budgetOverview.ExpenseByTag, "SELECT tag_costs.name as id, costs.costs as costs FROM (SELECT id, costs FROM expense WHERE user_id=$1) AS costs JOIN(SELECT id, name FROM tag LEFT JOIN expense_tag ON expense_tag.tag_id = tag.id WHERE expense_tag.expense_id=costs.id) AS tag_costs ON costs.id =  ", userID)
+	err = db.Select(&budgetOverview.ExpenseByTag, "SELECT tag_name_costs.tag, COALESCE(SUM(tag_name_costs.costs),0) AS total FROM (SELECT tag_id_costs.costs AS costs, tag.name AS tag FROM (SELECT expense.costs AS costs, expense_tag.tag_id AS id FROM expense, expense_tag WHERE expense.id = expense_tag.expense_id AND user_id=$1) AS tag_id_costs, tag WHERE tag_id_costs.id = tag.id) AS tag_name_costs GROUP BY tag_name_costs.tag ORDER BY total", userID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
 
 	//err = db.Get(&budgetOverview.TotalIncome, "SELECT COALESCE(SUM(costs),0) AS total FROM income WHERE user_id=$1", userID)
 	//if err != nil {
