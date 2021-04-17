@@ -10,10 +10,13 @@ export interface ListProps<T> {
     query: Query;
     url: string;
     renderItem: ListRenderItem<T>;
+    header?: React.ReactElement;
 }
 
 // TODO: Refresh-control is not directly loading
-export function List<T extends {id: string}>({ query, renderItem, url }: ListProps<T>) {
+export function List<T extends {id: string}>({
+  query, renderItem, url, header,
+}: ListProps<T>) {
   const {
     data: expenses, isLoading, refetch, isFetching, fetchNextPage, hasNextPage,
   } = usePaginatedQuery<T>(query, url);
@@ -24,6 +27,8 @@ export function List<T extends {id: string}>({ query, renderItem, url }: ListPro
     <FlatList<T>
       style={tailwind('w-full')}
       ItemSeparatorComponent={ItemDivider}
+      ListHeaderComponent={header}
+      stickyHeaderIndices={header ? [0] : undefined}
       refreshControl={(
         <RefreshControl
           refreshing={isLoading || isFetching}

@@ -16,6 +16,7 @@ import { TagDialog } from '../components/TagDialog';
 import { List } from '../components/List';
 import { Query } from '../hooks/use-paginated-query';
 import { DeleteDialog } from '../components/DeleteDialog';
+import { Header } from '../components/Header';
 
 const TagItem: FC<{
   item: Tag
@@ -85,6 +86,7 @@ export const Tags: FC = () => {
         query={Query.Tags}
         url="tag"
         renderItem={renderTagItem}
+        header={<Header title="Tags" />}
       />
       <Button
         style={tailwind('absolute right-6 bottom-5')}

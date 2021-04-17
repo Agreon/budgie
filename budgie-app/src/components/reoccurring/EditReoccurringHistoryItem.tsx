@@ -2,22 +2,21 @@ import {
   NavigationProp, RouteProp, useNavigation, useRoute,
 } from '@react-navigation/native';
 import {
-  Button, Datepicker, Icon, Input, Spinner,
+  Button, Datepicker, Icon, Input,
 } from '@ui-kitten/components';
 import dayjs from 'dayjs';
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { Keyboard, ScrollView, View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import { useQueryClient } from 'react-query';
 import tailwind from 'tailwind-rn';
 import { Query } from '../../hooks/use-paginated-query';
 import { useApi } from '../../hooks/use-request';
 import { useToast } from '../../ToastProvider';
 import { ReoccurringHistoryItem } from '../../util/types';
-import { BackAction } from '../BackAction';
-import { Header } from '../Header';
 import { LoadingIndicator } from '../LoadingIndicator';
+import { PageWrapper } from '../PageWrapper';
 
 interface EditReoccurringHistoryFormProps {
     historyItem: ReoccurringHistoryItem;
@@ -120,25 +119,11 @@ export const EditReoccurringHistoryItem: FC = () => {
   }, [id, api, historyItem, navigation, showToast]);
 
   return (
-    <ScrollView
-      stickyHeaderIndices={[0]}
-      style={tailwind('bg-white h-full w-full')}
+    <PageWrapper
+      title="Edit Reoccurring History"
+      loading={!historyItem}
     >
-      <Header
-        title="Edit Reoccurring History"
-        accessoryLeft={props => <BackAction {...props} />}
-      />
-      {
-        historyItem === null ? (
-          <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>
-            <Spinner size="giant" />
-          </View>
-        ) : (
-          <View style={tailwind('flex pl-5 pr-5')}>
-            <EditReoccurringHistoryItemForm historyItem={historyItem} onSubmit={onSave} />
-          </View>
-        )
-      }
-    </ScrollView>
+      <EditReoccurringHistoryItemForm historyItem={historyItem!} onSubmit={onSave} />
+    </PageWrapper>
   );
 };

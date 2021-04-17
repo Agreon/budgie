@@ -2,20 +2,16 @@ import React, {
   useCallback, useState,
 } from 'react';
 import {
-  Keyboard, ScrollView, View,
+  Keyboard,
 } from 'react-native';
-import tailwind from 'tailwind-rn';
 import {
   Icon,
-  Spinner,
   TopNavigationAction,
 } from '@ui-kitten/components';
 import {
   RouteProp, useNavigation, useRoute,
 } from '@react-navigation/native';
 import { useQuery } from 'react-query';
-import { BackAction } from '../BackAction';
-import { Header } from '../Header';
 import { Reoccurring, ReoccurringHistoryItem } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
@@ -24,6 +20,7 @@ import { capitalize } from '../../util/util';
 import { ReoccurringHistory } from './ReoccurringHistory';
 import { DeleteDialog } from '../DeleteDialog';
 import { Query } from '../../hooks/use-paginated-query';
+import { PageWrapper } from '../PageWrapper';
 
 export const EditReoccurring = ({ type, onActionDone }: {
   type: 'expense' | 'income'
@@ -79,53 +76,40 @@ export const EditReoccurring = ({ type, onActionDone }: {
   }, [id, data, api, navigation, type, showToast, onActionDone]);
 
   return (
-    <ScrollView
-      stickyHeaderIndices={[0]}
-      style={tailwind('bg-white h-full w-full')}
+    <PageWrapper
+      title={`Edit Reoccurring ${capitalize(type)}`}
+      loading={!data}
+      accessoryRight={props => (
+        <TopNavigationAction
+          {...props}
+          icon={iconProps => (
+            <Icon {...iconProps} name="trash-2-outline" />
+          )}
+          onPress={() => {
+            Keyboard.dismiss();
+            setDeleteDialogVisible(true);
+          }}
+        />
+      )}
     >
-      <Header
-        title={`Edit Reoccurring ${capitalize(type)}`}
-        accessoryLeft={props => <BackAction {...props} />}
-        accessoryRight={props => (
-          <TopNavigationAction
-            {...props}
-            icon={iconProps => (
-              <Icon {...iconProps} name="trash-2-outline" />
-            )}
-            onPress={() => {
-              Keyboard.dismiss();
-              setDeleteDialogVisible(true);
-            }}
-          />
-        )}
+      <ReoccurringForm
+        reoccurring={data!.recurring}
+        forType={type}
+        onSubmit={onSave}
       />
-      {
-        !data ? (
-          <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>
-            <Spinner size="giant" />
-          </View>
-        ) : (
-          <View style={tailwind('flex pl-5 pr-5')}>
-            <ReoccurringForm
-              reoccurring={data.recurring}
-              onSubmit={onSave}
-            />
-            {data.history.length !== 0 && (
-              <ReoccurringHistory
-                history={data.history}
-                refresh={async () => { await refetch(); }}
-              />
-            )}
-            <DeleteDialog
-              deletePath={`recurring/${id}`}
-              visible={deleteDialogVisible}
-              content={`Are you sure you want to delete this reoccurring ${type}?`}
-              onClose={() => setDeleteDialogVisible(false)}
-              onDeleted={onActionDone}
-            />
-          </View>
-        )
-      }
-    </ScrollView>
+      {data!.history.length !== 0 && (
+      <ReoccurringHistory
+        history={data!.history}
+        refresh={async () => { await refetch(); }}
+      />
+      )}
+      <DeleteDialog
+        deletePath={`recurring/${id}`}
+        visible={deleteDialogVisible}
+        content={`Are you sure you want to delete this reoccurring ${type}?`}
+        onClose={() => setDeleteDialogVisible(false)}
+        onDeleted={onActionDone}
+      />
+    </PageWrapper>
   );
 };

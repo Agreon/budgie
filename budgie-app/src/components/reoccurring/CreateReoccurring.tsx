@@ -1,15 +1,12 @@
 import React, {
   useCallback,
 } from 'react';
-import { View, ScrollView } from 'react-native';
-import tailwind from 'tailwind-rn';
-import { Header } from '../Header';
-import { BackAction } from '../BackAction';
 import { Reoccurring } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
 import { ReoccurringForm } from './ReoccurringForm';
 import { capitalize } from '../../util/util';
+import { PageWrapper } from '../PageWrapper';
 
 export const CreateReoccurring = ({ type, onActionDone }: {
   type: 'expense' | 'income',
@@ -30,21 +27,14 @@ export const CreateReoccurring = ({ type, onActionDone }: {
     }
   }, [api, showToast, type, onActionDone]);
 
-  // TODO: Maybe extract this ScrollView + Header stuff
   return (
-    <ScrollView
-      stickyHeaderIndices={[0]}
-      style={tailwind('bg-white h-full w-full')}
+    <PageWrapper
+      title={`Create Reoccurring ${capitalize(type)}`}
     >
-      <Header
-        title={`Create Reoccurring ${capitalize(type)}`}
-        accessoryLeft={props => <BackAction {...props} />}
+      <ReoccurringForm
+        onSubmit={createReoccurring}
+        forType={type}
       />
-      <View style={tailwind('flex pl-5 pr-5')}>
-        <ReoccurringForm
-          onSubmit={createReoccurring}
-        />
-      </View>
-    </ScrollView>
+    </PageWrapper>
   );
 };

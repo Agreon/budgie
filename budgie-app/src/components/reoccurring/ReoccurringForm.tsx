@@ -20,6 +20,7 @@ import { getIndexOfCategory } from '../../util/util';
 
 interface IProps {
   reoccurring?: Reoccurring;
+  forType: 'expense' | 'income',
   onSubmit: (expense: Omit<Reoccurring, 'id' | 'is_expense'>) => Promise<void>;
 }
 
@@ -27,10 +28,11 @@ interface IProps {
  * TODO: Focus (https://stackoverflow.com/a/59754484)
  *  - returnKeyType='next'
  *
- * - Possibility to set endDate to null
+ * - TODO: Possibility to set endDate to null
  */
 export const ReoccurringForm: FC<IProps> = ({
   reoccurring,
+  forType,
   onSubmit,
 }) => {
   const [costs, setCosts] = useState(reoccurring?.costs || '');
@@ -78,7 +80,7 @@ export const ReoccurringForm: FC<IProps> = ({
         label="Cost"
         keyboardType="number-pad"
       />
-      {reoccurring?.is_expense && (
+      {forType === 'expense' && (
         <Select
           style={tailwind('mt-4')}
           label="Type"
@@ -88,8 +90,8 @@ export const ReoccurringForm: FC<IProps> = ({
           onFocus={Keyboard.dismiss}
         >
           {
-            CATEGORIES.map(type => (
-              <SelectItem key={type} title={type} />
+            CATEGORIES.map(category => (
+              <SelectItem key={category} title={category} />
             ))
           }
         </Select>
