@@ -3,13 +3,15 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	JWTSecret   string
-	DatabaseURL string
+	JWTSecret            string
+	JWTExpirationTimeInS int
+	DatabaseURL          string
 }
 
 var config Config
@@ -22,6 +24,7 @@ func loadDataFromEnv() {
 
 	config.JWTSecret = getEnvEntry("JWT_SECRET")
 	config.DatabaseURL = getEnvEntry("DATABASE_URL")
+	config.JWTExpirationTimeInS, _ = strconv.Atoi(getEnvEntry("JWT_EXPIRATION_TIME_IN_S"))
 }
 
 func getEnvEntry(key string) string {
