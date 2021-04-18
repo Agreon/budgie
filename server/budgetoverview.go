@@ -13,8 +13,10 @@ type ExpenseByCategory struct {
 }
 
 type ExpenseByTag struct {
-	Tag        string `db:"tag" json:"tag"`
-	TotalCosts string `db:"total" json:"total_costs"`
+	Tag            string `db:"tag" json:"tag"`
+	PercentageOnce string `db:"percentage_once" json:"percentage_of_non_recurring_expenses"`
+	PercentageAll  string `db:"percentage_all" json:"percentage_of_all_expenses"`
+	TotalCosts     string `db:"total" json:"total_costs"`
 }
 
 type BudgetOverview struct {
@@ -43,12 +45,7 @@ func getBudgetOverview(c *gin.Context) {
 	//	return
 	//}
 
-	// TODO join tag - expense_tag - expense
-	//err := db.Select(&tags, "SELECT id, name FROM tag LEFT JOIN expense_tag ON expense_tag.tag_id = tag.id WHERE expense_tag.expense_id=$1", expenseID)
-
-	//err = db.Select(&budgetOverview.ExpenseByTag, "SELECT id, COALESCE(SUM(costs),0) AS total FROM expense WHERE user_id=$1 GROUP BY id ORDER BY total", userID)
-	//err = db.Select(&budgetOverview.ExpenseByTag, "SELECT tag_costs.name as id, costs.costs as costs FROM (SELECT id, costs FROM expense WHERE user_id=$1) AS costs JOIN(SELECT id, name FROM tag LEFT JOIN expense_tag ON expense_tag.tag_id = tag.id WHERE expense_tag.expense_id=costs.id) AS tag_costs ON costs.id =  ", userID)
-	err = db.Select(&budgetOverview.ExpenseByTag, "SELECT tag_name_costs.tag, COALESCE(SUM(tag_name_costs.costs),0) AS total FROM (SELECT tag_id_costs.costs AS costs, tag.name AS tag FROM (SELECT expense.costs AS costs, expense_tag.tag_id AS id FROM expense, expense_tag WHERE expense.id = expense_tag.expense_id AND user_id=$1) AS tag_id_costs, tag WHERE tag_id_costs.id = tag.id) AS tag_name_costs GROUP BY tag_name_costs.tag ORDER BY total", userID)
+	err = db.Select(&budgetOverview.ExpenseByTag, "SELECT tag_name_costs.tag, COALESCE(SUM(tag_name_costs.costs),0) AS total, ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $2) AS percentage_all, ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $3) AS percentage_once FROM (SELECT tag_id_costs.costs AS costs, tag.name AS tag FROM (SELECT expense.costs AS costs, expense_tag.tag_id AS id FROM expense, expense_tag WHERE expense.id = expense_tag.expense_id AND user_id=$1) AS tag_id_costs, tag WHERE tag_id_costs.id = tag.id) AS tag_name_costs GROUP BY tag_name_costs.tag ORDER BY total", userID, "50000", "9999")
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
