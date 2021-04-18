@@ -1,19 +1,15 @@
 import React, {
   FC, useCallback, useEffect, useState,
 } from 'react';
-import { View, SafeAreaView } from 'react-native';
-import tailwind from 'tailwind-rn';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Spinner } from '@ui-kitten/components';
 import { useQueryClient } from 'react-query';
-import { Header } from '../../components/Header';
-import { BackAction } from '../../components/BackAction';
 import { ExpenseForm } from './ExpenseForm';
 import { Expense, Tag } from '../../util/types';
 import { useToast } from '../../ToastProvider';
 import { useApi } from '../../hooks/use-request';
 import { ExpensesStackParamList } from '.';
 import { Query } from '../../hooks/use-paginated-query';
+import { PageWrapper } from '../../components/PageWrapper';
 
 export const CreateExpense: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'CreateExpense'>
@@ -27,7 +23,8 @@ export const CreateExpense: FC<{
   useEffect(() => {
     (async () => {
       try {
-        const { data: tags } = await api.get('tag?page=0');
+        // TODO: Use react-query
+        const { data: { data: tags } } = await api.get('tag?page=0');
         setAvailableTags(tags);
       } catch (err) {
         showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -41,7 +38,7 @@ export const CreateExpense: FC<{
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
-      queryClient.resetQueries({ queryKey: Query.Expense, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -49,26 +46,15 @@ export const CreateExpense: FC<{
   }, [api, navigation, showToast]);
 
   return (
-    <SafeAreaView style={tailwind('bg-white h-full w-full')}>
-      <Header
-        title="Create Expense"
-        accessoryLeft={() => <BackAction navigation={navigation} />}
+    <PageWrapper
+      title="Create Expense"
+      loading={availableTags === null}
+    >
+      <ExpenseForm
+        availableTags={availableTags!}
+        onSubmit={createExpense}
+        setAvailableTags={setAvailableTags}
       />
-      {
-        availableTags === null ? (
-          <View style={tailwind('absolute w-full h-full flex items-center bg-gray-300 bg-opacity-25 justify-center z-10')}>
-            <Spinner size="giant" />
-          </View>
-        ) : (
-          <View style={tailwind('flex pl-5 pr-5')}>
-            <ExpenseForm
-              availableTags={availableTags}
-              onSubmit={createExpense}
-              setAvailableTags={setAvailableTags}
-            />
-          </View>
-        )
-      }
-    </SafeAreaView>
+    </PageWrapper>
   );
 };

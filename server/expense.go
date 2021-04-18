@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	_ "github.com/lib/pq"
 )
 
@@ -72,10 +72,15 @@ type ExpenseWithTags struct {
 	Tags []ExpenseTagOutput `json:"tags"`
 }
 
+type ExpenseListOutput struct {
+	Data    []ExpenseWithTags `json:"data"`
+	Entries int               `json:"number_of_entries"`
+}
+
 func insertExpense(c *gin.Context) {
 	var newExpense ExpenseInput
 	var err error
-	if err = c.BindJSON(&newExpense); err != nil {
+	if err = c.ShouldBindBodyWith(&newExpense, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}
@@ -118,33 +123,36 @@ func insertExpense(c *gin.Context) {
 
 func listExpenses(c *gin.Context) {
 	db := GetDB()
-	var expenseWithTags []ExpenseWithTags
+	var dataOutput ExpenseListOutput
 
 	userID := c.MustGet("userID")
-	page := c.Query("page")
-	pageInt, err := strconv.Atoi(page)
-	if err != nil {
-		saveErrorInfo(c, err, 400)
-		return
-	}
-	page = strconv.Itoa(pageInt * pageSize)
-	err = db.Select(&expenseWithTags, "SELECT * FROM expense WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	page := c.MustGet("page")
+	err := db.Select(&dataOutput.Data, "SELECT * FROM expense WHERE user_id=$1 ORDER BY date DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
+	err = db.Get(&dataOutput.Entries, "SELECT count(*) FROM expense WHERE user_id=$1", userID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
 	var errCode int
-	for i, expense := range expenseWithTags {
-		expenseWithTags[i].Tags, err, errCode = getTagsOfExpense(c, expense.ID)
+	for i, expense := range dataOutput.Data {
+		dataOutput.Data[i].Tags, err, errCode = getTagsOfExpense(c, expense.ID)
 		if err != nil {
 			saveErrorInfo(c, err, errCode)
 			return
 		}
 	}
+	if len(dataOutput.Data) == 0 {
+		dataOutput.Data = []ExpenseWithTags{}
+	}
 
-	c.JSON(200, expenseWithTags)
+	c.JSON(200, dataOutput)
 }
 
 func listSingleExpense(c *gin.Context) {
@@ -171,7 +179,7 @@ func updateExpense(c *gin.Context) {
 	/* get updated data from body */
 	var updateExpense ExpenseInput
 	var err error
-	if err = c.BindJSON(&updateExpense); err != nil {
+	if err = c.ShouldBindBodyWith(&updateExpense, binding.JSON); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
 	}

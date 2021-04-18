@@ -1,22 +1,14 @@
 import React, {
-  FC, useMemo,
+  FC,
 } from 'react';
 import {
   Text,
 } from '@ui-kitten/components';
-import dayjs from 'dayjs';
 import tailwind from 'tailwind-rn';
-
-const currentYear = dayjs().year();
+import { useFormattedDate } from '../hooks/use-formatted-date';
 
 export const ItemDate: FC<{date: Date}> = ({ date }) => {
-  const formattedDate = useMemo(
-    () => (
-      dayjs(date).year() !== currentYear
-        ? dayjs(date).format('DD.MM.YY')
-        : dayjs(date).format('DD.MM.')),
-    [date],
-  );
+  const formattedDate = useFormattedDate(date);
 
   return (
     <Text appearance="hint" style={tailwind('text-right')}>

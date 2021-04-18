@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -10,10 +11,11 @@ import (
 
 func getToken(UserID string) string {
 	secret := []byte(config.JWTSecret)
+	expirationTime := time.Duration(config.JWTExpirationTimeInS)
 
 	claims := &jwt.StandardClaims{
-		//ExpiresAt: 3600, // TODO add refresh token
-		Subject: UserID,
+		ExpiresAt: time.Now().Add(time.Second * expirationTime).Unix(),
+		Subject:   UserID,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

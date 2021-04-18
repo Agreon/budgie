@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS expense_tag (
 );
 
 ALTER TABLE expense_tag DROP CONSTRAINT IF EXISTS fk_tag;
-
 ALTER TABLE expense_tag
     ADD CONSTRAINT fk_tag
 		FOREIGN KEY(tag_id)

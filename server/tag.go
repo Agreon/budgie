@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -40,6 +39,11 @@ type TagInput struct {
 type TagOutput struct {
 	Name string `json:"name"`
 	ID   string `json:"id"`
+}
+
+type TagListOutput struct {
+	Data    []Tag `json:"data"`
+	Entries int   `json:"number_of_entries"`
 }
 
 func insertTag(c *gin.Context) {
@@ -86,22 +90,25 @@ func insertTag(c *gin.Context) {
 
 func listTags(c *gin.Context) {
 	db := GetDB()
-	tags := []Tag{}
+	tags := TagListOutput{}
 
 	userID := c.MustGet("userID")
 
-	page := c.Query("page")
-	pageInt, err := strconv.Atoi(page)
-	if err != nil {
-		saveErrorInfo(c, err, 400)
-		return
-	}
-	page = strconv.Itoa(pageInt * pageSize)
-
-	err = db.Select(&tags, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	page := c.MustGet("page")
+	err := db.Select(&tags.Data, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
+	}
+
+	err = db.Get(&tags.Entries, "SELECT count(*) FROM tag WHERE user_id=$1", userID)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	if len(tags.Data) == 0 {
+		tags.Data = []Tag{}
 	}
 
 	c.JSON(200, tags)

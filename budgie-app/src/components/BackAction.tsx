@@ -1,18 +1,21 @@
 import React from 'react';
-import { StackNavigationProp } from '@react-navigation/stack';
 import {
   Icon,
   IconProps,
   TopNavigationAction,
 } from '@ui-kitten/components';
-import { ParamListBase } from '@react-navigation/native';
+import {
+  useNavigation,
+} from '@react-navigation/native';
+import { ImageProps } from 'react-native';
 
 const BackIcon = (props: IconProps) => (
   <Icon {...props} name="arrow-back" />
 );
 
-export const BackAction = <T extends ParamListBase>({ navigation }: {
-  navigation: StackNavigationProp<T, keyof T>
-}) => (
-  <TopNavigationAction icon={BackIcon} onPress={() => navigation.goBack()} />
+export const BackAction = (props: Partial<ImageProps>) => {
+  const navigation = useNavigation();
+  return (
+    <TopNavigationAction {...props} icon={BackIcon} onPress={() => navigation.goBack()} />
   );
+};

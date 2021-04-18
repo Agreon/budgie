@@ -42,11 +42,11 @@ export const IncomeForm: FC<IProps> = ({
   }, [loading, income, costs, name, date]);
 
   return (
-    <View>
+    <View style={tailwind('mb-3')}>
       <Input
         style={tailwind('mt-1')}
         value={costs}
-        onChangeText={(text) => setCosts(text)}
+        onChangeText={setCosts}
         label="Amount"
         autoFocus={!income}
         keyboardType="decimal-pad"
@@ -55,14 +55,14 @@ export const IncomeForm: FC<IProps> = ({
         style={tailwind('mt-4')}
         label="Date"
         date={date}
-        onFocus={() => Keyboard.dismiss()}
-        onSelect={(nextDate) => setDate(nextDate)}
+        onFocus={Keyboard.dismiss}
+        onSelect={setDate}
         accessoryRight={props => (<Icon {...props} name="calendar" />)}
       />
       <Input
         style={tailwind('mt-4')}
         value={name}
-        onChangeText={(text) => setName(text)}
+        onChangeText={setName}
         label="Name"
         onSubmitEditing={onSave}
       />
@@ -70,7 +70,7 @@ export const IncomeForm: FC<IProps> = ({
         style={tailwind('mt-8')}
         disabled={loading}
         onPress={onSave}
-        accessoryLeft={loading ? LoadingIndicator : undefined}
+        accessoryLeft={loading ? props => <LoadingIndicator {...props} /> : undefined}
       >
         Save
       </Button>
