@@ -38,22 +38,14 @@ type OverviewInput struct {
 	EndDate   string `json:"endDate" binding:"required"`
 }
 
-
 /**
 TODO:
-	COALESCE bei summe notwendig?!
-	and überall groß
-	multiline in go
-	ordering von parametern
-	Sortierung (ASC/DESC)
+	COALESCE bei summe notwendig?!-> "converting NULL to string is unsupported"
 **/
 func getBudgetOverview(c *gin.Context) {
 	var overviewInput OverviewInput
-	// TODO: As query parameter
-	if err := c.BindJSON(&overviewInput); err != nil {
-		saveErrorInfo(c, err, 400)
-		return
-	}
+	overviewInput.StartDate = c.Query("startDate")
+	overviewInput.EndDate = c.Query("endDate")
 	// TODO validate dates
 
 	db := GetDB()
@@ -63,18 +55,30 @@ func getBudgetOverview(c *gin.Context) {
 	//err := db.Get(&budgetOverview, "WITH expense_sum as (SELECT COALESCE(SUM(costs),0) AS expense_total FROM expense WHERE user_id=$1), income_sum as (SELECT COALESCE(SUM(costs),0) AS income_total FROM income WHERE user_id=$1), savings_rate as (select 100 - (expense_total from expense_sum)*100 / (income_total from income_sum) ) SELECT (select expense_total from expense_sum), (select income_total from income_sum), (select savings_rate)", userID)
 	//err = db.Get(&budgetOverview, "WITH expense_sum as (SELECT COALESCE(SUM(costs),0) AS expense_total FROM expense WHERE user_id=$1 AND date>=$2::date and date<$3::date), income_sum as (SELECT COALESCE(SUM(costs),0) AS income_total FROM income WHERE user_id=$1 AND date>=$2::date and date<$3::date), savings_rate as (SELECT income_total AS rate FROM income_sum) SELECT (select expense_total from expense_sum), (select income_total from income_sum), 100-div((select expense_total*100 from expense_sum), (select income_total from income_sum)) as savings_rate", userID, overviewInput.StartDate, overviewInput.EndDate)
 
-	err := db.Get(&budgetOverview.ExpensesOnce, "SELECT COALESCE(SUM(costs),0) AS expense_once FROM expense WHERE user_id=$1 AND date>=$2::date and date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
+	err := db.Get(&budgetOverview.ExpensesOnce, "SELECT COALESCE(SUM(costs),0) AS expense_once FROM expense WHERE user_id=$1 AND date>=$2::date AND date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-	err = db.Get(&budgetOverview.IncomeOnce, "SELECT COALESCE(SUM(costs),0) AS income_once FROM income WHERE user_id=$1 AND date>=$2::date and date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
+	err = db.Get(&budgetOverview.IncomeOnce, "SELECT COALESCE(SUM(costs),0) AS income_once FROM income WHERE user_id=$1 AND date>=$2::date AND date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
-	err = db.Select(&budgetOverview.ExpenseByCategory, "SELECT category, COALESCE(SUM(costs),0) AS total, ROUND(COALESCE(SUM(costs),0)*100 / $2) AS percentage_all, ROUND(COALESCE(SUM(costs),0)*100 / $3) AS percentage_once FROM expense WHERE user_id=$1 AND date>=$4::date and date<$5::date GROUP BY category ORDER BY total", userID, "50000", budgetOverview.ExpensesOnce, overviewInput.StartDate, overviewInput.EndDate)
+	err = db.Select(&budgetOverview.ExpenseByCategory, `
+		SELECT 
+			category, 
+			COALESCE(SUM(costs),0) AS total, 
+			ROUND(COALESCE(SUM(costs),0)*100 / $1) AS percentage_all, 
+			ROUND(COALESCE(SUM(costs),0)*100 / $2) AS percentage_once 
+		FROM 
+			expense 
+		WHERE 	
+			user_id=$3 AND date>=$4::date AND date<$5::date 
+		GROUP BY category 	
+		ORDER BY total DESC
+		`, "50000", budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -84,8 +88,8 @@ func getBudgetOverview(c *gin.Context) {
 		SELECT
 			tag_name_costs.tag AS tag,
 			COALESCE(SUM(tag_name_costs.costs),0) AS total,
-			ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $2) AS percentage_all,
-			ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $3) AS percentage_once
+			ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $1) AS percentage_all,
+			ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $2) AS percentage_once
 		FROM (
 			SELECT
 				tag_id_costs.costs AS costs,
@@ -97,7 +101,7 @@ func getBudgetOverview(c *gin.Context) {
 				FROM expense, expense_tag
 				WHERE
 					expense.id = expense_tag.expense_id
-					AND user_id=$1
+					AND user_id=$3
 					AND date>=$4::date
 					AND date<$5::date
 			) AS tag_id_costs, tag
@@ -105,8 +109,8 @@ func getBudgetOverview(c *gin.Context) {
 				tag_id_costs.id = tag.id
 		) AS tag_name_costs
 		GROUP BY tag_name_costs.tag
-		ORDER BY total
-		`, userID, "50000", budgetOverview.ExpensesOnce, overviewInput.StartDate, overviewInput.EndDate)
+		ORDER BY total DESC
+		`, "50000", budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -124,6 +128,14 @@ func getBudgetOverview(c *gin.Context) {
 	//	return
 	//}
 	//budgetOverview.SavingsRate = fmt.Sprintf("%s%%", budgetOverview.SavingsRate)
+
+	if len(budgetOverview.ExpenseByTag) == 0 {
+		budgetOverview.ExpenseByTag = []ExpenseByTag{}
+	}
+
+	if len(budgetOverview.ExpenseByCategory) == 0 {
+		budgetOverview.ExpenseByCategory = []ExpenseByCategory{}
+	}
 
 	c.JSON(200, budgetOverview)
 }
