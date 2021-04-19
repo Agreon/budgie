@@ -38,8 +38,18 @@ type OverviewInput struct {
 	EndDate   string `json:"endDate" binding:"required"`
 }
 
+
+/**
+TODO:
+	COALESCE bei summe notwendig?!
+	and überall groß
+	multiline in go
+	ordering von parametern
+	Sortierung (ASC/DESC)
+**/
 func getBudgetOverview(c *gin.Context) {
 	var overviewInput OverviewInput
+	// TODO: As query parameter
 	if err := c.BindJSON(&overviewInput); err != nil {
 		saveErrorInfo(c, err, 400)
 		return
@@ -70,7 +80,33 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 
-	err = db.Select(&budgetOverview.ExpenseByTag, "SELECT tag_name_costs.tag, COALESCE(SUM(tag_name_costs.costs),0) AS total, ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $2) AS percentage_all, ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $3) AS percentage_once FROM (SELECT tag_id_costs.costs AS costs, tag.name AS tag FROM (SELECT expense.costs AS costs, expense_tag.tag_id AS id FROM expense, expense_tag WHERE expense.id = expense_tag.expense_id AND user_id=$1 AND date>=$4::date and date<$5::date ) AS tag_id_costs, tag WHERE tag_id_costs.id = tag.id) AS tag_name_costs GROUP BY tag_name_costs.tag ORDER BY total", userID, "50000", budgetOverview.ExpensesOnce, overviewInput.StartDate, overviewInput.EndDate)
+	err = db.Select(&budgetOverview.ExpenseByTag, `
+		SELECT
+			tag_name_costs.tag AS tag,
+			COALESCE(SUM(tag_name_costs.costs),0) AS total,
+			ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $2) AS percentage_all,
+			ROUND(COALESCE(SUM(tag_name_costs.costs),0)*100 / $3) AS percentage_once
+		FROM (
+			SELECT
+				tag_id_costs.costs AS costs,
+				tag.name AS tag
+			FROM (
+				SELECT
+					expense.costs AS costs,
+					expense_tag.tag_id AS id
+				FROM expense, expense_tag
+				WHERE
+					expense.id = expense_tag.expense_id
+					AND user_id=$1
+					AND date>=$4::date
+					AND date<$5::date
+			) AS tag_id_costs, tag
+			WHERE
+				tag_id_costs.id = tag.id
+		) AS tag_name_costs
+		GROUP BY tag_name_costs.tag
+		ORDER BY total
+		`, userID, "50000", budgetOverview.ExpensesOnce, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
