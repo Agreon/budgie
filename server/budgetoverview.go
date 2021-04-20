@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,17 +32,20 @@ type BudgetOverview struct {
 	IncomeRecurring   string              `db:"income_recurring" json:"totalIncomeRecurring"`
 	IncomeOnce        string              `db:"income_once" json:"totalIncomeOnce"`
 	TotalIncome       string              `db:"income_total" json:"totalIncome"`
+	Data              []test              `db:"income_total" json:"recurringtest"`
 }
 
+type test struct {
+	Costs     string `db:"costs" json:"costs"`
+	StartDate string `db:"start_date" json:"startDate"`
+	Enddate   string `db:"end_date" json:"endDate"`
+	Interval  string `db:"interval" json:"interval"`
+}
 type OverviewInput struct {
 	StartDate string `json:"startDate" binding:"required"`
 	EndDate   string `json:"endDate" binding:"required"`
 }
 
-/**
-TODO:
-	COALESCE bei summe notwendig?!-> "converting NULL to string is unsupported"
-**/
 func getBudgetOverview(c *gin.Context) {
 	var overviewInput OverviewInput
 	overviewInput.StartDate = c.Query("startDate")
@@ -61,6 +65,45 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 	err = db.Get(&budgetOverview.IncomeOnce, "SELECT COALESCE(SUM(costs),0) AS income_once FROM income WHERE user_id=$1 AND date>=$2::date AND date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	//err = db.Get(&budgetOverview.IncomeRecurring, `
+	//	SELECT
+	//		COALESCE(SUM(costs),0) AS income_recurring
+	//	FROM recurring
+	//	WHERE
+	//		user_id=$1 AND is_expense=FALSE AND start_date>=$2::date AND end_date<$3::date
+	//	`, userID, overviewInput.StartDate, overviewInput.EndDate)
+	var nullTime time.Time
+	err = db.Select(&budgetOverview.Data, `
+		SELECT
+			COALESCE(SUM(cost_interval.costs*cost_interval.interval),0) AS interval
+		FROM (
+			SELECT
+				relevant_recurring.costs,
+				relevant_recurring.start_date,
+				relevant_recurring.end_date,
+				extract(year from age(relevant_recurring.end_date, relevant_recurring.start_date)) * 12 +
+						extract(month from age(relevant_recurring.end_date, relevant_recurring.start_date)) + 1 AS interval
+			FROM (
+				SELECT 
+					costs,
+					CASE WHEN start_date<$3 THEN $3
+						ELSE start_date
+					END AS start_date,
+					CASE WHEN end_date>$2 THEN $2
+						WHEN end_date=$4 THEN $2
+						ELSE end_date
+					END AS end_date
+				FROM recurring 
+				WHERE 
+					user_id=$1 AND is_expense=FALSE AND start_date<$2::date AND (end_date>$3::date OR end_date=$4::date)
+			) AS relevant_recurring
+		) AS cost_interval
+		`, userID, overviewInput.EndDate, overviewInput.StartDate, nullTime)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
