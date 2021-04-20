@@ -78,9 +78,9 @@ func getBudgetOverview(c *gin.Context) {
 	//		user_id=$1 AND is_expense=FALSE AND start_date>=$2::date AND end_date<$3::date
 	//	`, userID, overviewInput.StartDate, overviewInput.EndDate)
 	var nullTime time.Time
-	err = db.Select(&budgetOverview.Data, `
+	err = db.Get(&budgetOverview.IncomeRecurring, `
 		SELECT
-			COALESCE(SUM(cost_interval.costs*cost_interval.interval),0) AS interval
+			ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)::numeric,2) AS income_recurring
 		FROM (
 			SELECT
 				relevant_recurring.costs,
@@ -104,6 +104,37 @@ func getBudgetOverview(c *gin.Context) {
 			) AS relevant_recurring
 		) AS cost_interval
 		`, userID, overviewInput.EndDate, overviewInput.StartDate, nullTime)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	err = db.Get(&budgetOverview.ExpensesRecurring, `
+	SELECT
+		ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)::numeric,2) AS income_recurring
+	FROM (
+		SELECT
+			relevant_recurring.costs,
+			relevant_recurring.start_date,
+			relevant_recurring.end_date,
+			extract(year from age(relevant_recurring.end_date, relevant_recurring.start_date)) * 12 +
+					extract(month from age(relevant_recurring.end_date, relevant_recurring.start_date)) + 1 AS interval
+		FROM (
+			SELECT 
+				costs,
+				CASE WHEN start_date<$3 THEN $3
+					ELSE start_date
+				END AS start_date,
+				CASE WHEN end_date>$2 THEN $2
+					WHEN end_date=$4 THEN $2
+					ELSE end_date
+				END AS end_date
+			FROM recurring 
+			WHERE 
+				user_id=$1 AND is_expense=TRUE AND start_date<$2::date AND (end_date>$3::date OR end_date=$4::date)
+		) AS relevant_recurring
+	) AS cost_interval
+	`, userID, overviewInput.EndDate, overviewInput.StartDate, nullTime)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
