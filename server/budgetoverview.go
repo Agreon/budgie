@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"time"
@@ -140,6 +141,11 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 
+	if err = budgetOverview.calc(); err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
 	err = db.Select(&budgetOverview.ExpenseByCategory, `
 		SELECT 
 			category, 
@@ -152,7 +158,7 @@ func getBudgetOverview(c *gin.Context) {
 			user_id=$3 AND date>=$4::date AND date<$5::date 
 		GROUP BY category 	
 		ORDER BY total DESC
-		`, "50000", budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
+		`, budgetOverview.TotalExpense, budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -184,7 +190,7 @@ func getBudgetOverview(c *gin.Context) {
 		) AS tag_name_costs
 		GROUP BY tag_name_costs.tag
 		ORDER BY total DESC
-		`, "50000", budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
+		`, budgetOverview.TotalExpense, budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -214,26 +220,66 @@ func getBudgetOverview(c *gin.Context) {
 	c.JSON(200, budgetOverview)
 }
 
-type calcFunction func(float64, float64) int
+func (overview *BudgetOverview) calc() (err error) {
+	var expensesOnceNum, expensesRecurringNum, incomeOnceNum, incomerecurringNum float64
 
-func calc(a string, b string, function calcFunction) (c string, err error) {
-	var aNum, bNum float64
-	aNum, err = strconv.ParseFloat(a, 64)
+	expensesOnceNum, err = strconv.ParseFloat(overview.ExpensesOnce, 64)
 	if err != nil {
 		return
 	}
-	bNum, err = strconv.ParseFloat(b, 64)
+	expensesRecurringNum, err = strconv.ParseFloat(overview.ExpensesRecurring, 64)
 	if err != nil {
 		return
 	}
-	cInt := function(aNum, bNum)
+	incomeOnceNum, err = strconv.ParseFloat(overview.IncomeOnce, 64)
+	if err != nil {
+		return
+	}
+	incomerecurringNum, err = strconv.ParseFloat(overview.IncomeRecurring, 64)
+	if err != nil {
+		return
+	}
 
-	c = strconv.Itoa(cInt)
+	expensesTotalNum := expensesOnceNum + expensesRecurringNum
+	incomeTotalNum := incomeOnceNum + incomerecurringNum
+
+	savingsRateNum := 100 - expensesTotalNum*100/incomeTotalNum
+
+	overview.SavingsRate = strconv.Itoa(int(math.Round(savingsRateNum)))
+
+	overview.TotalExpense = fmt.Sprintf("%.2f", expensesTotalNum)
+	overview.TotalIncome = fmt.Sprintf("%.2f", incomeTotalNum)
 
 	return
 }
 
+type calcFunction func(float64, float64) int
+
+//func calc(a string, b string, function calcFunction) (c string, err error) {
+//	var aNum, bNum float64
+//	aNum, err = strconv.ParseFloat(a, 64)
+//	if err != nil {
+//		return
+//	}
+//	bNum, err = strconv.ParseFloat(b, 64)
+//	if err != nil {
+//		return
+//	}
+//	cInt := function(aNum, bNum)
+//
+//	c = strconv.Itoa(cInt)
+//
+//	return
+//}
+
 func calcPercentage(a float64, b float64) (c int) {
+	cFloat := 100 - a*100/b
+
+	c = int(math.Round(cFloat))
+	return
+}
+
+func add(a float64, b float64) (c int) {
 	cFloat := 100 - a*100/b
 
 	c = int(math.Round(cFloat))
