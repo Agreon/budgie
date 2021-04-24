@@ -33,6 +33,7 @@ type BudgetOverview struct {
 	IncomeRecurring   string              `db:"income_recurring" json:"totalIncomeRecurring"`
 	IncomeOnce        string              `db:"income_once" json:"totalIncomeOnce"`
 	TotalIncome       string              `db:"income_total" json:"totalIncome"`
+	AmountSaved       string              `json:"amountSaved"`
 	Data              []test              `db:"income_total" json:"recurringtest"`
 }
 
@@ -245,8 +246,11 @@ func (overview *BudgetOverview) calc() (err error) {
 
 	savingsRateNum := 100 - expensesTotalNum*100/incomeTotalNum
 
+	amountSavedNum := incomeTotalNum - expensesTotalNum
+
 	overview.SavingsRate = strconv.Itoa(int(math.Round(savingsRateNum)))
 
+	overview.AmountSaved = fmt.Sprintf("%.2f", amountSavedNum)
 	overview.TotalExpense = fmt.Sprintf("%.2f", expensesTotalNum)
 	overview.TotalIncome = fmt.Sprintf("%.2f", incomeTotalNum)
 
