@@ -18,23 +18,24 @@ type ExpenseByCategory struct {
 
 type ExpenseByTag struct {
 	Tag            string `db:"tag" json:"tag"`
-	PercentageOnce string `db:"percentage_once" json:"percentageOfNonRecurringExpenses"`
+	PercentageOnce string `db:"percentage_once" json:"percentageOfExpensesOnce"`
 	PercentageAll  string `db:"percentage_all" json:"percentageOfAllExpenses"`
 	TotalCosts     string `db:"total" json:"totalCosts"`
 }
 
 type BudgetOverview struct {
-	ExpensesRecurring string              `db:"expense_recurring" json:"totalExpenseRecurring"`
-	ExpensesOnce      string              `db:"expense_once" json:"totalExpenseOnce"`
-	TotalExpense      string              `db:"expense_total" json:"totalExpense"`
-	ExpenseByCategory []ExpenseByCategory `json:"expenseByCategory"`
-	ExpenseByTag      []ExpenseByTag      `json:"expenseByTag"`
-	SavingsRate       string              `db:"savings_rate" json:"savingsRate"`
-	IncomeRecurring   string              `db:"income_recurring" json:"totalIncomeRecurring"`
-	IncomeOnce        string              `db:"income_once" json:"totalIncomeOnce"`
-	TotalIncome       string              `db:"income_total" json:"totalIncome"`
-	AmountSaved       string              `json:"amountSaved"`
-	Data              []test              `db:"income_total" json:"recurringtest"`
+	ExpensesRecurring     string              `db:"expense_recurring" json:"totalExpenseRecurring"`
+	ExpensesOnce          string              `db:"expense_once" json:"totalExpenseOnce"`
+	TotalExpense          string              `db:"expense_total" json:"totalExpense"`
+	ExpenseOnceByCategory []ExpenseByCategory `json:"expenseOnceByCategory"`
+	ExpenseRecByCategory  []ExpenseByCategory `json:"expenseRecurringByCategory"`
+	ExpenseByTag          []ExpenseByTag      `json:"expenseByTag"`
+	SavingsRate           string              `db:"savings_rate" json:"savingsRate"`
+	IncomeRecurring       string              `db:"income_recurring" json:"totalIncomeRecurring"`
+	IncomeOnce            string              `db:"income_once" json:"totalIncomeOnce"`
+	TotalIncome           string              `db:"income_total" json:"totalIncome"`
+	AmountSaved           string              `json:"amountSaved"`
+	Data                  []test              `db:"income_total" json:"recurringtest"`
 }
 
 type test struct {
@@ -147,7 +148,7 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 
-	err = db.Select(&budgetOverview.ExpenseByCategory, `
+	err = db.Select(&budgetOverview.ExpenseOnceByCategory, `
 		SELECT 
 			category, 
 			COALESCE(SUM(costs),0) AS total, 
@@ -160,6 +161,44 @@ func getBudgetOverview(c *gin.Context) {
 		GROUP BY category 	
 		ORDER BY total DESC
 		`, budgetOverview.TotalExpense, budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
+	if err != nil {
+		saveErrorInfo(c, err, 500)
+		return
+	}
+
+	err = db.Select(&budgetOverview.ExpenseRecByCategory, `
+		SELECT 
+			cost_interval.category AS category, 
+			COALESCE(SUM(cost_interval.costs*cost_interval.interval),0) AS total, 
+			ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)*100 / $1) AS percentage_all, 
+			ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)*100 / $2) AS percentage_once 
+		FROM (
+			SELECT
+				relevant_recurring.costs AS costs,
+				relevant_recurring.start_date AS start_date,
+				relevant_recurring.end_date AS end_date,
+				relevant_recurring.category AS category,
+				extract(year from age(relevant_recurring.end_date, relevant_recurring.start_date)) * 12 +
+						extract(month from age(relevant_recurring.end_date, relevant_recurring.start_date)) + 1 AS interval
+			FROM (
+				SELECT 
+					costs,
+					CASE WHEN start_date<$4 THEN $4
+						ELSE start_date
+					END AS start_date,
+					CASE WHEN end_date>$5 THEN $5
+						WHEN end_date=$6 THEN $5
+						ELSE end_date
+					END AS end_date,
+					category
+				FROM recurring 
+				WHERE 
+					user_id=$3 AND is_expense=TRUE AND start_date<$5::date AND (end_date>$4::date OR end_date=$6::date)
+			) AS relevant_recurring
+		) AS cost_interval
+		GROUP BY category 	
+		ORDER BY total DESC
+	`, budgetOverview.TotalExpense, budgetOverview.ExpensesRecurring, userID, overviewInput.StartDate, overviewInput.EndDate, nullTime)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -214,8 +253,8 @@ func getBudgetOverview(c *gin.Context) {
 		budgetOverview.ExpenseByTag = []ExpenseByTag{}
 	}
 
-	if len(budgetOverview.ExpenseByCategory) == 0 {
-		budgetOverview.ExpenseByCategory = []ExpenseByCategory{}
+	if len(budgetOverview.ExpenseOnceByCategory) == 0 {
+		budgetOverview.ExpenseOnceByCategory = []ExpenseByCategory{}
 	}
 
 	c.JSON(200, budgetOverview)
