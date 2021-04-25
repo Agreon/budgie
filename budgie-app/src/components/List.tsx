@@ -48,7 +48,7 @@ export function List<T extends {id: string}>({
           }}
           progressViewOffset={LOADING_INDICATOR_OFFSET}
         />
-    )}
+      )}
       renderItem={renderItem}
       data={expenses}
       keyExtractor={item => item.id}

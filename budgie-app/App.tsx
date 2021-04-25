@@ -19,6 +19,7 @@ import { ToastProvider } from './src/ToastProvider';
 import { Tags } from './src/screens/Tags';
 import { Expenses } from './src/screens/expenses';
 import { Incomes } from './src/screens/incomes';
+import { Overview } from './src/screens/Overview';
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
@@ -34,6 +35,7 @@ const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => (
   >
     <BottomNavigationTab title="EXPENSES" icon={props => <Icon {...props} name="trending-down-outline" />} />
     <BottomNavigationTab title="INCOMES" icon={props => <Icon {...props} name="trending-up-outline" />} />
+    <BottomNavigationTab title="OVERVIEW" icon={props => <Icon {...props} name="pie-chart-outline" />} />
     <BottomNavigationTab title="TAGS" icon={props => <Icon {...props} name="pricetags-outline" />} />
   </BottomNavigation>
 );
@@ -41,6 +43,7 @@ const BottomTabBar = ({ navigation, state }: BottomTabBarProps) => (
 export type MainParamList = {
   'Expenses': undefined,
   'Incomes': undefined,
+  'Overview': undefined,
   'Tags': undefined,
 };
 
@@ -57,6 +60,10 @@ export const AppNavigator = () => (
     <Screen
       name="Incomes"
       component={Incomes}
+    />
+    <Screen
+      name="Overview"
+      component={Overview}
     />
     <Screen
       name="Tags"
