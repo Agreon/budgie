@@ -54,15 +54,8 @@ type BudgetOverview struct {
 	IncomeOnce            string                   `db:"income_once" json:"totalIncomeOnce"`
 	TotalIncome           string                   `db:"income_total" json:"totalIncome"`
 	AmountSaved           string                   `json:"amountSaved"`
-	Data                  []test                   `db:"income_total" json:"recurringtest"`
 }
 
-type test struct {
-	Costs     string `db:"costs" json:"costs"`
-	StartDate string `db:"start_date" json:"startDate"`
-	Enddate   string `db:"end_date" json:"endDate"`
-	Interval  string `db:"interval" json:"interval"`
-}
 type OverviewInput struct {
 	StartDate string `json:"startDate" binding:"required"`
 	EndDate   string `json:"endDate" binding:"required"`
