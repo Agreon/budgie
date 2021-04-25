@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"time"
 
@@ -16,6 +17,12 @@ type ExpenseByCategory struct {
 	TotalCosts     string `db:"total" json:"totalCosts"`
 }
 
+type ExpenseTotalByCategory struct {
+	Category      string `db:"category" json:"category"`
+	PercentageAll string `db:"percentage_all" json:"percentageOfAllExpenses"`
+	TotalCosts    string `db:"total" json:"totalCosts"`
+}
+
 type ExpenseByTag struct {
 	Tag            string `db:"tag" json:"tag"`
 	PercentageOnce string `db:"percentage_once" json:"percentageOfExpensesOnce"`
@@ -23,19 +30,30 @@ type ExpenseByTag struct {
 	TotalCosts     string `db:"total" json:"totalCosts"`
 }
 
+type CalcSomeStuff struct {
+	Percentage int
+	Total      float64
+}
+
+type CalcSomeStuffWithKey struct {
+	key string
+	CalcSomeStuff
+}
+
 type BudgetOverview struct {
-	ExpensesRecurring     string              `db:"expense_recurring" json:"totalExpenseRecurring"`
-	ExpensesOnce          string              `db:"expense_once" json:"totalExpenseOnce"`
-	TotalExpense          string              `db:"expense_total" json:"totalExpense"`
-	ExpenseOnceByCategory []ExpenseByCategory `json:"expenseOnceByCategory"`
-	ExpenseRecByCategory  []ExpenseByCategory `json:"expenseRecurringByCategory"`
-	ExpenseByTag          []ExpenseByTag      `json:"expenseByTag"`
-	SavingsRate           string              `db:"savings_rate" json:"savingsRate"`
-	IncomeRecurring       string              `db:"income_recurring" json:"totalIncomeRecurring"`
-	IncomeOnce            string              `db:"income_once" json:"totalIncomeOnce"`
-	TotalIncome           string              `db:"income_total" json:"totalIncome"`
-	AmountSaved           string              `json:"amountSaved"`
-	Data                  []test              `db:"income_total" json:"recurringtest"`
+	ExpensesRecurring     string                   `db:"expense_recurring" json:"totalExpenseRecurring"`
+	ExpensesOnce          string                   `db:"expense_once" json:"totalExpenseOnce"`
+	TotalExpense          string                   `db:"expense_total" json:"totalExpense"`
+	ExpenseOnceByCategory []ExpenseByCategory      `json:"expenseOnceByCategory"`
+	ExpenseRecByCategory  []ExpenseByCategory      `json:"expenseRecurringByCategory"`
+	ExpenseByCategory     []ExpenseTotalByCategory `json:"expenseByCategory"`
+	ExpenseByTag          []ExpenseByTag           `json:"expenseByTag"`
+	SavingsRate           string                   `db:"savings_rate" json:"savingsRate"`
+	IncomeRecurring       string                   `db:"income_recurring" json:"totalIncomeRecurring"`
+	IncomeOnce            string                   `db:"income_once" json:"totalIncomeOnce"`
+	TotalIncome           string                   `db:"income_total" json:"totalIncome"`
+	AmountSaved           string                   `json:"amountSaved"`
+	Data                  []test                   `db:"income_total" json:"recurringtest"`
 }
 
 type test struct {
@@ -236,25 +254,9 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 
-	//err = db.Get(&budgetOverview.TotalIncome, "SELECT COALESCE(SUM(costs),0) AS total FROM income WHERE user_id=$1", userID)
-	//if err != nil {
-	//	saveErrorInfo(c, err, 500)
-	//	return
-	//}
-	//
-	//budgetOverview.SavingsRate, err = calc(budgetOverview.TotalExpense, budgetOverview.TotalIncome, calcPercentage)
-	//if err != nil {
-	//	saveErrorInfo(c, err, 500)
-	//	return
-	//}
-	//budgetOverview.SavingsRate = fmt.Sprintf("%s%%", budgetOverview.SavingsRate)
-
-	if len(budgetOverview.ExpenseByTag) == 0 {
-		budgetOverview.ExpenseByTag = []ExpenseByTag{}
-	}
-
-	if len(budgetOverview.ExpenseOnceByCategory) == 0 {
-		budgetOverview.ExpenseOnceByCategory = []ExpenseByCategory{}
+	if err = budgetOverview.summariseArrays(); err != nil {
+		saveErrorInfo(c, err, 500)
+		return
 	}
 
 	c.JSON(200, budgetOverview)
@@ -296,6 +298,128 @@ func (overview *BudgetOverview) calc() (err error) {
 	return
 }
 
+func (overview *BudgetOverview) summariseArrays() (err error) {
+	var expenseByCategoryNum = map[string]CalcSomeStuff{}
+
+	var totalCostsNum float64
+	var percentageNum int
+
+	for _, expenseOnce := range overview.ExpenseOnceByCategory {
+		totalCostsNum, err = strconv.ParseFloat(expenseOnce.TotalCosts, 64)
+		if err != nil {
+			return
+		}
+		percentageNum, err = strconv.Atoi(expenseOnce.PercentageAll)
+		if err != nil {
+			return
+		}
+
+		expenseByCategoryNum[expenseOnce.Category] = CalcSomeStuff{percentageNum, totalCostsNum}
+	}
+
+	for _, expenseRec := range overview.ExpenseRecByCategory {
+		totalCostsNum, err = strconv.ParseFloat(expenseRec.TotalCosts, 64)
+		if err != nil {
+			return
+		}
+		percentageNum, err = strconv.Atoi(expenseRec.PercentageAll)
+		if err != nil {
+			return
+		}
+
+		if _, exists := expenseByCategoryNum[expenseRec.Category]; exists == true {
+			percentageNum = percentageNum + expenseByCategoryNum[expenseRec.Category].Percentage
+			totalCostsNum = totalCostsNum + expenseByCategoryNum[expenseRec.Category].Total
+		}
+
+		expenseByCategoryNum[expenseRec.Category] = CalcSomeStuff{percentageNum, totalCostsNum}
+	}
+
+	var keys []CalcSomeStuffWithKey
+	for key, value := range expenseByCategoryNum {
+		keys = append(keys, CalcSomeStuffWithKey{key, value})
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i].Total > keys[j].Total
+	})
+
+	var currentExpense ExpenseTotalByCategory
+	for _, item := range keys {
+		currentExpense.Category = item.key
+		currentExpense.PercentageAll = strconv.Itoa(item.Percentage)
+		currentExpense.TotalCosts = fmt.Sprintf("%.2f", item.Total)
+
+		overview.ExpenseByCategory = append(overview.ExpenseByCategory, currentExpense)
+	}
+
+	//overview.ExpenseByCategory = overview.ExpenseOnceByCategory
+	//appendCat := true
+	//var percentageOnceNum, percentageRecNum, percentageNum int
+	//var totalOnceNum, totalRecNum, totalNum float64
+	//
+	//for _, expenseRec := range overview.ExpenseRecByCategory {
+	//	for j, expenseOnce := range overview.ExpenseByCategory {
+	//		if expenseRec.Category == expenseOnce.Category {
+	//			totalOnceNum, err = strconv.ParseFloat(expenseOnce.TotalCosts, 64)
+	//			if err != nil {
+	//				return
+	//			}
+	//			totalRecNum, err = strconv.ParseFloat(expenseRec.TotalCosts, 64)
+	//			if err != nil {
+	//				return
+	//			}
+	//
+	//			percentageOnceNum, err = strconv.Atoi(expenseOnce.PercentageAll)
+	//			if err != nil {
+	//				return
+	//			}
+	//
+	//			percentageRecNum, err = strconv.Atoi(expenseRec.PercentageAll)
+	//			if err != nil {
+	//				return
+	//			}
+	//
+	//			percentageNum = percentageOnceNum + percentageRecNum
+	//			totalNum = totalOnceNum + totalRecNum
+	//
+	//			overview.ExpenseByCategory[j].TotalCosts = fmt.Sprintf("%.2f", totalNum)
+	//			overview.ExpenseByCategory[j].PercentageAll = strconv.Itoa(percentageNum)
+	//			appendCat = false
+	//			break
+	//		} else {
+	//			appendCat = true
+	//		}
+	//	}
+	//	if appendCat {
+	//		overview.ExpenseByCategory = append(overview.ExpenseByCategory, expenseRec)
+	//	}
+	//}
+
+	/* sort result */
+	//sort.SliceStable(overview.ExpenseByCategory, func(i, j int) bool {
+	//	return int(overview.ExpenseByCategory[i].TotalCosts*100) > int(overview.ExpenseByCategory[j].TotalCosts*100)
+	//})
+
+	/* array shall be empty instead of "null" */
+	if len(overview.ExpenseByTag) == 0 {
+		overview.ExpenseByTag = []ExpenseByTag{}
+	}
+
+	if len(overview.ExpenseOnceByCategory) == 0 {
+		overview.ExpenseOnceByCategory = []ExpenseByCategory{}
+	}
+
+	if len(overview.ExpenseRecByCategory) == 0 {
+		overview.ExpenseRecByCategory = []ExpenseByCategory{}
+	}
+
+	if len(overview.ExpenseByCategory) == 0 {
+		overview.ExpenseByCategory = []ExpenseTotalByCategory{}
+	}
+
+	return
+}
+
 type calcFunction func(float64, float64) int
 
 //func calc(a string, b string, function calcFunction) (c string, err error) {
@@ -315,16 +439,16 @@ type calcFunction func(float64, float64) int
 //	return
 //}
 
-func calcPercentage(a float64, b float64) (c int) {
-	cFloat := 100 - a*100/b
-
-	c = int(math.Round(cFloat))
-	return
-}
-
-func add(a float64, b float64) (c int) {
-	cFloat := 100 - a*100/b
-
-	c = int(math.Round(cFloat))
-	return
-}
+//func calcPercentage(a float64, b float64) (c int) {
+//	cFloat := 100 - a*100/b
+//
+//	c = int(math.Round(cFloat))
+//	return
+//}
+//
+//func add(a float64, b float64) (c int) {
+//	cFloat := 100 - a*100/b
+//
+//	c = int(math.Round(cFloat))
+//	return
+//}
