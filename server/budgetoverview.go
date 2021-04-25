@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -71,14 +72,14 @@ func getBudgetOverview(c *gin.Context) {
 	var overviewInput OverviewInput
 	overviewInput.StartDate = c.Query("startDate")
 	overviewInput.EndDate = c.Query("endDate")
-	// TODO validate dates
+	if err := overviewInput.validateInput(); err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
 
 	db := GetDB()
 	userID := c.MustGet("userID")
 	var budgetOverview BudgetOverview
-
-	//err := db.Get(&budgetOverview, "WITH expense_sum as (SELECT COALESCE(SUM(costs),0) AS expense_total FROM expense WHERE user_id=$1), income_sum as (SELECT COALESCE(SUM(costs),0) AS income_total FROM income WHERE user_id=$1), savings_rate as (select 100 - (expense_total from expense_sum)*100 / (income_total from income_sum) ) SELECT (select expense_total from expense_sum), (select income_total from income_sum), (select savings_rate)", userID)
-	//err = db.Get(&budgetOverview, "WITH expense_sum as (SELECT COALESCE(SUM(costs),0) AS expense_total FROM expense WHERE user_id=$1 AND date>=$2::date and date<$3::date), income_sum as (SELECT COALESCE(SUM(costs),0) AS income_total FROM income WHERE user_id=$1 AND date>=$2::date and date<$3::date), savings_rate as (SELECT income_total AS rate FROM income_sum) SELECT (select expense_total from expense_sum), (select income_total from income_sum), 100-div((select expense_total*100 from expense_sum), (select income_total from income_sum)) as savings_rate", userID, overviewInput.StartDate, overviewInput.EndDate)
 
 	err := db.Get(&budgetOverview.ExpensesOnce, "SELECT COALESCE(SUM(costs),0) AS expense_once FROM expense WHERE user_id=$1 AND date>=$2::date AND date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
@@ -91,13 +92,6 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 
-	//err = db.Get(&budgetOverview.IncomeRecurring, `
-	//	SELECT
-	//		COALESCE(SUM(costs),0) AS income_recurring
-	//	FROM recurring
-	//	WHERE
-	//		user_id=$1 AND is_expense=FALSE AND start_date>=$2::date AND end_date<$3::date
-	//	`, userID, overviewInput.StartDate, overviewInput.EndDate)
 	var nullTime time.Time
 	err = db.Get(&budgetOverview.IncomeRecurring, `
 		SELECT
@@ -262,6 +256,26 @@ func getBudgetOverview(c *gin.Context) {
 	c.JSON(200, budgetOverview)
 }
 
+func (input OverviewInput) validateInput() (err error) {
+	var startDate, endDate time.Time
+
+	startDate, err = time.Parse("2006-01-02T15:04:05.000Z", input.StartDate)
+	if err != nil {
+		return
+	}
+
+	endDate, err = time.Parse("2006-01-02T15:04:05.000Z", input.EndDate)
+	if err != nil {
+		return
+	}
+
+	if endDate.Before(startDate) {
+		err = errors.New("End date before start date.")
+	}
+
+	return
+}
+
 func (overview *BudgetOverview) calc() (err error) {
 	var expensesOnceNum, expensesRecurringNum, incomeOnceNum, incomerecurringNum float64
 
@@ -335,6 +349,7 @@ func (overview *BudgetOverview) summariseArrays() (err error) {
 		expenseByCategoryNum[expenseRec.Category] = CalcSomeStuff{percentageNum, totalCostsNum}
 	}
 
+	/* sort by total */
 	var keys []CalcSomeStuffWithKey
 	for key, value := range expenseByCategoryNum {
 		keys = append(keys, CalcSomeStuffWithKey{key, value})
@@ -351,54 +366,6 @@ func (overview *BudgetOverview) summariseArrays() (err error) {
 
 		overview.ExpenseByCategory = append(overview.ExpenseByCategory, currentExpense)
 	}
-
-	//overview.ExpenseByCategory = overview.ExpenseOnceByCategory
-	//appendCat := true
-	//var percentageOnceNum, percentageRecNum, percentageNum int
-	//var totalOnceNum, totalRecNum, totalNum float64
-	//
-	//for _, expenseRec := range overview.ExpenseRecByCategory {
-	//	for j, expenseOnce := range overview.ExpenseByCategory {
-	//		if expenseRec.Category == expenseOnce.Category {
-	//			totalOnceNum, err = strconv.ParseFloat(expenseOnce.TotalCosts, 64)
-	//			if err != nil {
-	//				return
-	//			}
-	//			totalRecNum, err = strconv.ParseFloat(expenseRec.TotalCosts, 64)
-	//			if err != nil {
-	//				return
-	//			}
-	//
-	//			percentageOnceNum, err = strconv.Atoi(expenseOnce.PercentageAll)
-	//			if err != nil {
-	//				return
-	//			}
-	//
-	//			percentageRecNum, err = strconv.Atoi(expenseRec.PercentageAll)
-	//			if err != nil {
-	//				return
-	//			}
-	//
-	//			percentageNum = percentageOnceNum + percentageRecNum
-	//			totalNum = totalOnceNum + totalRecNum
-	//
-	//			overview.ExpenseByCategory[j].TotalCosts = fmt.Sprintf("%.2f", totalNum)
-	//			overview.ExpenseByCategory[j].PercentageAll = strconv.Itoa(percentageNum)
-	//			appendCat = false
-	//			break
-	//		} else {
-	//			appendCat = true
-	//		}
-	//	}
-	//	if appendCat {
-	//		overview.ExpenseByCategory = append(overview.ExpenseByCategory, expenseRec)
-	//	}
-	//}
-
-	/* sort result */
-	//sort.SliceStable(overview.ExpenseByCategory, func(i, j int) bool {
-	//	return int(overview.ExpenseByCategory[i].TotalCosts*100) > int(overview.ExpenseByCategory[j].TotalCosts*100)
-	//})
 
 	/* array shall be empty instead of "null" */
 	if len(overview.ExpenseByTag) == 0 {
@@ -419,36 +386,3 @@ func (overview *BudgetOverview) summariseArrays() (err error) {
 
 	return
 }
-
-type calcFunction func(float64, float64) int
-
-//func calc(a string, b string, function calcFunction) (c string, err error) {
-//	var aNum, bNum float64
-//	aNum, err = strconv.ParseFloat(a, 64)
-//	if err != nil {
-//		return
-//	}
-//	bNum, err = strconv.ParseFloat(b, 64)
-//	if err != nil {
-//		return
-//	}
-//	cInt := function(aNum, bNum)
-//
-//	c = strconv.Itoa(cInt)
-//
-//	return
-//}
-
-//func calcPercentage(a float64, b float64) (c int) {
-//	cFloat := 100 - a*100/b
-//
-//	c = int(math.Round(cFloat))
-//	return
-//}
-//
-//func add(a float64, b float64) (c int) {
-//	cFloat := 100 - a*100/b
-//
-//	c = int(math.Round(cFloat))
-//	return
-//}
