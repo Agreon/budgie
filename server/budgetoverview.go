@@ -31,14 +31,14 @@ type ExpenseByTag struct {
 	TotalCosts     string `db:"total" json:"totalCosts"`
 }
 
-type CalcSomeStuff struct {
+type CategoryInformationForCalculation struct {
 	Percentage int
 	Total      float64
 }
 
-type CalcSomeStuffWithKey struct {
+type CategoryInformationForCalculationWithKey struct {
 	key string
-	CalcSomeStuff
+	CategoryInformationForCalculation
 }
 
 type BudgetOverview struct {
@@ -84,7 +84,6 @@ func getBudgetOverview(c *gin.Context) {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-
 	var nullTime time.Time
 	err = db.Get(&budgetOverview.IncomeRecurring, `
 		SELECT
@@ -148,7 +147,12 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 
-	if err = budgetOverview.calc(); err != nil {
+	budgetOverview.TotalExpense,
+		budgetOverview.TotalIncome,
+		budgetOverview.SavingsRate,
+		budgetOverview.AmountSaved,
+		err = budgetOverview.calculateOverviewInformation()
+	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
@@ -241,10 +245,12 @@ func getBudgetOverview(c *gin.Context) {
 		return
 	}
 
-	if err = budgetOverview.summariseArrays(); err != nil {
+	if err = budgetOverview.summariseAndSortExpenseByCategory(); err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
+
+	budgetOverview.fillArraysToAvoidNullInJSON()
 
 	c.JSON(200, budgetOverview)
 }
@@ -269,7 +275,7 @@ func (input OverviewInput) validateInput() (err error) {
 	return
 }
 
-func (overview *BudgetOverview) calc() (err error) {
+func (overview BudgetOverview) calculateOverviewInformation() (expensesTotal string, incomeTotal string, savingsRate string, amountSaved string, err error) {
 	var expensesOnceNum, expensesRecurringNum, incomeOnceNum, incomerecurringNum float64
 
 	expensesOnceNum, err = strconv.ParseFloat(overview.ExpensesOnce, 64)
@@ -296,17 +302,17 @@ func (overview *BudgetOverview) calc() (err error) {
 
 	amountSavedNum := incomeTotalNum - expensesTotalNum
 
-	overview.SavingsRate = strconv.Itoa(int(math.Round(savingsRateNum)))
+	savingsRate = strconv.Itoa(int(math.Round(savingsRateNum)))
 
-	overview.AmountSaved = fmt.Sprintf("%.2f", amountSavedNum)
-	overview.TotalExpense = fmt.Sprintf("%.2f", expensesTotalNum)
-	overview.TotalIncome = fmt.Sprintf("%.2f", incomeTotalNum)
+	amountSaved = fmt.Sprintf("%.2f", amountSavedNum)
+	expensesTotal = fmt.Sprintf("%.2f", expensesTotalNum)
+	incomeTotal = fmt.Sprintf("%.2f", incomeTotalNum)
 
 	return
 }
 
-func (overview *BudgetOverview) summariseArrays() (err error) {
-	var expenseByCategoryNum = map[string]CalcSomeStuff{}
+func (overview *BudgetOverview) summariseAndSortExpenseByCategory() (err error) {
+	var expenseByCategoryNum = map[string]CategoryInformationForCalculation{}
 
 	var totalCostsNum float64
 	var percentageNum int
@@ -321,7 +327,7 @@ func (overview *BudgetOverview) summariseArrays() (err error) {
 			return
 		}
 
-		expenseByCategoryNum[expenseOnce.Category] = CalcSomeStuff{percentageNum, totalCostsNum}
+		expenseByCategoryNum[expenseOnce.Category] = CategoryInformationForCalculation{percentageNum, totalCostsNum}
 	}
 
 	for _, expenseRec := range overview.ExpenseRecByCategory {
@@ -339,13 +345,13 @@ func (overview *BudgetOverview) summariseArrays() (err error) {
 			totalCostsNum = totalCostsNum + expenseByCategoryNum[expenseRec.Category].Total
 		}
 
-		expenseByCategoryNum[expenseRec.Category] = CalcSomeStuff{percentageNum, totalCostsNum}
+		expenseByCategoryNum[expenseRec.Category] = CategoryInformationForCalculation{percentageNum, totalCostsNum}
 	}
 
 	/* sort by total */
-	var keys []CalcSomeStuffWithKey
+	var keys []CategoryInformationForCalculationWithKey
 	for key, value := range expenseByCategoryNum {
-		keys = append(keys, CalcSomeStuffWithKey{key, value})
+		keys = append(keys, CategoryInformationForCalculationWithKey{key, value})
 	}
 	sort.Slice(keys, func(i, j int) bool {
 		return keys[i].Total > keys[j].Total
@@ -360,7 +366,11 @@ func (overview *BudgetOverview) summariseArrays() (err error) {
 		overview.ExpenseByCategory = append(overview.ExpenseByCategory, currentExpense)
 	}
 
-	/* array shall be empty instead of "null" */
+	return
+}
+
+func (overview BudgetOverview) fillArraysToAvoidNullInJSON() {
+
 	if len(overview.ExpenseByTag) == 0 {
 		overview.ExpenseByTag = []ExpenseByTag{}
 	}
@@ -377,5 +387,4 @@ func (overview *BudgetOverview) summariseArrays() (err error) {
 		overview.ExpenseByCategory = []ExpenseTotalByCategory{}
 	}
 
-	return
 }
