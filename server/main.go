@@ -65,6 +65,8 @@ func main() {
 
 		useAuthentication.DELETE("/tag/:id", validateUUID(), errorHandler(), deleteTag)
 
+		useAuthentication.GET("/overview", errorHandler(), getBudgetOverview)
+
 		useAuthentication.GET("/recurring", validatePageInput(), errorHandler(), listRecurring)
 
 		useAuthentication.POST("/recurring", validateCosts(), errorHandler(), insertRecurring)
