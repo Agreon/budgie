@@ -1,5 +1,4 @@
 import React, { FC, useMemo } from 'react';
-import { View } from 'react-native';
 import { VictoryPie, VictoryTheme } from 'victory-native';
 import { OverviewData } from '../../util/types';
 
@@ -13,32 +12,30 @@ export const CategoryPieChart: FC<{ data:OverviewData }> = ({
   data: { expenseByCategory },
 }) => {
   const data = useMemo(
-    () => expenseByCategory?.map(({ category, percentageOfNonRecurringExpenses }) => ({
+    () => expenseByCategory?.map(({ category, percentageOfAllExpenses }) => ({
       x: category,
-      y: parseInt(percentageOfNonRecurringExpenses, 10),
+      y: parseInt(percentageOfAllExpenses, 10),
       label: category,
     })) ?? [],
     [expenseByCategory],
   );
 
   return (
-    <View>
-      <VictoryPie
-        innerRadius={100}
-        startAngle={-90}
-        endAngle={90}
-        height={200}
-        padding={{
-          top: 10,
-          left: 0,
-          right: 80,
-          bottom: -150,
-        }}
-        animate={{ duration: 1000 }}
-        style={{ labels: { fill: 'white', opacity: 0 } }}
-        theme={VictoryTheme.material}
-        data={data}
-      />
-    </View>
+    <VictoryPie
+      innerRadius={100}
+      startAngle={-90}
+      endAngle={90}
+      height={200}
+      padding={{
+        top: 10,
+        left: 0,
+        right: 80,
+        bottom: -150,
+      }}
+      animate={{ duration: 1000 }}
+      style={{ labels: { fill: 'white', opacity: 0 } }}
+      theme={VictoryTheme.material}
+      data={data}
+    />
   );
 };
