@@ -66,8 +66,13 @@ const useOverviewData = () => {
 
 /**
  * Relative to all / non-reoccurring
- *  => setting as toggle?! (accessoryRight? or in cards?)
- *
+ *  => setting as toggle?! (accessoryRight? or in cards?) oder als dropdown?
+    - Ausgabe insgesamt
+    - Ausgabe reoccurring
+    - Ausgaben once
+    -> Persistieren im local storage
+    => OverflowMenu
+
  * TODO:
  *  - Switch to all time view?
  *  - Swipe control?
@@ -104,14 +109,12 @@ export const Overview: FC = () => {
               data={data.current.expenseByCategory.map(e => ({
                 title: e.category,
                 totalCosts: e.totalCosts,
-                // TODO: Use percentageOfAllExpenses as soon as complete
-                percentage: e.percentageOfNonRecurringExpenses,
+                percentage: e.percentageOfAllExpenses,
               }))}
               previous={data.previous.expenseByCategory.map(e => ({
                 title: e.category,
                 totalCosts: e.totalCosts,
-                // TODO: Use percentageOfAllExpenses as soon as complete
-                percentage: e.percentageOfNonRecurringExpenses,
+                percentage: e.percentageOfAllExpenses,
               }))}
             />
           </Card>
@@ -121,14 +124,12 @@ export const Overview: FC = () => {
               data={data.current.expenseByTag.map(e => ({
                 title: e.tag,
                 totalCosts: e.totalCosts,
-                // TODO: Use percentageOfAllExpenses as soon as complete
-                percentage: e.percentageOfNonRecurringExpenses,
+                percentage: e.percentageOfAllExpenses,
               }))}
               previous={data.previous.expenseByTag.map(e => ({
                 title: e.tag,
                 totalCosts: e.totalCosts,
-                // TODO: Use percentageOfAllExpenses as soon as complete
-                percentage: e.percentageOfNonRecurringExpenses,
+                percentage: e.percentageOfAllExpenses,
               }))}
             />
           </Card>

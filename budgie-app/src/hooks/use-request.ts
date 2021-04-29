@@ -10,7 +10,8 @@ export const useApi = () => {
 
   const api = useMemo(() => {
     const client = axios.create({
-      baseURL: 'http://localhost:8080',
+      baseURL: 'http://192.168.178.43:8080',
+      // baseURL: 'http://localhost:8080',
     });
 
     client.interceptors.request.use(async (config) => {
@@ -22,7 +23,7 @@ export const useApi = () => {
         ...config,
         headers: {
           ...config.headers,
-          token: await getToken(),
+          Authorization: await getToken(),
         },
       };
     });
@@ -35,13 +36,13 @@ export const useApi = () => {
         return navigation.navigate('Login');
       }
 
-      console.log('Err', JSON.stringify(error));
+      console.error('Err', JSON.stringify(error));
 
       throw error;
     });
 
     return client;
-  }, [showToast]);
+  }, [showToast, navigation]);
 
   return api;
 };

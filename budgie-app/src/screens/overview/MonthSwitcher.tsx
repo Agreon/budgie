@@ -11,10 +11,6 @@ import dayjs from 'dayjs';
 import { View, StatusBar } from 'react-native';
 import tailwind from 'tailwind-rn';
 
-/**
- * TODO:
- * - bigger buttons
- */
 export const MonthSwitcher: FC<{
     selectedDate: Date,
     setSelectedDate: (date: Date) => void,
@@ -41,11 +37,11 @@ export const MonthSwitcher: FC<{
               {title}
             </Text>
           )}
-          style={tailwind('z-20')}
           alignment="center"
           accessoryLeft={disablePreviousMonth ? undefined : props => (
             <TopNavigationAction
               {...props}
+              style={{ scaleX: 1.3, scaleY: 1.3 }}
               icon={iconProps => <Icon {...iconProps} name="arrow-back-outline" />}
               onPress={() => {
                 setSelectedDate(
@@ -57,6 +53,7 @@ export const MonthSwitcher: FC<{
           accessoryRight={disableNextMonth ? undefined : props => (
             <TopNavigationAction
               {...props}
+              style={{ scaleX: 1.3, scaleY: 1.3 }}
               icon={iconProps => <Icon {...iconProps} name="arrow-forward-outline" />}
               onPress={() => {
                 if (disableNextMonth) return;

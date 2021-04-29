@@ -36,14 +36,13 @@ export interface ReoccurringHistoryItem extends Reoccurring {
 
 export interface ExpensesByCategory {
   category: string;
-  percentageOfNonRecurringExpenses: string;
   percentageOfAllExpenses: string;
   totalCosts: string;
 }
 
 export interface ExpensesByTag {
   tag: string;
-  percentageOfNonRecurringExpenses: string;
+  percentageOfExpensesOnce: string;
   percentageOfAllExpenses: string;
   totalCosts: string;
 }
