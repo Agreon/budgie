@@ -19,7 +19,7 @@ import { ToastProvider } from './src/ToastProvider';
 import { Tags } from './src/screens/Tags';
 import { Expenses } from './src/screens/expenses';
 import { Incomes } from './src/screens/incomes';
-import { Overview } from './src/screens/Overview';
+import { Overview } from './src/screens/overview';
 
 const { Navigator, Screen } = createBottomTabNavigator();
 

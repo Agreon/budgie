@@ -8,11 +8,11 @@ import {
   Text,
 } from '@ui-kitten/components';
 import tailwind from 'tailwind-rn';
-import { OverviewData } from '../../util/types';
+import { HistoricValue, useOverviewContext } from './OverviewProvider';
 
 const TrendArrow: FC<{
-  current: number, previous: number
-}> = ({ current, previous }) => {
+  value: HistoricValue
+}> = ({ value: {current, previous} }) => {
   if (current === previous) {
     return <Icon fill="grey" style={{ width: 32, height: 32, padding: 1 }} name="minus" />;
   }
@@ -24,63 +24,52 @@ const TrendArrow: FC<{
   return <Icon fill="#8bc34a" style={{ width: 32, height: 32 }} name="arrow-up" />;
 };
 
-/**
- * TODO:
- * dont show arrow on first month!
- */
-export const SavingsRateCard: FC<{data: OverviewData, previous: OverviewData}> = (
-  {
-    data: {
-      totalExpense, totalIncome, amountSaved, savingsRate,
-    },
-    previous: {
-      savingsRate: previousSavingsRate,
-    },
-  },
-) => (
-  <Card>
-    <View style={tailwind('flex-row justify-between')}>
-      <Text style={tailwind('font-bold text-xl')}>Savings Rate</Text>
-      <View style={tailwind('flex-row')}>
-        <Text style={tailwind('font-bold text-xl')}>
-          {savingsRate > 0 ? savingsRate : 0}
-          {' '}
-          %
+export const SavingsRateCard: FC = () => {
+  const { previousEmpty, data: { totalExpense, totalIncome, amountSaved, savingsRate } } = useOverviewContext();
+
+  return (
+    <Card>
+      <View style={tailwind('flex-row justify-between')}>
+        <Text style={tailwind('font-bold text-xl')}>Savings Rate</Text>
+        <View style={tailwind('flex-row')}>
+          <Text style={tailwind('font-bold text-xl')}>
+            {savingsRate.current > 0 ? savingsRate.current : 0}
+            {' '}
+            %
         </Text>
-        <View>
-          <TrendArrow current={savingsRate} previous={previousSavingsRate} />
+        {!previousEmpty &&  <TrendArrow value={savingsRate} />}
         </View>
       </View>
-    </View>
-    <View style={tailwind('flex-row justify-between mt-3')}>
-      <Text>Total Income</Text>
-      <View>
-        <Text>
-          {totalIncome ?? 0}
-          {' '}
-          €
+      <View style={tailwind('flex-row justify-between mt-3')}>
+        <Text>Total Income</Text>
+        <View>
+          <Text>
+            {totalIncome.current ?? 0}
+            {' '}
+            €
         </Text>
+        </View>
       </View>
-    </View>
-    <View style={tailwind('flex-row justify-between mt-3')}>
-      <Text>Total Expenses</Text>
-      <View>
-        <Text>
-          {totalExpense ?? 0}
-          {' '}
-          €
+      <View style={tailwind('flex-row justify-between mt-3')}>
+        <Text>Total Expenses</Text>
+        <View>
+          <Text>
+            {totalExpense.current ?? 0}
+            {' '}
+            €
         </Text>
+        </View>
       </View>
-    </View>
-    <View style={tailwind('flex-row justify-between mt-3')}>
-      <Text>Amount saved</Text>
-      <View>
-        <Text>
-          {amountSaved ?? 0}
-          {' '}
-          €
+      <View style={tailwind('flex-row justify-between mt-3')}>
+        <Text>Amount saved</Text>
+        <View>
+          <Text>
+            {amountSaved ?? 0}
+            {' '}
+            €
         </Text>
+        </View>
       </View>
-    </View>
-  </Card>
-);
+    </Card>
+  );
+}

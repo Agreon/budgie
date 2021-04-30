@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC } from 'react';
 import {
   FlatList,
   View,
@@ -9,24 +9,17 @@ import {
   Text,
 } from '@ui-kitten/components';
 import { ItemDivider } from '../../components/ItemDivider';
+import { ExpenseGroupItem } from './OverviewProvider';
 
 const TrendArrow: FC<{
-  current: OverviewListItem, previous: OverviewListItem[]
-}> = ({ current, previous }) => {
-  const prevItem = useMemo(
-    () => previous.find(item => item.title === current.title),
-    [current, previous],
-  );
+  value: {totalCosts: number, previousCosts: number}
+}> = ({ value: {totalCosts, previousCosts} }) => {
 
-  if (!prevItem) {
-    return <Icon fill="#f4511e" style={{ width: 32, height: 32 }} name="arrow-up" />;
-  }
-
-  if (current.totalCosts === prevItem.totalCosts) {
+  if (totalCosts === previousCosts) {
     return <Icon fill="grey" style={{ width: 32, height: 32, padding: 1 }} name="minus" />;
   }
 
-  if (current.totalCosts < prevItem.totalCosts) {
+  if (totalCosts < previousCosts) {
     return <Icon fill="#8bc34a" style={{ width: 32, height: 32, marginBottom: 2 }} name="arrow-down" />;
   }
 
@@ -40,35 +33,35 @@ export interface OverviewListItem {
 }
 
 export const OverviewList: FC<{
-    data: OverviewListItem[];
-    previous: OverviewListItem[];
-}> = ({ data, previous }) => (
-  <FlatList<OverviewListItem>
+    items: ExpenseGroupItem[];
+    showTrend: boolean;
+}> = ({ items, showTrend }) => (
+  <FlatList<ExpenseGroupItem>
     style={tailwind('w-full mt-2')}
     ItemSeparatorComponent={ItemDivider}
-    renderItem={({ item }) => (
+    renderItem={({ item: {name, totalCosts, percentage, previousCosts} }) => (
       <View style={tailwind('flex flex-row justify-between items-center pt-2 pb-2')}>
-        <Text>{item.title}</Text>
+        <Text>{name}</Text>
         <View style={tailwind('flex flex-row items-center')}>
           <Text>
-            {item.totalCosts}
+            {totalCosts}
             €
           </Text>
-          {previous.length !== 0
+          {showTrend
             && (
             <View style={tailwind('pt-1')}>
-              <TrendArrow current={item} previous={previous} />
+              <TrendArrow value={{totalCosts, previousCosts}} />
             </View>
             )}
           <Text style={tailwind('ml-1 mr-1')}>|</Text>
-          <Text style={[tailwind('font-bold ml-1'), item.percentage < 10 ? { marginLeft: 12 } : {}]}>
-            {item.percentage}
+          <Text style={[tailwind('font-bold ml-1'), percentage < 10 ? { marginLeft: 12 } : {}]}>
+            {percentage}
             %
           </Text>
         </View>
       </View>
     )}
-    data={data}
-    keyExtractor={item => item.title}
+    data={items}
+    keyExtractor={({name}) => name}
   />
 );

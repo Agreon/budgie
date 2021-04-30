@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from 'react';
 import { VictoryPie, VictoryTheme } from 'victory-native';
-import { OverviewData } from '../../util/types';
+import { useOverviewContext } from './OverviewProvider';
 
 /**
       labels={({ datum }) => `${datum.x} - ${datum.y}`}
@@ -8,16 +8,15 @@ import { OverviewData } from '../../util/types';
     TODO: Maybe highlight list items onClick (https://formidable.com/open-source/victory/guides/events#single-component-events)
       => If tooltips wont work
  */
-export const CategoryPieChart: FC<{ data:OverviewData }> = ({
-  data: { expenseByCategory },
-}) => {
+export const CategoryPieChart: FC = () => {
+  const { data: { expensesByCategory } } = useOverviewContext();
+
   const data = useMemo(
-    () => expenseByCategory?.map(({ category, percentageOfAllExpenses }) => ({
-      x: category,
-      y: percentageOfAllExpenses,
-      label: category,
-    })) ?? [],
-    [expenseByCategory],
+    () => expensesByCategory.map(({ name, percentage }) => ({
+      x: name,
+      y: percentage,
+    })),
+    [expensesByCategory],
   );
 
   return (

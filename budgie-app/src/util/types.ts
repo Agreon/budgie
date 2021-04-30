@@ -37,6 +37,7 @@ export interface ReoccurringHistoryItem extends Reoccurring {
 export interface ExpensesByCategory {
   category: string;
   percentageOfAllExpenses: number;
+  percentageOfNonRecurringExpenses: number;
   totalCosts: number;
 }
 
@@ -47,11 +48,13 @@ export interface ExpensesByTag {
   totalCosts: number;
 }
 
-export interface OverviewData {
+export interface OverviewResponse {
   amountSaved: number;
   totalExpenseRecurring: number;
   totalExpenseOnce: number;
   totalExpense: number;
+  expenseOnceByCategory: ExpensesByCategory[];
+  expenseRecurringByCategory: ExpensesByCategory[];
   expenseByCategory: ExpensesByCategory[];
   expenseByTag: ExpensesByTag[];
   savingsRate: number;

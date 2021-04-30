@@ -19,6 +19,7 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
+    "max-len": 120,
     'import/prefer-default-export': 'off',
     'react/style-prop-object': 'off',
     'react/jsx-filename-extension': 'off',
