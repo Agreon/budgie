@@ -14,7 +14,7 @@ export const CategoryPieChart: FC<{ data:OverviewData }> = ({
   const data = useMemo(
     () => expenseByCategory?.map(({ category, percentageOfAllExpenses }) => ({
       x: category,
-      y: parseInt(percentageOfAllExpenses, 10),
+      y: percentageOfAllExpenses,
       label: category,
     })) ?? [],
     [expenseByCategory],

@@ -10,6 +10,20 @@ import {
 import tailwind from 'tailwind-rn';
 import { OverviewData } from '../../util/types';
 
+const TrendArrow: FC<{
+  current: number, previous: number
+}> = ({ current, previous }) => {
+  if (current === previous) {
+    return <Icon fill="grey" style={{ width: 32, height: 32, padding: 1 }} name="minus" />;
+  }
+
+  if (current < previous) {
+    return <Icon fill="#f4511e" style={{ width: 32, height: 32 }} name="arrow-down" />;
+  }
+
+  return <Icon fill="#8bc34a" style={{ width: 32, height: 32 }} name="arrow-up" />;
+};
+
 /**
  * TODO:
  * dont show arrow on first month!
@@ -29,14 +43,12 @@ export const SavingsRateCard: FC<{data: OverviewData, previous: OverviewData}> =
       <Text style={tailwind('font-bold text-xl')}>Savings Rate</Text>
       <View style={tailwind('flex-row')}>
         <Text style={tailwind('font-bold text-xl')}>
-          {parseFloat(savingsRate) > 0 ? savingsRate : 0}
+          {savingsRate > 0 ? savingsRate : 0}
           {' '}
           %
         </Text>
         <View>
-          {parseFloat(previousSavingsRate) < parseFloat(savingsRate)
-            ? <Icon fill="#8bc34a" style={{ width: 32, height: 32 }} name="arrow-up" />
-            : <Icon fill="#f4511e" style={{ width: 32, height: 32 }} name="arrow-down" />}
+          <TrendArrow current={savingsRate} previous={previousSavingsRate} />
         </View>
       </View>
     </View>

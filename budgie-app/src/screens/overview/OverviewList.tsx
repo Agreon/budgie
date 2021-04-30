@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import {
   FlatList,
   View,
@@ -10,20 +10,33 @@ import {
 } from '@ui-kitten/components';
 import { ItemDivider } from '../../components/ItemDivider';
 
-const isCurrentMoreThanPrevious = (current: OverviewListItem, previous: OverviewListItem[]) => {
-  const prevItem = previous.find(item => item.title === current.title);
+const TrendArrow: FC<{
+  current: OverviewListItem, previous: OverviewListItem[]
+}> = ({ current, previous }) => {
+  const prevItem = useMemo(
+    () => previous.find(item => item.title === current.title),
+    [current, previous],
+  );
 
   if (!prevItem) {
-    return true;
+    return <Icon fill="#f4511e" style={{ width: 32, height: 32 }} name="arrow-up" />;
   }
 
-  return parseFloat(current.totalCosts) > parseFloat(prevItem.totalCosts);
+  if (current.totalCosts === prevItem.totalCosts) {
+    return <Icon fill="grey" style={{ width: 32, height: 32, padding: 1 }} name="minus" />;
+  }
+
+  if (current.totalCosts < prevItem.totalCosts) {
+    return <Icon fill="#8bc34a" style={{ width: 32, height: 32, marginBottom: 2 }} name="arrow-down" />;
+  }
+
+  return <Icon fill="#f4511e" style={{ width: 32, height: 32 }} name="arrow-up" />;
 };
 
 export interface OverviewListItem {
     title: string;
-    totalCosts: string;
-    percentage: string;
+    totalCosts: number;
+    percentage: number;
 }
 
 export const OverviewList: FC<{
@@ -41,19 +54,17 @@ export const OverviewList: FC<{
             {item.totalCosts}
             €
           </Text>
-          <Text style={tailwind('ml-2 mr-1')}>|</Text>
-          <Text style={[tailwind('font-bold ml-1'), item.percentage.length < 2 ? { marginLeft: 12 } : {}]}>
-            {item.percentage}
-            %
-          </Text>
           {previous.length !== 0
             && (
             <View style={tailwind('pt-1')}>
-              {isCurrentMoreThanPrevious(item, previous)
-                ? <Icon fill="#8bc34a" style={{ width: 32, height: 32 }} name="arrow-up" />
-                : <Icon fill="#f4511e" style={{ width: 32, height: 32, marginBottom: 2 }} name="arrow-down" />}
+              <TrendArrow current={item} previous={previous} />
             </View>
             )}
+          <Text style={tailwind('ml-1 mr-1')}>|</Text>
+          <Text style={[tailwind('font-bold ml-1'), item.percentage < 10 ? { marginLeft: 12 } : {}]}>
+            {item.percentage}
+            %
+          </Text>
         </View>
       </View>
     )}
