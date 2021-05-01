@@ -121,20 +121,47 @@ func insertExpense(c *gin.Context) {
 	c.JSON(200, newExpense)
 }
 
+func extractFilterOptions(c *gin.Context) (filter map[string]string, err error) {
+	filter = make(map[string]string)
+
+	filter["date>"] = c.Query("startDate")
+	filter["date<"] = c.Query("endDate")
+	filter["category"] = c.Query("category")
+
+	for key, value := range filter {
+		if value == "" {
+			delete(filter, key)
+		} else if key == "date<" || key == "date>" {
+			_, err = time.Parse("2006-01-02T15:04:05.000Z", value)
+		} else {
+			/* nothing else */
+		}
+	}
+
+	return
+}
+
 func listExpenses(c *gin.Context) {
 	db := GetDB()
+	dbExtended := DBExtended{db}
 	var dataOutput ExpenseListOutput
+
+	filterOptions, err := extractFilterOptions(c)
+	if err != nil {
+		saveErrorInfo(c, err, 400)
+		return
+	}
 
 	userID := c.MustGet("userID")
 	page := c.MustGet("page")
-	err := db.Select(&dataOutput.Data, "SELECT * FROM expense WHERE user_id=$1 ORDER BY date DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	err = dbExtended.SelectWithFilterOptions(&dataOutput.Data, "SELECT * FROM expense WHERE user_id=$1 ORDER BY date DESC LIMIT $2 OFFSET $3", filterOptions, userID, pageSize, page)
 
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
 
-	err = db.Get(&dataOutput.Entries, "SELECT count(*) FROM expense WHERE user_id=$1", userID)
+	err = dbExtended.GetWithFilterOptions(&dataOutput.Entries, "SELECT count(*) FROM expense WHERE user_id=$1", filterOptions, userID)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
