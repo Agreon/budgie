@@ -25,7 +25,6 @@ jobs:
           expo-cache: true
       - name: Lint and build
         run: |
-          echo $API_BASE_URL
           cd budgie-app
           yarn install
           expo build:android -t apk
