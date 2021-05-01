@@ -77,12 +77,6 @@ type ExpenseListOutput struct {
 	Entries int               `json:"number_of_entries"`
 }
 
-type ExpenseListFilterOptions struct {
-	StartDate string
-	EndDate   string
-	Category  string
-}
-
 func insertExpense(c *gin.Context) {
 	var newExpense ExpenseInput
 	var err error
