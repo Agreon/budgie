@@ -27,4 +27,4 @@ jobs:
         run: |
           cd budgie-app
           yarn install
-          expo build:android -t apk
+          expo publish
