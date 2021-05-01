@@ -24,8 +24,6 @@ jobs:
           expo-token: ${{ secrets.EXPO_TOKEN }}
           expo-cache: true
       - name: Lint and build
-        with:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
           echo $API_BASE_URL
           cd budgie-app
