@@ -21,9 +21,8 @@ import { DataFilterSelection } from './DataFilterSelection';
 /**
    * TODO:
    *  - Switch to all time view?
+   *  => Vlt auf einer ebene mit DataFitler-selection?
    *  - Swipe control?
-   *  - Pulldown-reload
-   *  => Lohnt sich nicht
    *  =>  TImezone mismatch? => Eben eingetragene werden nicht berücksichtigt?
    */
 export const Overview: FC = () => {

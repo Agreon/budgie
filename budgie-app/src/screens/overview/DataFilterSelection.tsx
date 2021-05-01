@@ -1,6 +1,6 @@
 import { Text, Icon, IndexPath, MenuItem, OverflowMenu, TopNavigationAction } from "@ui-kitten/components";
 import React, { FC, useState } from "react";
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import tailwind from "tailwind-rn";
 import { DataFilter, useOverviewContext } from "./OverviewProvider";
 
@@ -12,8 +12,7 @@ const FILTER_LABELS: Record<DataFilter, string> = {
 };
 
 /**
- * TODO: on press on text also open modal
-      -> Persistieren im local storage
+ TODO: Persistieren im local storage
  */
 export const DataFilterSelection: FC = () => {
     const { dataFilter, setDataFilter } = useOverviewContext();
@@ -37,34 +36,38 @@ export const DataFilterSelection: FC = () => {
 
 
     return (
-        <View style={tailwind("flex-row")}>
-            <Text>
-                {FILTER_LABELS[dataFilter]}
-            </Text>
-            <OverflowMenu
-                style={tailwind("mt-14")}
-                anchor={() =>
-                    <TopNavigationAction
-                        icon={(props) => (
-                            <Icon {...props} name='more-vertical' />
-                        )}
-                        onPress={() => setMenuVisible(true)}
-                    />
-                }
-                visible={menuVisible}
-                onSelect={onItemSelect}
-                onBackdropPress={() => setMenuVisible(false)}
-            >
-                {
-                    Object.entries(FILTER_LABELS).map(([key, label]) => (
-                        <MenuItem
-                            key={key}
-                            title={label}
-                            style={key === dataFilter ? { display: "none" } : {}}
+        <TouchableOpacity
+            onPress={() => setMenuVisible(true)}
+        >
+            <View style={tailwind("flex-row")}>
+                <Text>
+                    {FILTER_LABELS[dataFilter]}
+                </Text>
+                <OverflowMenu
+                    style={tailwind("mt-14")}
+                    anchor={() =>
+                        <TopNavigationAction
+                            icon={(props) => (
+                                <Icon {...props} name='more-vertical' />
+                            )}
+                            onPress={() => setMenuVisible(true)}
                         />
-                    ))
-                }
-            </OverflowMenu>
-        </View>
+                    }
+                    visible={menuVisible}
+                    onSelect={onItemSelect}
+                    onBackdropPress={() => setMenuVisible(false)}
+                >
+                    {
+                        Object.entries(FILTER_LABELS).map(([key, label]) => (
+                            <MenuItem
+                                key={key}
+                                title={label}
+                                style={key === dataFilter ? { display: "none" } : {}}
+                            />
+                        ))
+                    }
+                </OverflowMenu>
+            </View>
+        </TouchableOpacity>
     )
 }
