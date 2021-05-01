@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useMemo } from 'react';
 import { useToast } from '../ToastProvider';
 import { deleteToken, getToken } from '../util/token';
+import { API_BASE_URL } from '@env'
 
 export const useApi = () => {
   const navigation = useNavigation();
@@ -10,7 +11,7 @@ export const useApi = () => {
 
   const api = useMemo(() => {
     const client = axios.create({
-      baseURL: 'http://localhost:8080',
+      baseURL: API_BASE_URL,
     });
 
     client.interceptors.request.use(async (config) => {
