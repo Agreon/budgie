@@ -18,5 +18,6 @@ jobs:
           expo-version: 4.x
           expo-token: ${{ secrets.EXPO_TOKEN }}
           expo-cache: true
+      - run: cd budgie-app
       - run: yarn install
       - run: expo build:android -t apk
