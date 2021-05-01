@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { API_BASE_URL } from '@env';
 import axios from 'axios';
 import { useMemo } from 'react';
 import { useToast } from '../ToastProvider';
@@ -10,8 +11,7 @@ export const useApi = () => {
 
   const api = useMemo(() => {
     const client = axios.create({
-      baseURL: 'http://192.168.178.43:8080',
-      // baseURL: 'http://localhost:8080',
+      baseURL: API_BASE_URL,
     });
 
     client.interceptors.request.use(async (config) => {

@@ -291,7 +291,7 @@ func (overview *BudgetOverview) summariseAndSortExpenseByCategory() {
 	})
 }
 
-func (overview BudgetOverview) fillArraysToAvoidNullInJSON() {
+func (overview *BudgetOverview) fillArraysToAvoidNullInJSON() {
 
 	if len(overview.ExpenseByTag) == 0 {
 		overview.ExpenseByTag = []ExpenseByTag{}

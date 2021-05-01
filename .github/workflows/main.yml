@@ -1,0 +1,31 @@
+name: Expo Publish
+on:
+  push:
+    branches:
+      - master
+
+defaults:
+  run:
+    shell: 'bash --noprofile --norc -euo pipefail -x {0}'
+
+jobs:
+  publish:
+    name: Lint and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - uses: expo/expo-github-action@v5
+        with:
+          expo-version: 4.x
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          expo-cache: true
+      - name: Lint and build
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+        run: |
+          cd budgie-app
+          yarn install
+          expo build:android -t apk
