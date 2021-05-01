@@ -157,9 +157,7 @@ func listExpenses(c *gin.Context) {
 		saveErrorInfo(c, err, 400)
 		return
 	}
-	//mapTest := map[string]string{
-	//	"category": "asv",
-	//}
+
 	userID := c.MustGet("userID")
 	page := c.MustGet("page")
 	err = dbExtended.SelectWithFilterOptions(&dataOutput.Data, "SELECT * FROM expense WHERE user_id=$1 ORDER BY date DESC LIMIT $2 OFFSET $3", filterOptions, userID, pageSize, page)
