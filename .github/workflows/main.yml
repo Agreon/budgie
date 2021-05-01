@@ -27,7 +27,6 @@ jobs:
         env:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
-          echo ${#API_BASE_URL}
           cd budgie-app
           yarn install
-          expo publish
+          expo build:android -t apk
