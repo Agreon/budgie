@@ -13,9 +13,9 @@ export interface ExpenseGroupItem {
   previousCosts: number;
 }
 
-export interface HistoricValue {
-  current: number;
-  previous: number;
+export interface HistoricValue<T = number> {
+  current: T;
+  previous: T;
 }
 
 export interface OverviewData {
@@ -29,7 +29,7 @@ export interface OverviewData {
 
 export type DateRange = [Dayjs, Dayjs];
 
-export type DataFilter = "all" | "reoccurring" | "single";
+export type DataFilter = 'all' | 'reoccurring' | 'single';
 
 interface OverviewCtx {
   data: OverviewData;
@@ -44,29 +44,29 @@ interface OverviewCtx {
 const defaultContextData: OverviewData = {
   totalExpense: {
     current: 0,
-    previous: 0
+    previous: 0,
   },
   totalIncome: {
     current: 0,
-    previous: 0
+    previous: 0,
   },
   savingsRate: {
     current: 0,
-    previous: 0
+    previous: 0,
   },
   amountSaved: 0,
   expensesByCategory: [],
   expensesByTag: [],
-}
+};
 
 export const OverviewContext = React.createContext<OverviewCtx>({
   data: defaultContextData,
   loading: false,
   previousEmpty: true,
-  dataFilter: "all",
-  setDataFilter: () => {},
-  selectedDateRange: [dayjs().startOf("month"), dayjs().endOf("month")],
-  setSelectedDateRange: () => {}
+  dataFilter: 'all',
+  setDataFilter: () => { },
+  selectedDateRange: [dayjs().startOf('month'), dayjs().endOf('month')],
+  setSelectedDateRange: () => { },
 });
 
 export const useOverviewContext = () => React.useContext(OverviewContext);
@@ -75,9 +75,11 @@ export const OverviewProvider: FC = ({ children }) => {
   const api = useApi();
   const { showToast } = useToast();
 
-  const [dataFilter, setDataFilter] = useState<DataFilter>("single");
-  const [selectedDateRange, setSelectedDateRange] = useState<DateRange>([dayjs().startOf("month"), dayjs().endOf("month")]);
-  const [response, setResponse] = useState<{ current: OverviewResponse, previous: OverviewResponse } | null>(null);
+  const [dataFilter, setDataFilter] = useState<DataFilter>('single');
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRange>(
+    [dayjs().startOf('month'), dayjs().endOf('month')],
+  );
+  const [response, setResponse] = useState<HistoricValue<OverviewResponse> | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -87,7 +89,9 @@ export const OverviewProvider: FC = ({ children }) => {
       const endDatePrevious = selectedDateRange[1].subtract(1, 'month').endOf('month');
 
       const [{ data: current }, { data: previous }] = await Promise.all([
-        api.get(`overview?startDate=${selectedDateRange[0].toISOString()}&endDate=${selectedDateRange[1].toISOString()}`),
+        api.get(
+          `overview?startDate=${selectedDateRange[0].toISOString()}&endDate=${selectedDateRange[1].toISOString()}`,
+        ),
         api.get(`overview?startDate=${startDatePrevious.toISOString()}&endDate=${endDatePrevious.toISOString()}`),
       ]);
 
@@ -111,37 +115,42 @@ export const OverviewProvider: FC = ({ children }) => {
     }
     const { current, previous } = response;
 
-    const categoryListToUse = (dataFilter === "all"
-      ? "expenseByCategory"
-      : dataFilter === "single"
-        ? "expenseOnceByCategory"
-        : "expenseRecurringByCategory"
+    const categoryListToUse = (
+      // eslint-disable-next-line no-nested-ternary
+      dataFilter === 'all'
+        ? 'expenseByCategory'
+        : dataFilter === 'single'
+          ? 'expenseOnceByCategory'
+          : 'expenseRecurringByCategory'
     );
 
     const currentCategoryList = current[categoryListToUse];
     const previousCategoryList = previous[categoryListToUse];
 
-    const expensesByCategory = currentCategoryList.map(({category, totalCosts, percentageOfAllExpenses, percentageOfNonRecurringExpenses }) => {
-      const previousItem = previousCategoryList.find(previousCategory => previousCategory.category === category);
+    const expensesByCategory = currentCategoryList.map(({
+      category, totalCosts, percentageOfAllExpenses, percentageOfNonRecurringExpenses,
+    }) => {
+      const previousItem = previousCategoryList.find(
+        previousCategory => previousCategory.category === category,
+      );
 
       return {
         name: category,
-        percentage: dataFilter === "all" ? percentageOfAllExpenses : percentageOfNonRecurringExpenses,
-        totalCosts: totalCosts,
-        previousCosts: previousItem?.totalCosts ?? 0
-      }
+        percentage: dataFilter === 'all' ? percentageOfAllExpenses : percentageOfNonRecurringExpenses,
+        totalCosts,
+        previousCosts: previousItem?.totalCosts ?? 0,
+      };
     });
-
 
     const expensesByTag = current.expenseByTag.map(tag => {
       const previousItem = previous.expenseByTag.find(previousTag => previousTag.tag === tag.tag);
 
       return {
         name: tag.tag,
-        percentage: dataFilter === "all" ? tag.percentageOfAllExpenses : tag.percentageOfExpensesOnce,
+        percentage: dataFilter === 'all' ? tag.percentageOfAllExpenses : tag.percentageOfExpensesOnce,
         totalCosts: tag.totalCosts,
-        previousCosts: previousItem?.totalCosts ?? 0
-      }
+        previousCosts: previousItem?.totalCosts ?? 0,
+      };
     });
 
     return {
@@ -155,7 +164,7 @@ export const OverviewProvider: FC = ({ children }) => {
       },
       savingsRate: {
         current: current.savingsRate,
-        previous: previous.savingsRate
+        previous: previous.savingsRate,
       },
       amountSaved: current.amountSaved,
       expensesByCategory,
@@ -170,7 +179,7 @@ export const OverviewProvider: FC = ({ children }) => {
     setDataFilter,
     selectedDateRange,
     setSelectedDateRange,
-    previousEmpty: data.totalIncome.previous === 0 && data.totalExpense.previous === 0
+    previousEmpty: data.totalIncome.previous === 0 && data.totalExpense.previous === 0,
   }), [loading, data, dataFilter, setDataFilter, selectedDateRange, setSelectedDateRange]);
 
   return (

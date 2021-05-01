@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+// eslint-disable-next-line import/no-unresolved
 import { API_BASE_URL } from '@env';
 import axios from 'axios';
 import { useMemo } from 'react';

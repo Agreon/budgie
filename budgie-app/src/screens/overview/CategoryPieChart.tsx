@@ -5,7 +5,8 @@ import { useOverviewContext } from './OverviewProvider';
 /**
       labels={({ datum }) => `${datum.x} - ${datum.y}`}
 
-    TODO: Maybe highlight list items onClick (https://formidable.com/open-source/victory/guides/events#single-component-events)
+    TODO: Maybe highlight list items onClick
+     (https://formidable.com/open-source/victory/guides/events#single-component-events)
       => If tooltips wont work
  */
 export const CategoryPieChart: FC = () => {

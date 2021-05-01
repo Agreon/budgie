@@ -19,7 +19,7 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
-    "max-len": 120,
+    // 'max-len': ['error', { code: 120, tabWidth: 4 }],
     'import/prefer-default-export': 'off',
     'react/style-prop-object': 'off',
     'react/jsx-filename-extension': 'off',

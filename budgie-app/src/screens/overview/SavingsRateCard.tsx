@@ -12,7 +12,7 @@ import { HistoricValue, useOverviewContext } from './OverviewProvider';
 
 const TrendArrow: FC<{
   value: HistoricValue
-}> = ({ value: {current, previous} }) => {
+}> = ({ value: { current, previous } }) => {
   if (current === previous) {
     return <Icon fill="grey" style={{ width: 32, height: 32, padding: 1 }} name="minus" />;
   }
@@ -25,7 +25,11 @@ const TrendArrow: FC<{
 };
 
 export const SavingsRateCard: FC = () => {
-  const { previousEmpty, data: { totalExpense, totalIncome, amountSaved, savingsRate } } = useOverviewContext();
+  const {
+    previousEmpty, data: {
+      totalExpense, totalIncome, amountSaved, savingsRate,
+    },
+  } = useOverviewContext();
 
   return (
     <Card>
@@ -36,8 +40,8 @@ export const SavingsRateCard: FC = () => {
             {savingsRate.current > 0 ? savingsRate.current : 0}
             {' '}
             %
-        </Text>
-        {!previousEmpty &&  <TrendArrow value={savingsRate} />}
+          </Text>
+          {!previousEmpty && <TrendArrow value={savingsRate} />}
         </View>
       </View>
       <View style={tailwind('flex-row justify-between mt-3')}>
@@ -47,7 +51,7 @@ export const SavingsRateCard: FC = () => {
             {totalIncome.current ?? 0}
             {' '}
             €
-        </Text>
+          </Text>
         </View>
       </View>
       <View style={tailwind('flex-row justify-between mt-3')}>
@@ -57,7 +61,7 @@ export const SavingsRateCard: FC = () => {
             {totalExpense.current ?? 0}
             {' '}
             €
-        </Text>
+          </Text>
         </View>
       </View>
       <View style={tailwind('flex-row justify-between mt-3')}>
@@ -67,9 +71,9 @@ export const SavingsRateCard: FC = () => {
             {amountSaved ?? 0}
             {' '}
             €
-        </Text>
+          </Text>
         </View>
       </View>
     </Card>
   );
-}
+};

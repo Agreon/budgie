@@ -13,8 +13,7 @@ import { ExpenseGroupItem } from './OverviewProvider';
 
 const TrendArrow: FC<{
   value: {totalCosts: number, previousCosts: number}
-}> = ({ value: {totalCosts, previousCosts} }) => {
-
+}> = ({ value: { totalCosts, previousCosts } }) => {
   if (totalCosts === previousCosts) {
     return <Icon fill="grey" style={{ width: 32, height: 32, padding: 1 }} name="minus" />;
   }
@@ -39,7 +38,11 @@ export const OverviewList: FC<{
   <FlatList<ExpenseGroupItem>
     style={tailwind('w-full mt-2')}
     ItemSeparatorComponent={ItemDivider}
-    renderItem={({ item: {name, totalCosts, percentage, previousCosts} }) => (
+    renderItem={({
+      item: {
+        name, totalCosts, percentage, previousCosts,
+      },
+    }) => (
       <View style={tailwind('flex flex-row justify-between items-center pt-2 pb-2')}>
         <Text>{name}</Text>
         <View style={tailwind('flex flex-row items-center')}>
@@ -50,7 +53,7 @@ export const OverviewList: FC<{
           {showTrend
             && (
             <View style={tailwind('pt-1')}>
-              <TrendArrow value={{totalCosts, previousCosts}} />
+              <TrendArrow value={{ totalCosts, previousCosts }} />
             </View>
             )}
           <Text style={tailwind('ml-1 mr-1')}>|</Text>
@@ -62,6 +65,6 @@ export const OverviewList: FC<{
       </View>
     )}
     data={items}
-    keyExtractor={({name}) => name}
+    keyExtractor={({ name }) => name}
   />
 );

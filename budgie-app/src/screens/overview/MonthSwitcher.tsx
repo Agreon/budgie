@@ -17,11 +17,11 @@ export const MonthSwitcher: FC = () => {
 
   const title = useMemo(
     () => selectedDateRange[0].format('MMMM YYYY'),
-    [selectedDateRange]
+    [selectedDateRange],
   );
   const disableNextMonth = useMemo(
     () => dayjs(selectedDateRange[0]).add(1, 'month').isAfter(dayjs()),
-    [selectedDateRange]
+    [selectedDateRange],
   );
 
   return (
@@ -34,9 +34,9 @@ export const MonthSwitcher: FC = () => {
     >
       <TopNavigation
         title={() => (
-            <Text style={tailwind('text-xl font-bold')}>
-              {title}
-            </Text>
+          <Text style={tailwind('text-xl font-bold')}>
+            {title}
+          </Text>
         )}
         alignment="center"
         accessoryLeft={previousEmpty ? undefined : props => (
@@ -46,8 +46,8 @@ export const MonthSwitcher: FC = () => {
             icon={iconProps => <Icon {...iconProps} name="arrow-back-outline" />}
             onPress={() => {
               setSelectedDateRange([
-                dayjs(selectedDateRange[0]).subtract(1, 'month').startOf("month"),
-                dayjs(selectedDateRange[0]).subtract(1, 'month').endOf("month"),
+                dayjs(selectedDateRange[0]).subtract(1, 'month').startOf('month'),
+                dayjs(selectedDateRange[0]).subtract(1, 'month').endOf('month'),
               ]);
             }}
           />
@@ -59,8 +59,8 @@ export const MonthSwitcher: FC = () => {
             icon={iconProps => <Icon {...iconProps} name="arrow-forward-outline" />}
             onPress={() => {
               setSelectedDateRange([
-                dayjs(selectedDateRange[0]).add(1, 'month').startOf("month"),
-                dayjs(selectedDateRange[0]).add(1, 'month').endOf("month"),
+                dayjs(selectedDateRange[0]).add(1, 'month').startOf('month'),
+                dayjs(selectedDateRange[0]).add(1, 'month').endOf('month'),
               ]);
             }}
           />
