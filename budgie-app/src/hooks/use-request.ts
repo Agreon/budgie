@@ -1,9 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
+import { API_BASE_URL } from '@env';
 import axios from 'axios';
 import { useMemo } from 'react';
 import { useToast } from '../ToastProvider';
 import { deleteToken, getToken } from '../util/token';
-import { API_BASE_URL } from '@env'
 
 export const useApi = () => {
   const navigation = useNavigation();

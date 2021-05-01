@@ -4,9 +4,14 @@ on:
     branches:
       - master
       - 169-add-ci-app-build
+
+defaults:
+  run:
+    shell: 'bash --noprofile --norc -euo pipefail -x {0}'
+
 jobs:
   publish:
-    name: Install and publish
+    name: Lint and build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,7 +23,9 @@ jobs:
           expo-version: 4.x
           expo-token: ${{ secrets.EXPO_TOKEN }}
           expo-cache: true
-      - run: |
+      - name: Lint and build
+        run: |
+          echo $API_BASE_URL
           cd budgie-app
           yarn install
           expo build:android -t apk
