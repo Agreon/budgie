@@ -42,7 +42,7 @@ func checkTokenIsValid(tokenString string) (string, bool) {
 
 func authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenInput := c.GetHeader("token")
+		tokenInput := c.GetHeader("Authorization")
 
 		/* check if input is valid (required format: x.x.x) */
 		if strings.Count(tokenInput, ".") != 2 {

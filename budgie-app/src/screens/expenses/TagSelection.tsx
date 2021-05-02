@@ -43,7 +43,11 @@ export const TagSelection: FC<{
     <View>
       <View style={tailwind('flex-row justify-between items-center mb-1')}>
         <Text category="c1">Tags</Text>
-        <Button appearance="ghost" accessoryLeft={props => (<Icon {...props} name="plus-outline" />)} onPress={() => setCreateTagDialogVisible(true)} />
+        <Button
+          appearance="ghost"
+          accessoryLeft={props => (<Icon {...props} name="plus-outline" />)}
+          onPress={() => setCreateTagDialogVisible(true)}
+        />
       </View>
       {available.length ? (
         <ScrollView

@@ -16,7 +16,7 @@ services:
     command: gow run .
     environment:
       - JWT_SECRET=$JWT_SECRET
-      - JWT_EXPIRATION_TIME=$JWT_EXPIRATION_TIME_IN_S
+      - JWT_EXPIRATION_TIME_IN_S=$JWT_EXPIRATION_TIME_IN_S
       - DATABASE_URL=postgres://$DATABASE_USER:$DATABASE_PASSWORD@db:5432/$DATABASE_NAME?sslmode=disable
     depends_on:
       - db

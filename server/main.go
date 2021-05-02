@@ -13,7 +13,7 @@ func main() {
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"*"}
-	corsConfig.AddAllowHeaders("token")
+	corsConfig.AddAllowHeaders("Authorization")
 
 	db := GetDB()
 

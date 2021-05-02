@@ -89,7 +89,7 @@ func getBudgetOverview(c *gin.Context) {
 				extract(year from age(relevant_recurring.end_date, relevant_recurring.start_date)) * 12 +
 						extract(month from age(relevant_recurring.end_date, relevant_recurring.start_date)) + 1 AS interval
 			FROM (
-				SELECT 
+				SELECT
 					costs,
 					CASE WHEN start_date<$3 THEN $3
 						ELSE start_date
@@ -98,8 +98,8 @@ func getBudgetOverview(c *gin.Context) {
 						WHEN end_date=$4 THEN $2
 						ELSE end_date
 					END AS end_date
-				FROM recurring 
-				WHERE 
+				FROM recurring
+				WHERE
 					user_id=$1 AND is_expense=FALSE AND start_date<$2::date AND (end_date>$3::date OR end_date=$4::date)
 			) AS relevant_recurring
 		) AS cost_interval
@@ -120,7 +120,7 @@ func getBudgetOverview(c *gin.Context) {
 			extract(year from age(relevant_recurring.end_date, relevant_recurring.start_date)) * 12 +
 					extract(month from age(relevant_recurring.end_date, relevant_recurring.start_date)) + 1 AS interval
 		FROM (
-			SELECT 
+			SELECT
 				costs,
 				CASE WHEN start_date<$3 THEN $3
 					ELSE start_date
@@ -129,8 +129,8 @@ func getBudgetOverview(c *gin.Context) {
 					WHEN end_date=$4 THEN $2
 					ELSE end_date
 				END AS end_date
-			FROM recurring 
-			WHERE 
+			FROM recurring
+			WHERE
 				user_id=$1 AND is_expense=TRUE AND start_date<$2::date AND (end_date>$3::date OR end_date=$4::date)
 		) AS relevant_recurring
 	) AS cost_interval
@@ -146,16 +146,16 @@ func getBudgetOverview(c *gin.Context) {
 	budgetOverview.AmountSaved = math.Round(100*(budgetOverview.TotalIncome-budgetOverview.TotalExpense)) / 100
 
 	err = db.Select(&budgetOverview.ExpenseOnceByCategory, `
-		SELECT 
-			category, 
-			COALESCE(SUM(costs),0) AS total, 
-			ROUND(COALESCE(SUM(costs),0)*100 / $1) AS percentage_all, 
-			ROUND(COALESCE(SUM(costs),0)*100 / $2) AS percentage_once 
-		FROM 
-			expense 
-		WHERE 	
-			user_id=$3 AND date>=$4::date AND date<$5::date 
-		GROUP BY category 	
+		SELECT
+			category,
+			COALESCE(SUM(costs),0) AS total,
+			ROUND(COALESCE(SUM(costs),0)*100 / $1) AS percentage_all,
+			ROUND(COALESCE(SUM(costs),0)*100 / $2) AS percentage_once
+		FROM
+			expense
+		WHERE
+			user_id=$3 AND date>=$4::date AND date<$5::date
+		GROUP BY category
 		ORDER BY total DESC
 		`, budgetOverview.TotalExpense, budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
@@ -164,11 +164,11 @@ func getBudgetOverview(c *gin.Context) {
 	}
 
 	err = db.Select(&budgetOverview.ExpenseRecByCategory, `
-		SELECT 
-			cost_interval.category AS category, 
-			COALESCE(SUM(cost_interval.costs*cost_interval.interval),0) AS total, 
-			ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)*100 / $1) AS percentage_all, 
-			ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)*100 / $2) AS percentage_once 
+		SELECT
+			cost_interval.category AS category,
+			COALESCE(SUM(cost_interval.costs*cost_interval.interval),0) AS total,
+			ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)*100 / $1) AS percentage_all,
+			ROUND(COALESCE(SUM(cost_interval.costs*cost_interval.interval),0)*100 / $2) AS percentage_once
 		FROM (
 			SELECT
 				relevant_recurring.costs AS costs,
@@ -178,7 +178,7 @@ func getBudgetOverview(c *gin.Context) {
 				extract(year from age(relevant_recurring.end_date, relevant_recurring.start_date)) * 12 +
 						extract(month from age(relevant_recurring.end_date, relevant_recurring.start_date)) + 1 AS interval
 			FROM (
-				SELECT 
+				SELECT
 					costs,
 					CASE WHEN start_date<$4 THEN $4
 						ELSE start_date
@@ -188,12 +188,12 @@ func getBudgetOverview(c *gin.Context) {
 						ELSE end_date
 					END AS end_date,
 					category
-				FROM recurring 
-				WHERE 
+				FROM recurring
+				WHERE
 					user_id=$3 AND is_expense=TRUE AND start_date<$5::date AND (end_date>$4::date OR end_date=$6::date)
 			) AS relevant_recurring
 		) AS cost_interval
-		GROUP BY category 	
+		GROUP BY category
 		ORDER BY total DESC
 	`, budgetOverview.TotalExpense, budgetOverview.ExpensesRecurring, userID, overviewInput.StartDate, overviewInput.EndDate, nullTime)
 	if err != nil {

@@ -7,5 +7,8 @@ module.exports = async (env, argv) => {
       dangerouslyAddModulePathsToTranspile: ['@ui-kitten/components'],
     },
   }, argv);
+
+  config.resolve.alias['victory-native'] = 'victory';
+
   return config;
 };

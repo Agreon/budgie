@@ -2,7 +2,7 @@ import React, {
   useCallback, useState,
 } from 'react';
 import {
-  Keyboard,
+  Keyboard, View,
 } from 'react-native';
 import {
   Icon,
@@ -92,16 +92,20 @@ export const EditReoccurring = ({ type, onActionDone }: {
         />
       )}
     >
-      <ReoccurringForm
-        reoccurring={data!.recurring}
-        forType={type}
-        onSubmit={onSave}
-      />
-      {data!.history.length !== 0 && (
-      <ReoccurringHistory
-        history={data!.history}
-        refresh={async () => { await refetch(); }}
-      />
+      {data !== undefined && (
+        <View>
+          <ReoccurringForm
+            reoccurring={data.recurring}
+            forType={type}
+            onSubmit={onSave}
+          />
+          {data.history.length !== 0 && (
+          <ReoccurringHistory
+            history={data!.history}
+            refresh={async () => { await refetch(); }}
+          />
+          )}
+        </View>
       )}
       <DeleteDialog
         deletePath={`recurring/${id}`}

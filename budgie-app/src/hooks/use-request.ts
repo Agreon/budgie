@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+// eslint-disable-next-line import/no-unresolved
 import { API_BASE_URL } from '@env';
 import axios from 'axios';
 import { useMemo } from 'react';
@@ -23,7 +24,7 @@ export const useApi = () => {
         ...config,
         headers: {
           ...config.headers,
-          token: await getToken(),
+          Authorization: await getToken(),
         },
       };
     });
@@ -36,13 +37,13 @@ export const useApi = () => {
         return navigation.navigate('Login');
       }
 
-      console.log('Err', JSON.stringify(error));
+      console.error('Err', JSON.stringify(error));
 
       throw error;
     });
 
     return client;
-  }, [showToast]);
+  }, [showToast, navigation]);
 
   return api;
 };

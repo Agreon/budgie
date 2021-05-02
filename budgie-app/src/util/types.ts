@@ -33,3 +33,32 @@ export interface Reoccurring {
 export interface ReoccurringHistoryItem extends Reoccurring {
   end_date: Date;
 }
+
+export interface ExpensesByCategory {
+  category: string;
+  percentageOfAllExpenses: number;
+  percentageOfNonRecurringExpenses: number;
+  totalCosts: number;
+}
+
+export interface ExpensesByTag {
+  tag: string;
+  percentageOfExpensesOnce: number;
+  percentageOfAllExpenses: number;
+  totalCosts: number;
+}
+
+export interface OverviewResponse {
+  amountSaved: number;
+  totalExpenseRecurring: number;
+  totalExpenseOnce: number;
+  totalExpense: number;
+  expenseOnceByCategory: ExpensesByCategory[];
+  expenseRecurringByCategory: ExpensesByCategory[];
+  expenseByCategory: ExpensesByCategory[];
+  expenseByTag: ExpensesByTag[];
+  savingsRate: number;
+  totalIncomeRecurring: number;
+  totalIncomeOnce: number;
+  totalIncome: number;
+}
