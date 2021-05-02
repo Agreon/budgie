@@ -67,12 +67,12 @@ func getBudgetOverview(c *gin.Context) {
 	userID := c.MustGet("userID")
 	var budgetOverview BudgetOverview
 
-	err := db.Get(&budgetOverview.ExpensesOnce, "SELECT COALESCE(SUM(costs),0) AS expense_once FROM expense WHERE user_id=$1 AND date>=$2::date AND date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
+	err := db.Get(&budgetOverview.ExpensesOnce, "SELECT COALESCE(SUM(costs),0) AS expense_once FROM expense WHERE user_id=$1 AND date>=$2 AND date<$3", userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
 	}
-	err = db.Get(&budgetOverview.IncomeOnce, "SELECT COALESCE(SUM(costs),0) AS income_once FROM income WHERE user_id=$1 AND date>=$2::date AND date<$3::date", userID, overviewInput.StartDate, overviewInput.EndDate)
+	err = db.Get(&budgetOverview.IncomeOnce, "SELECT COALESCE(SUM(costs),0) AS income_once FROM income WHERE user_id=$1 AND date>=$2 AND date<$3", userID, overviewInput.StartDate, overviewInput.EndDate)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -100,7 +100,7 @@ func getBudgetOverview(c *gin.Context) {
 					END AS end_date
 				FROM recurring
 				WHERE
-					user_id=$1 AND is_expense=FALSE AND start_date<$2::date AND (end_date>$3::date OR end_date=$4::date)
+					user_id=$1 AND is_expense=FALSE AND start_date<$2 AND (end_date>$3 OR end_date=$4)
 			) AS relevant_recurring
 		) AS cost_interval
 		`, userID, overviewInput.EndDate, overviewInput.StartDate, nullTime)
@@ -131,7 +131,7 @@ func getBudgetOverview(c *gin.Context) {
 				END AS end_date
 			FROM recurring
 			WHERE
-				user_id=$1 AND is_expense=TRUE AND start_date<$2::date AND (end_date>$3::date OR end_date=$4::date)
+				user_id=$1 AND is_expense=TRUE AND start_date<$2 AND (end_date>$3 OR end_date=$4)
 		) AS relevant_recurring
 	) AS cost_interval
 	`, userID, overviewInput.EndDate, overviewInput.StartDate, nullTime)
@@ -154,7 +154,7 @@ func getBudgetOverview(c *gin.Context) {
 		FROM
 			expense
 		WHERE
-			user_id=$3 AND date>=$4::date AND date<$5::date
+			user_id=$3 AND date>=$4 AND date<$5
 		GROUP BY category
 		ORDER BY total DESC
 		`, budgetOverview.TotalExpense, budgetOverview.ExpensesOnce, userID, overviewInput.StartDate, overviewInput.EndDate)
@@ -190,7 +190,7 @@ func getBudgetOverview(c *gin.Context) {
 					category
 				FROM recurring
 				WHERE
-					user_id=$3 AND is_expense=TRUE AND start_date<$5::date AND (end_date>$4::date OR end_date=$6::date)
+					user_id=$3 AND is_expense=TRUE AND start_date<$5 AND (end_date>$4 OR end_date=$6)
 			) AS relevant_recurring
 		) AS cost_interval
 		GROUP BY category
@@ -219,8 +219,8 @@ func getBudgetOverview(c *gin.Context) {
 				WHERE
 					expense.id = expense_tag.expense_id
 					AND user_id=$3
-					AND date>=$4::date
-					AND date<$5::date
+					AND date>=$4
+					AND date<$5
 			) AS tag_id_costs, tag
 			WHERE
 				tag_id_costs.id = tag.id
