@@ -22,11 +22,14 @@ import { ReoccurringDates } from '../../components/reoccurring/ReoccurringDates'
  * - Name?
  * - Costs?
  */
-const ReoccurringExpenseItem: FC<{
+export const ReoccurringExpenseItem: FC<{
   item: Reoccurring;
-  onPress: (id: string) => void
+  onPress?: (id: string) => void
 }> = ({ item, onPress }) => (
-  <TouchableWithoutFeedback delayPressIn={0} onPress={() => onPress(item.id)}>
+  <TouchableWithoutFeedback
+    delayPressIn={0}
+    onPress={() => (onPress ? onPress(item.id) : undefined)}
+  >
     <View style={tailwind('p-2 flex-row justify-between')}>
       <View style={tailwind('flex-col ml-1 pr-2 flex-1')}>
         <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
@@ -60,7 +63,10 @@ export const ReoccurringExpenseList: FC<{
   >
     <List<Reoccurring>
       query={Query.ReoccurringExpenses}
-      url="recurring?type=expense"
+      url="recurring"
+      params={{
+        type: 'expense',
+      }}
       renderItem={({ item }) => (
         <ReoccurringExpenseItem
           item={item}
