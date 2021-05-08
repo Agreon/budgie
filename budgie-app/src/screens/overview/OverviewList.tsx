@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import {
   FlatList,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import tailwind from 'tailwind-rn';
@@ -34,7 +35,8 @@ export interface OverviewListItem {
 export const OverviewList: FC<{
     items: ExpenseGroupItem[];
     showTrend: boolean;
-}> = ({ items, showTrend }) => (
+    onPressItem?: (name: string) => void;
+}> = ({ items, showTrend, onPressItem }) => (
   <FlatList<ExpenseGroupItem>
     style={tailwind('w-full mt-2')}
     ItemSeparatorComponent={ItemDivider}
@@ -43,26 +45,31 @@ export const OverviewList: FC<{
         name, totalCosts, percentage, previousCosts,
       },
     }) => (
-      <View style={tailwind('flex flex-row justify-between items-center pt-2 pb-2')}>
-        <Text>{name}</Text>
-        <View style={tailwind('flex flex-row items-center')}>
-          <Text>
-            {totalCosts}
-            €
-          </Text>
-          {showTrend
+      <TouchableWithoutFeedback
+        delayPressIn={0}
+        onPress={() => (onPressItem ? onPressItem(name) : undefined)}
+      >
+        <View style={tailwind('flex flex-row justify-between items-center pt-2 pb-2')}>
+          <Text>{name}</Text>
+          <View style={tailwind('flex flex-row items-center')}>
+            <Text>
+              {totalCosts}
+              €
+            </Text>
+            {showTrend
             && (
             <View style={tailwind('pt-1')}>
               <TrendArrow value={{ totalCosts, previousCosts }} />
             </View>
             )}
-          <Text style={tailwind('ml-1 mr-1')}>|</Text>
-          <Text style={[tailwind('font-bold ml-1'), percentage < 10 ? { marginLeft: 12 } : {}]}>
-            {percentage}
-            %
-          </Text>
+            <Text style={tailwind('ml-1 mr-1')}>|</Text>
+            <Text style={[tailwind('font-bold ml-1'), percentage < 10 ? { marginLeft: 12 } : {}]}>
+              {percentage}
+              %
+            </Text>
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     )}
     data={items}
     keyExtractor={({ name }) => name}

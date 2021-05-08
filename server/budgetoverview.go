@@ -242,13 +242,12 @@ func getBudgetOverview(c *gin.Context) {
 
 func (input OverviewInput) validateInput() (err error) {
 	var startDate, endDate time.Time
-
-	startDate, err = time.Parse("2006-01-02T15:04:05.000Z", input.StartDate)
+	startDate, err = time.Parse(time.RFC3339, input.StartDate)
 	if err != nil {
 		return
 	}
 
-	endDate, err = time.Parse("2006-01-02T15:04:05.000Z", input.EndDate)
+	endDate, err = time.Parse(time.RFC3339, input.EndDate)
 	if err != nil {
 		return
 	}

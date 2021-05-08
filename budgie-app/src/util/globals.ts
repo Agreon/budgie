@@ -19,3 +19,5 @@ export const CATEGORIES = [
   'Travel',
   'Other',
 ] as const;
+
+export const RFC3339_DATE_FORMAT = 'YYYY-MM-DDThh:mm:ssZ';

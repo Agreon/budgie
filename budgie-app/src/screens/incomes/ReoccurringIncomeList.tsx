@@ -45,7 +45,10 @@ export const ReoccurringIncomeList: FC<{
     >
       <List<Reoccurring>
         query={Query.ReoccurringIncomes}
-        url="recurring?type=income"
+        url="recurring"
+        params={{
+          type: 'income',
+        }}
         renderItem={({ item }) => (
           <ReoccurringIncomeItem
             item={item}

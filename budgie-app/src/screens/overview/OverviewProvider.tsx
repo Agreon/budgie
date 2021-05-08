@@ -75,13 +75,14 @@ export const OverviewProvider: FC = ({ children }) => {
   const api = useApi();
   const { showToast } = useToast();
 
-  const [dataFilter, setDataFilter] = useState<DataFilter>('single');
+  const [dataFilter, setDataFilter] = useState<DataFilter>('all');
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange>(
     [dayjs().startOf('month'), dayjs().endOf('month')],
   );
   const [response, setResponse] = useState<HistoricValue<OverviewResponse> | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // TODO: Use react-query
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -89,10 +90,18 @@ export const OverviewProvider: FC = ({ children }) => {
       const endDatePrevious = selectedDateRange[1].subtract(1, 'month').endOf('month');
 
       const [{ data: current }, { data: previous }] = await Promise.all([
-        api.get(
-          `overview?startDate=${selectedDateRange[0].toISOString()}&endDate=${selectedDateRange[1].toISOString()}`,
-        ),
-        api.get(`overview?startDate=${startDatePrevious.toISOString()}&endDate=${endDatePrevious.toISOString()}`),
+        api.get('overview', {
+          params: {
+            startDate: selectedDateRange[0].toDate(),
+            endDate: selectedDateRange[1].toDate(),
+          },
+        }),
+        api.get('overview', {
+          params: {
+            startDate: startDatePrevious.toDate(),
+            endDate: endDatePrevious.toDate(),
+          },
+        }),
       ]);
 
       setResponse({

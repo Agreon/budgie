@@ -1,7 +1,9 @@
 import { Spinner } from '@ui-kitten/components';
 import { RenderProp } from '@ui-kitten/components/devsupport';
 import React, { FC } from 'react';
-import { ScrollView, View } from 'react-native';
+import {
+  ScrollView, StyleProp, View, ViewStyle,
+} from 'react-native';
 import tailwind from 'tailwind-rn';
 import { BackAction } from './BackAction';
 import { Header } from './Header';
@@ -10,6 +12,7 @@ export interface PageWrapperProps {
     title: string;
     loading?: boolean;
     accessoryRight?: RenderProp;
+    contentContainerStyle?: StyleProp<ViewStyle>
 }
 
 export const PageWrapper: FC<PageWrapperProps> = ({
@@ -17,6 +20,7 @@ export const PageWrapper: FC<PageWrapperProps> = ({
   title,
   loading,
   accessoryRight,
+  contentContainerStyle,
 }) => (
   <ScrollView
     stickyHeaderIndices={[0]}
@@ -34,7 +38,7 @@ export const PageWrapper: FC<PageWrapperProps> = ({
       </View>
     ) : (
       <View
-        style={tailwind('flex pl-5 pr-5')}
+        style={contentContainerStyle ?? tailwind('flex pl-5 pr-5')}
       >
         {children}
       </View>
