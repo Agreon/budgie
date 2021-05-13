@@ -50,7 +50,7 @@ type TagOutputWithFrequency struct {
 
 type TagListOutput struct {
 	Data    []TagOutputWithFrequency `json:"data"`
-	Entries int                      `json:"number_of_entries"`
+	Entries int                      `json:"numberOfEntries"`
 }
 
 func insertTag(c *gin.Context) {
