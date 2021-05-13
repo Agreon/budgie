@@ -26,9 +26,10 @@ ALTER TABLE tag
 `
 
 type Tag struct {
-	ID        string    `db:"id" json:"id"`
+	ID        string    `db:"tag_id" json:"id"`
 	Name      string    `db:"name" json:"name"`
 	UserID    string    `db:"user_id" json:"user_id"`
+	ExpenseID string    `db:"expense_id" json:"expense_id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
@@ -94,8 +95,33 @@ func listTags(c *gin.Context) {
 
 	userID := c.MustGet("userID")
 
-	page := c.MustGet("page")
-	err := db.Select(&tags.Data, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	//page := c.MustGet("page")
+	//err := db.Select(&tags.Data, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	err := db.Select(&tags.Data,
+		//	SELECT
+		//		tag_info.tag_id AS tag_id,
+		//		tag_info.name AS name,
+		//		expense.id AS expense_id
+		//	FROM (
+		`		
+	SELECT
+		COUNT(tag_name_costs.id) - 1 AS expense_id,
+		tag_name_costs.id AS tag_id,
+		tag_name_costs.name AS name
+	FROM (
+		SELECT
+			tag.id AS id,
+			tag.name AS name
+		FROM expense_tag, tag
+		WHERE
+			expense_tag.tag_id = tag.id
+			AND user_id=$1
+	) AS tag_name_costs
+	GROUP BY tag_name_costs.id, tag_name_costs.name
+	ORDER BY tag_name_costs.name `, userID /*, pageSize, page*/)
+	//	) AS tag_info, expense
+	//	WHERE
+	//	 	tag_info.expense_id = expense.id
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
