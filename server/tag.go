@@ -26,10 +26,9 @@ ALTER TABLE tag
 `
 
 type Tag struct {
-	ID        string    `db:"tag_id" json:"id"`
+	ID        string    `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
 	UserID    string    `db:"user_id" json:"user_id"`
-	ExpenseID string    `db:"expense_id" json:"expense_id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
@@ -37,14 +36,21 @@ type Tag struct {
 type TagInput struct {
 	Name string `json:"name" binding:"required"`
 }
+
 type TagOutput struct {
 	Name string `json:"name"`
 	ID   string `json:"id"`
 }
 
+type TagOutputWithFrequency struct {
+	Name      string `db:"name" json:"name"`
+	ID        string `db:"id" json:"id"`
+	Frequency int    `db:"frequency" json:"frequency"`
+}
+
 type TagListOutput struct {
-	Data    []Tag `json:"data"`
-	Entries int   `json:"number_of_entries"`
+	Data    []TagOutputWithFrequency `json:"data"`
+	Entries int                      `json:"number_of_entries"`
 }
 
 func insertTag(c *gin.Context) {
@@ -95,33 +101,23 @@ func listTags(c *gin.Context) {
 
 	userID := c.MustGet("userID")
 
-	//page := c.MustGet("page")
-	//err := db.Select(&tags.Data, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
-	err := db.Select(&tags.Data,
-		//	SELECT
-		//		tag_info.tag_id AS tag_id,
-		//		tag_info.name AS name,
-		//		expense.id AS expense_id
-		//	FROM (
-		`		
-	SELECT
-		COUNT(tag_name_costs.id) - 1 AS expense_id,
-		tag_name_costs.id AS tag_id,
-		tag_name_costs.name AS name
-	FROM (
+	page := c.MustGet("page")
+	err := db.Select(&tags.Data, `		
 		SELECT
-			tag.id AS id,
-			tag.name AS name
-		FROM expense_tag, tag
-		WHERE
-			expense_tag.tag_id = tag.id
-			AND user_id=$1
-	) AS tag_name_costs
-	GROUP BY tag_name_costs.id, tag_name_costs.name
-	ORDER BY tag_name_costs.name `, userID /*, pageSize, page*/)
-	//	) AS tag_info, expense
-	//	WHERE
-	//	 	tag_info.expense_id = expense.id
+			COUNT(tag_frequency.expense_id) AS frequency,
+			tag_frequency.id AS id,
+			tag_frequency.name AS name
+		FROM (
+			SELECT *
+			FROM tag
+			FULL JOIN expense_tag
+			ON expense_tag.tag_id = tag.id
+			WHERE user_id=$1
+		) AS tag_frequency
+		GROUP BY tag_frequency.id, tag_frequency.name
+		ORDER BY frequency DESC
+		LIMIT $2 OFFSET $3
+	`, userID, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -134,7 +130,7 @@ func listTags(c *gin.Context) {
 	}
 
 	if len(tags.Data) == 0 {
-		tags.Data = []Tag{}
+		tags.Data = []TagOutputWithFrequency{}
 	}
 
 	c.JSON(200, tags)
