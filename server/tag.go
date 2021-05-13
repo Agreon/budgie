@@ -108,7 +108,10 @@ func listTags(c *gin.Context) {
 			tag_frequency.id AS id,
 			tag_frequency.name AS name
 		FROM (
-			SELECT *
+			SELECT 
+				tag.id,
+				tag.name,
+				expense_tag.expense_id
 			FROM tag
 			FULL JOIN expense_tag
 			ON expense_tag.tag_id = tag.id
