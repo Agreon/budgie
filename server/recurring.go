@@ -82,8 +82,30 @@ type RecurringListOutput struct {
 	Entries int           `json:"number_of_entries"`
 }
 
+func extractRecFilterOptions(c *gin.Context) (filter map[string]string, err error) {
+	filter = make(map[string]string)
+
+	filter["start_date>"] = c.Query("startDate")
+	filter["start_date<"] = c.Query("endDate")
+	filter["end_date"] = c.Query("endDate")
+	filter["category"] = c.Query("category")
+
+	for key, value := range filter {
+		if value == "" {
+			delete(filter, key)
+		} else if key == "end_date" || key == "start_date>" || key == "start_date<" {
+			_, err = time.Parse("2006-01-02T15:04:05.000Z", value)
+		} else {
+			/* nothing else */
+		}
+	}
+
+	return
+}
+
 func listRecurring(c *gin.Context) {
 	db := GetDB()
+	dbExtended := DBExtended{db}
 	recurring := RecurringListOutput{}
 	recurring.Data = []interface{}{}
 	recurringData := []Recurring{}
@@ -100,17 +122,40 @@ func listRecurring(c *gin.Context) {
 		saveErrorInfo(c, errors.New("Invalid type in query"), 400)
 		return
 	}
-	page := c.MustGet("page")
-	err := db.Select(&recurringData, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, isExpense, pageSize, page)
+
+	filterOptions, err := extractRecFilterOptions(c)
 	if err != nil {
-		saveErrorInfo(c, err, 500)
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
-	err = db.Get(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2", userID, isExpense)
-	if err != nil {
-		saveErrorInfo(c, err, 500)
-		return
+	page := c.MustGet("page")
+	if _, existing := filterOptions["end_date"]; existing {
+		var nullTime time.Time
+		endDate := filterOptions["end_date"]
+		delete(filterOptions, "end_date")
+		err = dbExtended.SelectWithFilterOptions(&recurringData, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 AND (end_date<=$3 OR end_date=$4) ORDER BY created_at DESC LIMIT $5 OFFSET $6", filterOptions, userID, isExpense, endDate, nullTime, pageSize, page)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+		err = dbExtended.GetWithFilterOptions(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 AND (end_date<=$3 OR end_date=$4)", filterOptions, userID, isExpense, endDate, nullTime)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+	} else {
+		err = dbExtended.SelectWithFilterOptions(&recurringData, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", filterOptions, userID, isExpense, pageSize, page)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+
+		err = dbExtended.GetWithFilterOptions(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2", filterOptions, userID, isExpense)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
 	}
 
 	/* workaround for dealing with optional enddate */
