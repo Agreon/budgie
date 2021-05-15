@@ -63,8 +63,8 @@ export const MonthOverview: FC<{
                 onPressItem={name => {
                   navigation.navigate('CategoryOverview', {
                     category: name,
-                    startDate: selectedDateRange[0],
-                    endDate: selectedDateRange[1],
+                    startDate: selectedDateRange[0].toDate(),
+                    endDate: selectedDateRange[1].toDate(),
                   });
                 }}
               />

@@ -25,7 +25,7 @@ export const PageWrapper: FC<PageWrapperProps> = ({
   <ScrollView
     stickyHeaderIndices={[0]}
     style={tailwind('bg-white h-full')}
-    contentContainerStyle={tailwind('h-full')}
+    contentContainerStyle={loading ? tailwind('h-full') : undefined}
   >
     <Header
       title={title}

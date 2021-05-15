@@ -46,7 +46,7 @@ export const EditIncome: FC<{
   const onSave = useCallback(async (incomeData: Omit<Income, 'id'>) => {
     try {
       await api.put(`income/${id}`, incomeData);
-      queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Incomes });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -80,7 +80,7 @@ export const EditIncome: FC<{
         content="Are you sure you want to delete this income?"
         onClose={() => setDeleteDialogVisible(false)}
         onDeleted={() => {
-          queryClient.resetQueries({ queryKey: Query.Incomes, exact: true });
+          queryClient.resetQueries({ queryKey: Query.Incomes });
           navigation.goBack();
         }}
       />

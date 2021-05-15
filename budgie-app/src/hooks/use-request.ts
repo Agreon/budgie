@@ -27,7 +27,7 @@ export const useApi = () => {
       let { data } = config;
       if (typeof data === 'object') {
         data = Object.entries(data as Record<string, any>).reduce((acc, [key, value]) => {
-          if (dayjs(value).isValid()) {
+          if (dayjs(value).isValid() && key.toLocaleLowerCase().includes('date')) {
             return { ...acc, [key]: dayjs(value).format(RFC3339_DATE_FORMAT) };
           }
 
@@ -50,8 +50,7 @@ export const useApi = () => {
     });
 
     client.interceptors.response.use(undefined, async (error) => {
-      // TODO: Not on login route
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401 && error.config?.url !== 'login') {
         await deleteToken();
         showToast({ status: 'danger', message: 'Please log in again' });
 

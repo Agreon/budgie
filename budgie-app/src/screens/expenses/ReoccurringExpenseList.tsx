@@ -2,7 +2,7 @@ import React, {
   FC,
 } from 'react';
 import {
-  SafeAreaView, View, TouchableWithoutFeedback,
+  SafeAreaView, View, TouchableWithoutFeedback, StyleProp, ViewStyle,
 } from 'react-native';
 
 import tailwind from 'tailwind-rn';
@@ -18,19 +18,19 @@ import { ReoccurringDates } from '../../components/reoccurring/ReoccurringDates'
 
 /**
  * TODO: Extract more components
- * - Wrapper for List-Item
  * - Name?
  * - Costs?
  */
 export const ReoccurringExpenseItem: FC<{
   item: Reoccurring;
   onPress?: (id: string) => void
-}> = ({ item, onPress }) => (
+  containerStyle?: StyleProp<ViewStyle>;
+}> = ({ item, onPress, containerStyle }) => (
   <TouchableWithoutFeedback
     delayPressIn={0}
     onPress={() => (onPress ? onPress(item.id) : undefined)}
   >
-    <View style={tailwind('p-2 flex-row justify-between')}>
+    <View style={containerStyle || tailwind('p-2 flex-row justify-between')}>
       <View style={tailwind('flex-col ml-1 pr-2 flex-1')}>
         <Text category="h5" status="primary" style={tailwind('font-bold')}>{item.category}</Text>
         <View style={tailwind('flex-row items-center')}>
