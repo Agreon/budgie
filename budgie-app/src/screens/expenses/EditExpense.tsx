@@ -52,7 +52,7 @@ export const EditExpense: FC<{
         ...expenseData,
         tag_ids: expenseData.tags?.map(t => t.id) || [],
       });
-      queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
+      queryClient.resetQueries({ queryKey: Query.Expenses });
       navigation.goBack();
     } catch (err) {
       showToast({ status: 'danger', message: err.message || 'Unknown error' });
@@ -88,7 +88,7 @@ export const EditExpense: FC<{
         content="Are you sure you want to delete this expense?"
         onClose={() => setDeleteDialogVisible(false)}
         onDeleted={() => {
-          queryClient.resetQueries({ queryKey: Query.Expenses, exact: true });
+          queryClient.resetQueries({ queryKey: Query.Expenses });
           navigation.goBack();
         }}
       />

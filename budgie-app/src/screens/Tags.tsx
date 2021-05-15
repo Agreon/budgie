@@ -101,7 +101,7 @@ export const Tags: FC = () => {
         visible={deleteDialogVisible}
         content="Are you sure you want to delete this tag?"
         onClose={() => { setDeleteDialogVisible(false); setSelectedTag(null); }}
-        onDeleted={() => queryClient.resetQueries({ queryKey: Query.Tags, exact: true })}
+        onDeleted={() => queryClient.resetQueries({ queryKey: Query.Tags })}
       />
       <TagDialog
         visible={createTagDialogVisible}
@@ -110,7 +110,7 @@ export const Tags: FC = () => {
         onSubmit={() => {
           setSelectedTag(null);
           setCreateTagDialogVisible(false);
-          queryClient.resetQueries({ queryKey: Query.Tags, exact: true });
+          queryClient.resetQueries({ queryKey: Query.Tags });
         }}
       />
     </SafeAreaView>

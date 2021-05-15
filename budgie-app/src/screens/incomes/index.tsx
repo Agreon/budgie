@@ -74,7 +74,7 @@ export const Incomes = () => {
   const queryClient = useQueryClient();
 
   const onActionDone = useCallback((navigation) => {
-    queryClient.resetQueries({ queryKey: Query.ReoccurringIncomes, exact: true });
+    queryClient.resetQueries({ queryKey: Query.ReoccurringIncomes });
     queryClient.resetQueries({ queryKey: Query.Reoccurring });
     navigation.navigate('Incomes', { screen: 'Reoccurring' });
   }, [queryClient]);

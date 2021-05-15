@@ -16,12 +16,16 @@ import { ExpensesStackParamList } from '.';
 import { ItemDate } from '../../components/ItemDate';
 import { Query } from '../../hooks/use-paginated-query';
 import { List } from '../../components/List';
+import { TagBox } from '../../components/TagBox';
 
-const ExpenseItem: FC<{
+export const ExpenseItem: FC<{
   item: Expense;
-  onPress: (id: string) => void
+  onPress?: (id: string) => void
 }> = ({ item, onPress }) => (
-  <TouchableWithoutFeedback delayPressIn={0} onPress={() => onPress(item.id)}>
+  <TouchableWithoutFeedback
+    delayPressIn={0}
+    onPress={() => (onPress ? onPress(item.id) : undefined)}
+  >
     <View style={tailwind('p-2 flex-row justify-between')}>
       <View style={{
         ...tailwind('flex-col ml-1 pr-2'),
@@ -36,20 +40,8 @@ const ExpenseItem: FC<{
             style={item.name ? tailwind('mr-2') : undefined}
           >
             {item.name}
-
           </Text>
-          {item.tags![0] != null
-            && (
-              <Text
-                style={{
-                  ...tailwind('border rounded border-gray-300 p-1'),
-                  marginTop: 2,
-                }}
-                category="c1"
-              >
-                {item.tags![0].name}
-              </Text>
-            )}
+          {item.tags[0] != null && <TagBox tag={item.tags[0]} />}
         </View>
       </View>
       <View style={tailwind('flex-col justify-between mr-1 flex-1')}>
@@ -64,6 +56,7 @@ const ExpenseItem: FC<{
   </TouchableWithoutFeedback>
 );
 
+// TODO: Placeholder for no expenses yet
 export const ExpenseList: FC<{
   navigation: StackNavigationProp<ExpensesStackParamList, 'Expenses'>
 }> = ({ navigation }) => {
