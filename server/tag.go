@@ -36,14 +36,21 @@ type Tag struct {
 type TagInput struct {
 	Name string `json:"name" binding:"required"`
 }
+
 type TagOutput struct {
 	Name string `json:"name"`
 	ID   string `json:"id"`
 }
 
+type TagOutputWithFrequency struct {
+	Name      string `db:"name" json:"name"`
+	ID        string `db:"id" json:"id"`
+	Frequency int    `db:"frequency" json:"frequency"`
+}
+
 type TagListOutput struct {
-	Data    []Tag `json:"data"`
-	Entries int   `json:"number_of_entries"`
+	Data    []TagOutputWithFrequency `json:"data"`
+	Entries int                      `json:"numberOfEntries"`
 }
 
 func insertTag(c *gin.Context) {
@@ -95,7 +102,25 @@ func listTags(c *gin.Context) {
 	userID := c.MustGet("userID")
 
 	page := c.MustGet("page")
-	err := db.Select(&tags.Data, "SELECT * FROM tag WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", userID, pageSize, page)
+	err := db.Select(&tags.Data, `		
+		SELECT
+			COUNT(tag_frequency.expense_id) AS frequency,
+			tag_frequency.id AS id,
+			tag_frequency.name AS name
+		FROM (
+			SELECT 
+				tag.id,
+				tag.name,
+				expense_tag.expense_id
+			FROM tag
+			FULL JOIN expense_tag
+			ON expense_tag.tag_id = tag.id
+			WHERE user_id=$1
+		) AS tag_frequency
+		GROUP BY tag_frequency.id, tag_frequency.name
+		ORDER BY frequency DESC
+		LIMIT $2 OFFSET $3
+	`, userID, pageSize, page)
 	if err != nil {
 		saveErrorInfo(c, err, 500)
 		return
@@ -108,7 +133,7 @@ func listTags(c *gin.Context) {
 	}
 
 	if len(tags.Data) == 0 {
-		tags.Data = []Tag{}
+		tags.Data = []TagOutputWithFrequency{}
 	}
 
 	c.JSON(200, tags)
