@@ -132,7 +132,7 @@ func extractFilterOptions(c *gin.Context) (filter map[string]string, err error) 
 		if value == "" {
 			delete(filter, key)
 		} else if key == "date<" || key == "date>" {
-			_, err = time.Parse("2006-01-02T15:04:05.000Z", value)
+			_, err = time.Parse(time.RFC3339, value)
 		} else {
 			/* nothing else */
 		}

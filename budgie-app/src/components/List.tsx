@@ -2,7 +2,7 @@ import React from 'react';
 import { FlatList, ListRenderItem, RefreshControl } from 'react-native';
 import { InfiniteData, useQueryClient } from 'react-query';
 import tailwind from 'tailwind-rn';
-import { Query, usePaginatedQuery } from '../hooks/use-paginated-query';
+import { Query, QueryParams, usePaginatedQuery } from '../hooks/use-paginated-query';
 import { LOADING_INDICATOR_OFFSET } from '../util/globals';
 import { ItemDivider } from './ItemDivider';
 
@@ -11,15 +11,16 @@ export interface ListProps<T> {
     url: string;
     renderItem: ListRenderItem<T>;
     header?: React.ReactElement;
+    params?: QueryParams;
 }
 
 // TODO: Refresh-control is not directly loading
 export function List<T extends {id: string}>({
-  query, renderItem, url, header,
+  query, renderItem, url, header, params,
 }: ListProps<T>) {
   const {
     data: expenses, isLoading, refetch, isFetching, fetchNextPage, hasNextPage,
-  } = usePaginatedQuery<T>(query, url);
+  } = usePaginatedQuery<T>(query, url, params);
 
   const queryClient = useQueryClient();
 

@@ -18,18 +18,26 @@ interface ListResult<T> {
   number_of_entries: number;
 }
 
+export type QueryParams = Record<string, string | number | Date>;
+
 // TODO: Error handling does not seem to work => No redirect
-export function usePaginatedQuery<T>(query: Query, url: string) {
+export function usePaginatedQuery<T>(
+  query: Query,
+  url: string,
+  params?: QueryParams,
+) {
   const api = useApi();
   const { showToast } = useToast();
 
   const { data: queryData, ...queryResult } = useInfiniteQuery<ListResult<T>, Error>(
-    [query],
+    [query, params],
     async ({ pageParam }) => {
       const page = pageParam === undefined ? 0 : pageParam - 1;
-      const fullUrl = url.includes('?') ? `${url}&page=${page}` : `${url}?page=${page}`;
 
-      const { data } = await api.get<ListResult<T>>(fullUrl);
+      const { data } = await api.get<ListResult<T>>(
+        url,
+        { params: { page, ...params } },
+      );
 
       return data;
     },

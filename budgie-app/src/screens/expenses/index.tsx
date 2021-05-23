@@ -72,7 +72,7 @@ export const Expenses = () => {
   const queryClient = useQueryClient();
 
   const onActionDone = useCallback((navigation) => {
-    queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses, exact: true });
+    queryClient.resetQueries({ queryKey: Query.ReoccurringExpenses });
     queryClient.resetQueries({ queryKey: Query.Reoccurring });
     navigation.navigate('Expenses', { screen: 'Reoccurring' });
   }, [queryClient]);
