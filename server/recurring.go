@@ -86,14 +86,13 @@ func extractRecFilterOptions(c *gin.Context) (filter map[string]string, err erro
 	filter = make(map[string]string)
 
 	filter["start_date>"] = c.Query("startDate")
-	filter["start_date<"] = c.Query("endDate")
-	filter["end_date"] = c.Query("endDate")
+	filter["end_date<"] = c.Query("endDate")
 	filter["category"] = c.Query("category")
 
 	for key, value := range filter {
 		if value == "" {
 			delete(filter, key)
-		} else if key == "end_date" || key == "start_date>" || key == "start_date<" {
+		} else if key == "start_date>" || key == "end_date<" {
 			_, err = time.Parse("2006-01-02T15:04:05.000Z", value)
 		} else {
 			/* nothing else */
@@ -130,16 +129,57 @@ func listRecurring(c *gin.Context) {
 	}
 
 	page := c.MustGet("page")
-	if _, existing := filterOptions["end_date"]; existing {
+	endDate, existingEndDate := filterOptions["end_date<"]
+	startDate, existingStartDate := filterOptions["start_date>"]
+	if existingEndDate && existingStartDate {
 		var nullTime time.Time
-		endDate := filterOptions["end_date"]
-		delete(filterOptions, "end_date")
-		err = dbExtended.SelectWithFilterOptions(&recurringData, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 AND (end_date<=$3 OR end_date=$4) ORDER BY created_at DESC LIMIT $5 OFFSET $6", filterOptions, userID, isExpense, endDate, nullTime, pageSize, page)
+		delete(filterOptions, "end_date<")
+		delete(filterOptions, "start_date>")
+		err = dbExtended.SelectWithFilterOptions(&recurringData, `
+			SELECT
+				relevant_recurring.id,
+				relevant_recurring.name,
+				relevant_recurring.user_id,
+				relevant_recurring.category,
+				relevant_recurring.is_expense,
+				relevant_recurring.costs AS costs,
+				relevant_recurring.start_date_return_value AS start_date,
+				relevant_recurring.end_date_return_value AS end_date,
+				relevant_recurring.created_at,
+				relevant_recurring.updated_at
+			FROM (
+				SELECT
+					id,	name, costs, user_id, category, is_expense, 
+					start_date AS start_date_return_value, 
+					end_date AS end_date_return_value, 
+					created_at, updated_at, 
+					CASE WHEN start_date<$4 THEN $4
+						ELSE start_date
+					END AS start_date_calc,
+					CASE WHEN end_date>$3 THEN $3
+						WHEN end_date=$5 THEN $3
+						ELSE end_date
+					END AS end_date_calc
+				FROM recurring
+				WHERE
+					user_id=$1 AND is_expense=$2 AND start_date<$3 AND (end_date>$4 OR end_date=$5)
+			) AS relevant_recurring
+			ORDER BY relevant_recurring.start_date_return_value DESC LIMIT $6 OFFSET $7
+		`, filterOptions, userID, isExpense, endDate, startDate, nullTime, pageSize, page)
 		if err != nil {
 			saveErrorInfo(c, err, 500)
 			return
 		}
-		err = dbExtended.GetWithFilterOptions(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 AND (end_date<=$3 OR end_date=$4)", filterOptions, userID, isExpense, endDate, nullTime)
+		err = dbExtended.GetWithFilterOptions(&recurring.Entries, `
+			SELECT count(*)  
+			FROM (
+				SELECT
+					id
+				FROM recurring
+				WHERE
+					user_id=$1 AND is_expense=$2 AND start_date<$3 AND (end_date>$4 OR end_date=$5)
+			) AS relevant_recurring
+		`, filterOptions, userID, isExpense, endDate, startDate, nullTime)
 		if err != nil {
 			saveErrorInfo(c, err, 500)
 			return

@@ -26,9 +26,11 @@ func (db *DBExtended) GetWithFilterOptions(dest interface{}, query string, filte
 func adaptQuery(query *string, filter map[string]string, args *[]interface{}) {
 	numOfArgs := len(*args)
 
-	querySplit := strings.SplitAfter(*query, "WHERE ")
+	querySplit := strings.SplitAfter(*query, "WHERE")
 	var newQuery []string
 	newQuery = append(newQuery, querySplit[0])
+	/* in case of any other sign after WHERE */
+	newQuery = append(newQuery, " ")
 
 	var filterQuery string
 	i := 0
