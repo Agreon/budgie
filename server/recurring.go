@@ -129,9 +129,9 @@ func listRecurring(c *gin.Context) {
 	}
 
 	page := c.MustGet("page")
-	endDate, existingEndDate := filterOptions["end_date<"]
-	startDate, existingStartDate := filterOptions["start_date>"]
-	if existingEndDate && existingStartDate {
+	endDate, endDateExists := filterOptions["end_date<"]
+	startDate, startDateExists := filterOptions["start_date>"]
+	if endDateExists && startDateExists {
 		var nullTime time.Time
 		delete(filterOptions, "end_date<")
 		delete(filterOptions, "start_date>")
@@ -149,7 +149,7 @@ func listRecurring(c *gin.Context) {
 				relevant_recurring.updated_at
 			FROM (
 				SELECT
-					id,	name, costs, user_id, category, is_expense, 
+					id, name, costs, user_id, category, is_expense, 
 					start_date AS start_date_return_value, 
 					end_date AS end_date_return_value, 
 					created_at, updated_at, 
@@ -170,16 +170,7 @@ func listRecurring(c *gin.Context) {
 			saveErrorInfo(c, err, 500)
 			return
 		}
-		err = dbExtended.GetWithFilterOptions(&recurring.Entries, `
-			SELECT count(*)  
-			FROM (
-				SELECT
-					id
-				FROM recurring
-				WHERE
-					user_id=$1 AND is_expense=$2 AND start_date<$3 AND (end_date>$4 OR end_date=$5)
-			) AS relevant_recurring
-		`, filterOptions, userID, isExpense, endDate, startDate, nullTime)
+		err = dbExtended.GetWithFilterOptions(&recurring.Entries, `SELECT count(*) FROM recurring WHERE user_id=$1 AND is_expense=$2 AND start_date<$3 AND (end_date>$4 OR end_date=$5)`, filterOptions, userID, isExpense, endDate, startDate, nullTime)
 		if err != nil {
 			saveErrorInfo(c, err, 500)
 			return
