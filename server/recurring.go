@@ -82,8 +82,29 @@ type RecurringListOutput struct {
 	Entries int           `json:"number_of_entries"`
 }
 
+func extractRecFilterOptions(c *gin.Context) (filter map[string]string, err error) {
+	filter = make(map[string]string)
+
+	filter["start_date>"] = c.Query("startDate")
+	filter["end_date<"] = c.Query("endDate")
+	filter["category"] = c.Query("category")
+
+	for key, value := range filter {
+		if value == "" {
+			delete(filter, key)
+		} else if key == "start_date>" || key == "end_date<" {
+			_, err = time.Parse(time.RFC3339, value)
+		} else {
+			/* nothing else */
+		}
+	}
+
+	return
+}
+
 func listRecurring(c *gin.Context) {
 	db := GetDB()
+	dbExtended := DBExtended{db}
 	recurring := RecurringListOutput{}
 	recurring.Data = []interface{}{}
 	recurringData := []Recurring{}
@@ -100,17 +121,72 @@ func listRecurring(c *gin.Context) {
 		saveErrorInfo(c, errors.New("Invalid type in query"), 400)
 		return
 	}
-	page := c.MustGet("page")
-	err := db.Select(&recurringData, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", userID, isExpense, pageSize, page)
+
+	filterOptions, err := extractRecFilterOptions(c)
 	if err != nil {
-		saveErrorInfo(c, err, 500)
+		saveErrorInfo(c, err, 400)
 		return
 	}
 
-	err = db.Get(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2", userID, isExpense)
-	if err != nil {
-		saveErrorInfo(c, err, 500)
-		return
+	page := c.MustGet("page")
+	endDate, endDateExists := filterOptions["end_date<"]
+	startDate, startDateExists := filterOptions["start_date>"]
+	if endDateExists && startDateExists {
+		var nullTime time.Time
+		delete(filterOptions, "end_date<")
+		delete(filterOptions, "start_date>")
+		err = dbExtended.SelectWithFilterOptions(&recurringData, `
+			SELECT
+				relevant_recurring.id,
+				relevant_recurring.name,
+				relevant_recurring.user_id,
+				relevant_recurring.category,
+				relevant_recurring.is_expense,
+				relevant_recurring.costs AS costs,
+				relevant_recurring.start_date_return_value AS start_date,
+				relevant_recurring.end_date_return_value AS end_date,
+				relevant_recurring.created_at,
+				relevant_recurring.updated_at
+			FROM (
+				SELECT
+					id, name, costs, user_id, category, is_expense, 
+					start_date AS start_date_return_value, 
+					end_date AS end_date_return_value, 
+					created_at, updated_at, 
+					CASE WHEN start_date<$4 THEN $4
+						ELSE start_date
+					END AS start_date_calc,
+					CASE WHEN end_date>$3 THEN $3
+						WHEN end_date=$5 THEN $3
+						ELSE end_date
+					END AS end_date_calc
+				FROM recurring
+				WHERE
+					user_id=$1 AND is_expense=$2 AND start_date<$3 AND (end_date>$4 OR end_date=$5)
+			) AS relevant_recurring
+			ORDER BY relevant_recurring.start_date_return_value DESC LIMIT $6 OFFSET $7
+		`, filterOptions, userID, isExpense, endDate, startDate, nullTime, pageSize, page)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+		err = dbExtended.GetWithFilterOptions(&recurring.Entries, `SELECT count(*) FROM recurring WHERE user_id=$1 AND is_expense=$2 AND start_date<$3 AND (end_date>$4 OR end_date=$5)`, filterOptions, userID, isExpense, endDate, startDate, nullTime)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+	} else {
+		err = dbExtended.SelectWithFilterOptions(&recurringData, "SELECT id, name, costs, user_id, category, is_expense, start_date, end_date, created_at, updated_at FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2 ORDER BY created_at DESC LIMIT $3 OFFSET $4", filterOptions, userID, isExpense, pageSize, page)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
+
+		err = dbExtended.GetWithFilterOptions(&recurring.Entries, "SELECT count(*) FROM recurring WHERE user_id=$1 AND parent_id IS NULL AND is_expense=$2", filterOptions, userID, isExpense)
+		if err != nil {
+			saveErrorInfo(c, err, 500)
+			return
+		}
 	}
 
 	/* workaround for dealing with optional enddate */
